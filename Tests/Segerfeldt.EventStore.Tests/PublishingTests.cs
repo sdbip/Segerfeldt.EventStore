@@ -22,7 +22,6 @@ namespace Segerfeldt.EventStore.Tests
             eventStore = new Source.EventStore(connectionFactory);
 
             var connection = connectionFactory.CreateConnection();
-            connection.Open();
             new SQLiteConnectionFactory(null!).CreateSchemaIfMissing(connection);
         }
 
@@ -87,8 +86,42 @@ namespace Segerfeldt.EventStore.Tests
 
         private class InMemoryConnectionFactory : IConnectionFactory
         {
-            private readonly IDbConnection connection = new SQLiteConnection("Data Source = :memory:");
+            private readonly IDbConnection connection = new InMemoryConnection();
             public IDbConnection CreateConnection() => connection;
+        }
+
+        private class InMemoryConnection : IDbConnection
+        {
+            private readonly SQLiteConnection implementor;
+
+            public string ConnectionString
+            {
+                get => implementor.ConnectionString;
+                #nullable disable // This is a fucked up situation!
+                set => implementor.ConnectionString = value;
+                #nullable enable // The interface is defined as
+                                 // string ConnectionString { get; [param: AllowNull] set; }
+                                 // What is the point of that!?
+            }
+
+            public int ConnectionTimeout => implementor.ConnectionTimeout;
+            public string Database => implementor.Database;
+            public ConnectionState State => implementor.State;
+
+            public InMemoryConnection() { implementor = new SQLiteConnection("Data Source = :memory:").OpenAndReturn(); }
+
+            public IDbTransaction BeginTransaction() => implementor.BeginTransaction();
+
+            public void Dispose() { implementor.Dispose(); }
+
+            public IDbTransaction BeginTransaction(IsolationLevel il) => throw new System.NotImplementedException();
+
+            public void ChangeDatabase(string databaseName) { implementor.ChangeDatabase(databaseName); }
+
+            public IDbCommand CreateCommand() => implementor.CreateCommand();
+
+            public void Open() { }
+            public void Close() { }
         }
     }
 }

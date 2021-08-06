@@ -52,38 +52,23 @@ namespace Segerfeldt.EventStore.Source
 
         private void PerformAtomically(Action<IDbConnection> action)
         {
-            var transaction = BeginTransaction();
+            var connection = connectionFactory.CreateConnection();
+            connection.Open();
+            var transaction = connection.BeginTransaction();
 
             try
             {
-                action(transaction.Connection!);
+                action(connection);
             }
             catch
             {
-                Rollback(transaction);
+                transaction.Rollback();
+                connection.Close();
                 throw;
             }
 
-            Commit(transaction);
-        }
-
-        private IDbTransaction BeginTransaction()
-        {
-            var connection = connectionFactory.CreateConnection();
-//            connection.Open();
-            return connection.BeginTransaction();
-        }
-
-        private static void Commit(IDbTransaction transaction)
-        {
             transaction.Commit();
-            transaction.Connection?.Close();
-        }
-
-        private static void Rollback(IDbTransaction transaction)
-        {
-            transaction.Rollback();
-            transaction.Connection?.Close();
+            connection.Close();
         }
     }
 }
