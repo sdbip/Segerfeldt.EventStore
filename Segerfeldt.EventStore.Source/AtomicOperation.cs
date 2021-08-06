@@ -23,44 +23,45 @@ namespace Segerfeldt.EventStore.Source
             return new AtomicOperation(connection, transaction);
         }
 
-        public (int? version, long? position) GetVersionAndPosition(string entityId)
+        public EntityVersion GetVersion(EntityId entityId)
         {
-            var reader = connection.CreateCommand("SELECT (SELECT MAX(position) FROM Events)," +
-                                                  " (SELECT MAX(version) FROM Events WHERE entity = @entityId)",
-                    ("@entityId", entityId))
-                .ExecuteReader();
-            reader.Read();
-            return (version: reader[1] as int?, position: reader[0] as long?);
+            var command = connection.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
+                ("@entityId", entityId.ToString()));
+            return command.ExecuteScalar() is int versionValue
+                ? EntityVersion.Of(versionValue)
+                : EntityVersion.New;
         }
 
-        public void InsertEntity(string id, int version)
+        public long? GetPosition() => connection.CreateCommand("SELECT MAX(position) FROM Events").ExecuteScalar() as long?;
+
+        public void InsertEntity(EntityId id, EntityVersion version)
         {
             var command = connection.CreateCommand(
                 "INSERT INTO Entities (id, version) VALUES (@id, @version)",
-                ("@id", id),
-                ("@version", version));
+                ("@id", id.ToString()),
+                ("@version", version.Value));
             command.ExecuteNonQuery();
         }
 
-        public void UpdateEntityVersion(string id, int version)
+        public void UpdateEntityVersion(EntityId id, EntityVersion version)
         {
-            connection.CreateCommand(
-                    "UPDATE Entities SET version = @version WHERE id = @id",
-                    ("(@id,", id),
-                    ("@version", version))
-                .ExecuteNonQuery();
+            var command = connection.CreateCommand(
+                "UPDATE Entities SET version = @version WHERE id = @id",
+                ("(@id,", id.ToString()),
+                ("@version", version.Value));
+            command.ExecuteNonQuery();
         }
 
-        internal void InsertEvent(string entityId, string eventName, string details, string actor, int version, long position)
+        internal void InsertEvent(EntityId entityId, string eventName, string details, string actor, EntityVersion version, long position)
         {
             connection.CreateCommand(
                     "INSERT INTO Events (entity, name, details, actor, version, position)" +
                     " VALUES (@entityId, @eventName, @details, @actor, @version, @position)",
-                    ("@entityId", entityId),
+                    ("@entityId", entityId.ToString()),
                     ("@eventName", eventName),
                     ("@details", details),
                     ("@actor", actor),
-                    ("@version", version),
+                    ("@version", version.Value),
                     ("@position", position))
                 .ExecuteNonQuery();
         }

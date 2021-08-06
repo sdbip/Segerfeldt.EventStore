@@ -45,8 +45,8 @@ namespace Segerfeldt.EventStore.Tests
                 Entity = (object) "test",
                 Name = (object) "test",
                 Details = (object) @"{""meaning"":42}",
-                Version = (object) 1,
-                Position = (object) 1
+                Version = (object) 0,
+                Position = (object) 0
             }));
         }
 
@@ -62,11 +62,21 @@ namespace Segerfeldt.EventStore.Tests
             var reader = connectionFactory.CreateConnection().CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
 
-            Assert.That(reader["entity"], Is.EqualTo("test"));
-            Assert.That(reader["name"], Is.EqualTo("test"));
-            Assert.That(reader["details"], Is.EqualTo(@"{""meaning"":42}"));
-            Assert.That(reader["version"], Is.EqualTo(1));
-            Assert.That(reader["position"], Is.EqualTo(1));
+            Assert.That(new
+            {
+                Entity = reader["entity"],
+                Name = reader["name"],
+                Details = reader["details"],
+                Version = reader["version"],
+                Position = reader["position"]
+            }, Is.EqualTo(new
+            {
+                Entity = (object) "test",
+                Name = (object) "test",
+                Details = (object) @"{""meaning"":42}",
+                Version = (object) 0,
+                Position = (object) 0
+            }));
         }
 
         [Test]

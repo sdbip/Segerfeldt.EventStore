@@ -15,16 +15,17 @@ namespace Segerfeldt.EventStore.Source
         {
             using var operation = AtomicOperation.BeginTransaction(connectionFactory);
 
-            var (version, position) = operation.GetVersionAndPosition(entityId.ToString());
-
-            if (version is null)
-                operation.InsertEntity(entityId.ToString(), 1);
-            else
-                operation.UpdateEntityVersion(entityId.ToString(), version.Value);
+            var currentVersion = operation.GetVersion(entityId);
+            var nextVersion = currentVersion.Next();
 
             var details = JsonSerializer.Serialize(@event.Details,
                 new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
-            operation.InsertEvent(entityId.ToString(), @event.Name, details, actor, version + 1 ?? 1, position + 1 ?? 1);
+            operation.InsertEvent(entityId, @event.Name, details, actor, nextVersion, operation.GetPosition() + 1 ?? 0);
+
+            if (currentVersion.IsNew)
+                operation.InsertEntity(entityId, nextVersion);
+            else
+                operation.UpdateEntityVersion(entityId, nextVersion);
 
             operation.Commit();
         }
@@ -33,20 +34,24 @@ namespace Segerfeldt.EventStore.Source
         {
             using var operation = AtomicOperation.BeginTransaction(connectionFactory);
 
-            var (previousVersion, previousPosition) = operation.GetVersionAndPosition(entity.Id.ToString());
-            if ((previousVersion ?? -1) != entity.Version.Value) throw new ConcurrentUpdateException(entity.Version, previousVersion);
+            var currentVersion = operation.GetVersion(entity.Id);
+            if (currentVersion != entity.Version) throw new ConcurrentUpdateException(entity.Version, currentVersion);
 
-            var version = previousVersion ?? 0;
-            var position = previousPosition + 1 ?? 1;
-
+            var position = operation.GetPosition() + 1 ?? 0;
+            var nextVersion = currentVersion;
             foreach (var @event in entity.UnpublishedEvents)
             {
-                version++;
+                nextVersion++;
                 var details = JsonSerializer.Serialize(@event.Details,
                     new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
 
-                operation.InsertEvent(entity.Id.ToString(), @event.Name, details, actor, version, position);
+                operation.InsertEvent(entity.Id, @event.Name, details, actor, nextVersion, position);
             }
+
+            if (currentVersion.IsNew)
+                operation.InsertEntity(entity.Id, nextVersion);
+            else
+                operation.UpdateEntityVersion(entity.Id, nextVersion);
 
             operation.Commit();
         }
