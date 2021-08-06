@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Tests", "Tests\Segerfeldt.EventStore.Tests\Segerfeldt.EventStore.Tests.csproj", "{ECC39A08-34BA-4E47-94FB-DC45342478C2}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4753DDB6-1168-4785-9400-75A28AB654C8}"
 ProjectSection(SolutionItems) = preProject
 	Directory.Build.props = Directory.Build.props
@@ -12,22 +10,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C71FE7ED
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source", "Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj", "{291B366A-E774-469C-87B2-67BFB056DCD5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.Tests", "Tests\Segerfeldt.EventStore.Source.Tests\Segerfeldt.EventStore.Source.Tests.csproj", "{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ECC39A08-34BA-4E47-94FB-DC45342478C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ECC39A08-34BA-4E47-94FB-DC45342478C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ECC39A08-34BA-4E47-94FB-DC45342478C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ECC39A08-34BA-4E47-94FB-DC45342478C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{291B366A-E774-469C-87B2-67BFB056DCD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{291B366A-E774-469C-87B2-67BFB056DCD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{291B366A-E774-469C-87B2-67BFB056DCD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{291B366A-E774-469C-87B2-67BFB056DCD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{ECC39A08-34BA-4E47-94FB-DC45342478C2} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 	EndGlobalSection
 EndGlobal

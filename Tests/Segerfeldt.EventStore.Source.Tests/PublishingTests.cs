@@ -2,13 +2,12 @@ using Moq;
 
 using NUnit.Framework;
 
-using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.SQLite;
 
 using System.Data;
 using System.Data.SQLite;
 
-namespace Segerfeldt.EventStore.Tests
+namespace Segerfeldt.EventStore.Source.Tests
 {
     public class PublishingTests
     {
