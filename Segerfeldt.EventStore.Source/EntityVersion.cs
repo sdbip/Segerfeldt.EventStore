@@ -22,7 +22,6 @@ namespace Segerfeldt.EventStore.Source
 
         public static bool operator ==(EntityVersion left, EntityVersion right) => Equals(left, right);
         public static bool operator !=(EntityVersion left, EntityVersion right) => !Equals(left, right);
-        public static EntityVersion operator ++(EntityVersion left) => left.Next();
 
         public override bool Equals(object? obj) => obj is EntityVersion other && other.Value == Value;
         public override int GetHashCode() => Value;
