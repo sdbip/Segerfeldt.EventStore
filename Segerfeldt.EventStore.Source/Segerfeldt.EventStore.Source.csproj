@@ -8,4 +8,9 @@
       <PackageReference Include="System.Data.SQLite.Core" Version="1.0.114.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="SQLite\schema.sql" />
+      <EmbeddedResource Include="SQLite\schema.sql" />
+    </ItemGroup>
+
 </Project>

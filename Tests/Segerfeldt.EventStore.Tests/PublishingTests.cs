@@ -3,6 +3,7 @@ using Moq;
 using NUnit.Framework;
 
 using Segerfeldt.EventStore.Source;
+using Segerfeldt.EventStore.Source.SQLite;
 
 using System.Data;
 using System.Data.SQLite;
@@ -22,7 +23,7 @@ namespace Segerfeldt.EventStore.Tests
 
             var connection = connectionFactory.CreateConnection();
             connection.Open();
-            new SqLiteConnectionFactory(null!).CreateSchemaIfMissing(connection);
+            new SQLiteConnectionFactory(null!).CreateSchemaIfMissing(connection);
         }
 
         [Test]
