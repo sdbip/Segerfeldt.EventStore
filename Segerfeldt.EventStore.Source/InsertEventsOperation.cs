@@ -14,18 +14,17 @@ namespace Segerfeldt.EventStore.Source
         private static readonly JsonSerializerOptions CamelCase = new() {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
         private EntityVersion? expectedVersion;
 
-        public InsertEventsOperation(IConnectionFactory connectionFactory, EntityId entityId, string actor,
-            params UnpublishedEvent[] events)
+        public InsertEventsOperation(IDbConnection connection, EntityId entityId, string actor, params UnpublishedEvent[] events)
         {
-            connection = connectionFactory.CreateConnection();
+            this.connection = connection;
             this.entityId = entityId;
             this.actor = actor;
             this.events = events;
         }
 
-        public InsertEventsOperation(IConnectionFactory connectionFactory, EntityId entityId, string actor, IEnumerable<UnpublishedEvent> events)
+        public InsertEventsOperation(IDbConnection connection, EntityId entityId, string actor, IEnumerable<UnpublishedEvent> events)
         {
-            connection = connectionFactory.CreateConnection();
+            this.connection = connection;
             this.entityId = entityId;
             this.actor = actor;
             this.events = events;
@@ -38,7 +37,7 @@ namespace Segerfeldt.EventStore.Source
 
             try
             {
-                var currentVersion = GetCurrentVersion(entityId);
+                var currentVersion = GetCurrentVersion();
                 if (expectedVersion is not null && currentVersion != expectedVersion) throw new ConcurrentUpdateException(expectedVersion, currentVersion);
 
                 var position = GetCurrentPosition() + 1;
@@ -63,7 +62,7 @@ namespace Segerfeldt.EventStore.Source
             connection.Close();
         }
 
-        private EntityVersion GetCurrentVersion(EntityId entityId)
+        private EntityVersion GetCurrentVersion()
         {
             var command = connection.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
                 ("@entityId", entityId.ToString()));
@@ -79,6 +78,7 @@ namespace Segerfeldt.EventStore.Source
                 yield return next;
                 next = next.Next();
             }
+            // ReSharper disable once IteratorNeverReturns
         }
 
         private long GetCurrentPosition()

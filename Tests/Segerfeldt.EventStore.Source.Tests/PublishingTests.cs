@@ -11,16 +11,16 @@ namespace Segerfeldt.EventStore.Source.Tests
 {
     public class PublishingTests
     {
-        private InMemoryConnectionFactory connectionFactory = null!;
-        private Source.EventStore eventStore = null!;
+        private InMemoryConnection connection = null!;
+        private EventStore eventStore = null!;
 
         [SetUp]
         public void Setup()
         {
-            connectionFactory = new InMemoryConnectionFactory();
-            eventStore = new Source.EventStore(connectionFactory);
+            connection = new InMemoryConnection();
+            eventStore = new EventStore(connection);
 
-            new SQLiteConnectionFactory(null!).CreateSchemaIfMissing(connectionFactory.Connection);
+            SQLite.SQLite.CreateSchemaIfMissing(connection);
         }
 
         [Test]
@@ -28,7 +28,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             eventStore.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
-            var reader = connectionFactory.CreateConnection().CreateCommand("SELECT * FROM Events").ExecuteReader();
+            var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
 
             Assert.That(new
@@ -57,7 +57,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
             eventStore.PublishChanges(entity.Object, "johan");
 
-            var reader = connectionFactory.CreateConnection().CreateCommand("SELECT * FROM Events").ExecuteReader();
+            var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
 
             Assert.That(new
@@ -80,7 +80,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CannotPublishChangesIfRemoteUpdated()
         {
-            connectionFactory.Connection
+            connection
                 .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
                 .ExecuteNonQuery();
 
@@ -90,13 +90,6 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
             Assert.That(() => eventStore.PublishChanges(entity.Object, "johan"), Throws.Exception);
-        }
-
-        private class InMemoryConnectionFactory : IConnectionFactory
-        {
-            public readonly IDbConnection Connection = new InMemoryConnection();
-
-            public IDbConnection CreateConnection() => Connection;
         }
 
         private class InMemoryConnection : IDbConnection
