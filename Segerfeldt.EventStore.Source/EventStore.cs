@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Segerfeldt.EventStore.Source
 {
@@ -13,62 +11,44 @@ namespace Segerfeldt.EventStore.Source
             this.connectionFactory = connectionFactory;
         }
 
-        public void Publish(EntityId entityId, UnpublishedEvent @event, string actor) {
-            PerformAtomically(connection =>
-            {
-                var (version, position) = connection.GetVersionAndPosition(entityId.ToString());
+        public void Publish(EntityId entityId, UnpublishedEvent @event, string actor)
+        {
+            using var operation = AtomicOperation.BeginTransaction(connectionFactory);
 
-                if (version is null)
-                    connection.InsertEntity(entityId.ToString(), 1);
-                else
-                    connection.UpdateEntityVersion(entityId.ToString(), version.Value);
+            var (version, position) = operation.GetVersionAndPosition(entityId.ToString());
 
-                var details = JsonSerializer.Serialize(@event.Details,
-                    new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
-                connection.InsertEvent(entityId.ToString(), @event.Name, details, actor, version + 1 ?? 1, position + 1 ?? 1);
-            });
+            if (version is null)
+                operation.InsertEntity(entityId.ToString(), 1);
+            else
+                operation.UpdateEntityVersion(entityId.ToString(), version.Value);
+
+            var details = JsonSerializer.Serialize(@event.Details,
+                new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
+            operation.InsertEvent(entityId.ToString(), @event.Name, details, actor, version + 1 ?? 1, position + 1 ?? 1);
+
+            operation.Commit();
         }
 
         public void PublishChanges(IEntity entity, string actor)
         {
-            PerformAtomically(connection =>
+            using var operation = AtomicOperation.BeginTransaction(connectionFactory);
+
+            var (previousVersion, previousPosition) = operation.GetVersionAndPosition(entity.Id.ToString());
+            if ((previousVersion ?? -1) != entity.Version.Value) throw new ConcurrentUpdateException(entity.Version, previousVersion);
+
+            var version = previousVersion ?? 0;
+            var position = previousPosition + 1 ?? 1;
+
+            foreach (var @event in entity.UnpublishedEvents)
             {
-                var (previousVersion, previousPosition) = connection.GetVersionAndPosition(entity.Id.ToString());
-                if ((previousVersion ?? -1) != entity.Version.Value) throw new ConcurrentUpdateException(entity.Version, previousVersion);
+                version++;
+                var details = JsonSerializer.Serialize(@event.Details,
+                    new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
 
-                var version = previousVersion ?? 0;
-                var position = previousPosition + 1 ?? 1;
-
-                foreach (var @event in entity.UnpublishedEvents)
-                {
-                    version++;
-                    var details = JsonSerializer.Serialize(@event.Details,
-                        new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
-
-                    connection.InsertEvent(entity.Id.ToString(), @event.Name, details, actor, version, position);
-                }
-            });
-        }
-
-        private void PerformAtomically(Action<IDbConnection> action)
-        {
-            var connection = connectionFactory.CreateConnection();
-            connection.Open();
-            var transaction = connection.BeginTransaction();
-
-            try
-            {
-                action(connection);
-            }
-            catch
-            {
-                transaction.Rollback();
-                connection.Close();
-                throw;
+                operation.InsertEvent(entity.Id.ToString(), @event.Name, details, actor, version, position);
             }
 
-            transaction.Commit();
-            connection.Close();
+            operation.Commit();
         }
     }
 }
