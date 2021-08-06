@@ -44,7 +44,7 @@ namespace Segerfeldt.EventStore.Source
                 var position = GetCurrentPosition() + 1;
                 var eventsAndVersions = events.Zip(InfiniteVersionsFrom(currentVersion.Next())).ToList();
                 foreach (var (@event, version) in eventsAndVersions)
-                    InsertEvent(entityId, @event, actor, version, position);
+                    InsertEvent(@event, version, position);
 
                 var lastInsertedVersion = eventsAndVersions.Last().Second;
                 if (currentVersion.IsNew)
@@ -87,7 +87,7 @@ namespace Segerfeldt.EventStore.Source
             return command.ExecuteScalar() as long? ?? -1;
         }
 
-        private void InsertEvent(EntityId entityId, UnpublishedEvent @event, string actor, EntityVersion version, long position)
+        private void InsertEvent(UnpublishedEvent @event, EntityVersion version, long position)
         {
             var command = connection.CreateCommand(
                 "INSERT INTO Events (entity, name, details, actor, version, position)" +

@@ -21,14 +21,13 @@ namespace Segerfeldt.EventStore.Tests
             connectionFactory = new InMemoryConnectionFactory();
             eventStore = new Source.EventStore(connectionFactory);
 
-            var connection = connectionFactory.CreateConnection();
-            new SQLiteConnectionFactory(null!).CreateSchemaIfMissing(connection);
+            new SQLiteConnectionFactory(null!).CreateSchemaIfMissing(connectionFactory.Connection);
         }
 
         [Test]
         public void CanPublishSingleEvent()
         {
-            eventStore.Publish(new EntityId("test"), new UnpublishedEvent("test", new{Meaning = 42}), "johan");
+            eventStore.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
             var reader = connectionFactory.CreateConnection().CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
@@ -42,8 +41,8 @@ namespace Segerfeldt.EventStore.Tests
                 Position = reader["position"]
             }, Is.EqualTo(new
             {
-                Entity = (object) "test",
-                Name = (object) "test",
+                Entity = (object) "an-entity",
+                Name = (object) "an-event",
                 Details = (object) @"{""meaning"":42}",
                 Version = (object) 0,
                 Position = (object) 0
@@ -54,9 +53,9 @@ namespace Segerfeldt.EventStore.Tests
         public void CanPublishChanges()
         {
             var entity = new Mock<IEntity>();
-            entity.Setup(e => e.Id).Returns(new EntityId("test"));
+            entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
             entity.Setup(e => e.Version).Returns(EntityVersion.New);
-            entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("test", new{Meaning = 42})});
+            entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
             eventStore.PublishChanges(entity.Object, "johan");
 
             var reader = connectionFactory.CreateConnection().CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -71,8 +70,8 @@ namespace Segerfeldt.EventStore.Tests
                 Position = reader["position"]
             }, Is.EqualTo(new
             {
-                Entity = (object) "test",
-                Name = (object) "test",
+                Entity = (object) "an-entity",
+                Name = (object) "an-event",
                 Details = (object) @"{""meaning"":42}",
                 Version = (object) 0,
                 Position = (object) 0
@@ -82,22 +81,23 @@ namespace Segerfeldt.EventStore.Tests
         [Test]
         public void CannotPublishChangesIfRemoteUpdated()
         {
-            connectionFactory.CreateConnection().CreateCommand(
-                "INSERT INTO Events (entity, name, details, actor, version, position)" +
-                " VALUES ('test', 'previous-event, '{}', 'system', 3, 3)");
+            connectionFactory.Connection
+                .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
+                .ExecuteNonQuery();
 
             var entity = new Mock<IEntity>();
-            entity.Setup(e => e.Id).Returns(new EntityId("test"));
+            entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
             entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
-            entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("test", new{Meaning = 42})});
+            entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
             Assert.That(() => eventStore.PublishChanges(entity.Object, "johan"), Throws.Exception);
         }
 
         private class InMemoryConnectionFactory : IConnectionFactory
         {
-            private readonly IDbConnection connection = new InMemoryConnection();
-            public IDbConnection CreateConnection() => connection;
+            public readonly IDbConnection Connection = new InMemoryConnection();
+
+            public IDbConnection CreateConnection() => Connection;
         }
 
         private class InMemoryConnection : IDbConnection
