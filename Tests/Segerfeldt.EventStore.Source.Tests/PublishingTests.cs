@@ -2,8 +2,6 @@ using Moq;
 
 using NUnit.Framework;
 
-using Segerfeldt.EventStore.Source.SQLite;
-
 using System.Data;
 using System.Data.SQLite;
 

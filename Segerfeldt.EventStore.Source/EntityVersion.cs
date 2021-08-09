@@ -1,5 +1,4 @@
 using System;
-using System.Xml.Xsl;
 
 namespace Segerfeldt.EventStore.Source
 {
