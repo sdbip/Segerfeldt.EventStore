@@ -13,15 +13,14 @@ namespace Segerfeldt.EventStore.Source
 
         public void Publish(EntityId entityId, UnpublishedEvent @event, string actor)
         {
-            var operation = new InsertEventsOperation(connection, entityId, actor, @event);
-            operation.Run();
+            var command = new InsertEventsOperation(entityId, actor, @event);
+            command.Execute(connection);
         }
 
         public void PublishChanges(IEntity entity, string actor)
         {
-            var operation = new InsertEventsOperation(connection, entity.Id, actor, entity.UnpublishedEvents);
-            operation.ExpectVersion(entity.Version);
-            operation.Run();
+            var command = new InsertEventsOperation(entity.Id, actor, entity.UnpublishedEvents) { ExpectedVersion = entity.Version };
+            command.Execute(connection);
         }
     }
 }
