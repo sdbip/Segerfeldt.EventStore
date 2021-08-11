@@ -36,6 +36,7 @@ namespace Segerfeldt.EventStore.Source
             private static readonly JsonSerializerOptions CamelCase = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
             private readonly IDbConnection connection;
+            private IDbTransaction? transaction;
             private readonly InsertEventsOperation operation;
 
             public ActiveOperation(IDbConnection connection, InsertEventsOperation operation)
@@ -47,7 +48,7 @@ namespace Segerfeldt.EventStore.Source
             public void Run()
             {
                 connection.Open();
-                var transaction = connection.BeginTransaction();
+                transaction = connection.BeginTransaction();
 
                 try
                 {
@@ -55,16 +56,15 @@ namespace Segerfeldt.EventStore.Source
                     if (operation.ExpectedVersion is not null && currentVersion != operation.ExpectedVersion)
                         throw new ConcurrentUpdateException(operation.ExpectedVersion, currentVersion);
 
+                    if (currentVersion.IsNew) InsertEntity(operation.entityId, EntityVersion.Of(1));
+
                     var position = GetCurrentPosition() + 1;
                     var eventsAndVersions = operation.events.Zip(InfiniteVersionsFrom(currentVersion.Next())).ToList();
                     foreach (var (@event, version) in eventsAndVersions)
                         InsertEvent(@event, version, position);
 
                     var lastInsertedVersion = eventsAndVersions.Last().Second;
-                    if (currentVersion.IsNew)
-                        InsertEntity(operation.entityId, lastInsertedVersion);
-                    else
-                        UpdateVersion(operation.entityId, lastInsertedVersion);
+                    UpdateVersion(operation.entityId, lastInsertedVersion);
                 }
                 catch
                 {
@@ -91,7 +91,8 @@ namespace Segerfeldt.EventStore.Source
             private EntityVersion GetCurrentVersion()
             {
                 var command = connection.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
-                    ("@entityId", this.operation.entityId.ToString()));
+                    ("@entityId", operation.entityId.ToString()));
+                command.Transaction = transaction;
                 return command.ExecuteScalar() is int versionValue
                     ? EntityVersion.Of(versionValue)
                     : EntityVersion.New;
@@ -100,6 +101,7 @@ namespace Segerfeldt.EventStore.Source
             private long GetCurrentPosition()
             {
                 var command = connection.CreateCommand("SELECT MAX(position) FROM Events");
+                command.Transaction = transaction;
                 return command.ExecuteScalar() as long? ?? -1;
             }
 
@@ -114,6 +116,7 @@ namespace Segerfeldt.EventStore.Source
                     ("@actor", operation.actor),
                     ("@version", version.Value),
                     ("@position", position));
+                command.Transaction = transaction;
                 command.ExecuteNonQuery();
             }
 
@@ -123,6 +126,7 @@ namespace Segerfeldt.EventStore.Source
                     "INSERT INTO Entities (id, version) VALUES (@id, @version)",
                     ("@id", id.ToString()),
                     ("@version", version.Value));
+                command.Transaction = transaction;
                 command.ExecuteNonQuery();
             }
 
@@ -130,8 +134,9 @@ namespace Segerfeldt.EventStore.Source
             {
                 var command = connection.CreateCommand(
                     "UPDATE Entities SET version = @version WHERE id = @id",
-                    ("(@id,", id.ToString()),
+                    ("@id", id.ToString()),
                     ("@version", version.Value));
+                command.Transaction = transaction;
                 command.ExecuteNonQuery();
             }
         }

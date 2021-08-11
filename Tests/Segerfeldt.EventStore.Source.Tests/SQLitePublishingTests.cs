@@ -7,7 +7,8 @@ using System.Data.SQLite;
 
 namespace Segerfeldt.EventStore.Source.Tests
 {
-    public class PublishingTests
+    // ReSharper disable once InconsistentNaming
+    public class SQLitePublishingTests
     {
         private InMemoryConnection connection = null!;
         private EventStore eventStore = null!;
