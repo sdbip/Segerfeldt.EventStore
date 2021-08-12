@@ -7,5 +7,7 @@ namespace Segerfeldt.EventStore.Source
         EntityId Id { get; }
         EntityVersion Version { get; }
         IEnumerable<UnpublishedEvent> UnpublishedEvents { get; }
+
+        void ReplayEvents(IEnumerable<PublishedEvent> events);
     }
 }
