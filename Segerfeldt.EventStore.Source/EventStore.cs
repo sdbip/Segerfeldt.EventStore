@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace Segerfeldt.EventStore.Source
 {
@@ -25,10 +26,13 @@ namespace Segerfeldt.EventStore.Source
             command.Execute(connection);
         }
 
-        public TEntity Reconstitute<TEntity>(EntityId id) where TEntity : IEntity
+        public TEntity? Reconstitute<TEntity>(EntityId id) where TEntity : class, IEntity
         {
+            var version = GetEntityVersion(id);
+            if (version is null) return null;
+
             var events = GetPublishedEvents(id);
-            var entity = Instantiate<TEntity>(id, EntityVersion.New);
+            var entity = Instantiate<TEntity>(id, version);
             entity.ReplayEvents(events);
             return entity;
         }
@@ -40,14 +44,26 @@ namespace Segerfeldt.EventStore.Source
             return (TEntity)constructor.Invoke(new object[] { id, version });
         }
 
+        private EntityVersion? GetEntityVersion(EntityId id)
+        {
+            var command = connection.CreateCommand(
+                "SELECT version FROM Entities WHERE id = @entityId",
+                ("@entityId", id.ToString()));
+            var version = command.ExecuteScalar();
+            return version is null ? null : EntityVersion.Of((int)version);
+        }
+
         private IEnumerable<PublishedEvent> GetPublishedEvents(EntityId id)
         {
-            var reader = connection.CreateCommand("SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
-                    ("@entityId", id.ToString()))
-                .ExecuteReader();
-
+            var command = connection.CreateCommand(
+                "SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
+                ("@entityId", id.ToString()));
+            var reader = command.ExecuteReader();
+            var result = new List<PublishedEvent>();
             while (reader.Read())
-                yield return new PublishedEvent((string)reader["name"], (string)reader["details"]);
+                result.Add(new PublishedEvent((string)reader["name"], (string)reader["details"]));
+            reader.Dispose();
+            return result;
         }
     }
 }

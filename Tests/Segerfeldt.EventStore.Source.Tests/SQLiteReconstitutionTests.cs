@@ -24,11 +24,20 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReconstitutesEntities()
         {
-            GivenEntity("an-entity");
+            GivenEntity("an-entity", 3);
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity, Is.Not.Null);
+            Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
+        }
+
+        [Test]
+        public void ReturnsNullIfNoEntity()
+        {
+            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+
+            Assert.That(entity, Is.Null);
         }
 
         [Test]
@@ -39,8 +48,8 @@ namespace Segerfeldt.EventStore.Source.Tests
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
-            Assert.That(entity.ReplayedEvents, Is.Not.Null);
-            Assert.That(entity.ReplayedEvents?.Select(e => new
+            Assert.That(entity?.ReplayedEvents, Is.Not.Null);
+            Assert.That(entity?.ReplayedEvents?.Select(e => new
                 {
                     e.Name,
                     e.Details
@@ -62,9 +71,9 @@ namespace Segerfeldt.EventStore.Source.Tests
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
-            Assert.That(entity.ReplayedEvents, Is.Not.Null);
+            Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
-            var replayedEvents = entity.ReplayedEvents!.ToList();
+            var replayedEvents = entity!.ReplayedEvents!.ToList();
             Assert.That(replayedEvents[0].Name, Is.EqualTo("first-event"));
             Assert.That(replayedEvents[1].Name, Is.EqualTo("second-event"));
             Assert.That(replayedEvents[2].Name, Is.EqualTo("third-event"));
