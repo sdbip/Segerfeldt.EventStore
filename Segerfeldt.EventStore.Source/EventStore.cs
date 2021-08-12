@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data;
 
 namespace Segerfeldt.EventStore.Source
@@ -29,13 +30,37 @@ namespace Segerfeldt.EventStore.Source
 
         public TEntity? Reconstitute<TEntity>(EntityId id) where TEntity : class, IEntity
         {
-            var version = GetEntityVersion(id);
-            if (version is null) return null;
+            var history = GetHistory(id);
+            if (history is null) return null;
 
-            var events = GetPublishedEvents(id);
-            var entity = Instantiate<TEntity>(id, version);
-            entity.ReplayEvents(events);
+            var entity = Instantiate<TEntity>(id, history.Version);
+            entity.ReplayEvents(history.Events);
             return entity;
+        }
+
+        public EntityHistory? GetHistory(EntityId entityId)
+        {
+            var command = connection.CreateCommand(
+                "SELECT version FROM Entities WHERE id = @entityId;" +
+                "SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
+                ("@entityId", entityId.ToString()));
+
+            using var reader = command.ExecuteReader();
+            var version = ReadEntityVersion(reader);
+            return version is not null ? new EntityHistory(version, ReadEvents(reader)) : null;
+        }
+
+        private static EntityVersion? ReadEntityVersion(IDataReader reader) =>
+            reader.Read() ? EntityVersion.Of((int)reader[0]) : null;
+
+        private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
+        {
+            if (!reader.NextResult()) return ImmutableList<PublishedEvent>.Empty;
+
+            var events = new List<PublishedEvent>();
+            while (reader.Read())
+                events.Add(new PublishedEvent((string)reader["name"], (string)reader["details"]));
+            return events;
         }
 
         private static TEntity Instantiate<TEntity>(EntityId id, EntityVersion version) where TEntity : IEntity
@@ -43,28 +68,6 @@ namespace Segerfeldt.EventStore.Source
             var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
             if (constructor is null) throw new Exception("Invalid entity type. Constructor missing.");
             return (TEntity)constructor.Invoke(new object[] { id, version });
-        }
-
-        private EntityVersion? GetEntityVersion(EntityId id)
-        {
-            var command = connection.CreateCommand(
-                "SELECT version FROM Entities WHERE id = @entityId",
-                ("@entityId", id.ToString()));
-            var version = command.ExecuteScalar();
-            return version is null ? null : EntityVersion.Of((int)version);
-        }
-
-        private IEnumerable<PublishedEvent> GetPublishedEvents(EntityId id)
-        {
-            var command = connection.CreateCommand(
-                "SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
-                ("@entityId", id.ToString()));
-            var reader = command.ExecuteReader();
-            var result = new List<PublishedEvent>();
-            while (reader.Read())
-                result.Add(new PublishedEvent((string)reader["name"], (string)reader["details"]));
-            reader.Dispose();
-            return result;
         }
     }
 }

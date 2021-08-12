@@ -79,6 +79,23 @@ namespace Segerfeldt.EventStore.Source.Tests
             Assert.That(replayedEvents[2].Name, Is.EqualTo("third-event"));
         }
 
+        public void CanReadHistoryOnly()
+        {
+            GivenEntity("an-entity");
+            GivenEvent("an-entity", "first-event", version: 1);
+            GivenEvent("an-entity", "third-event", version: 3);
+            GivenEvent("an-entity", "second-event", version: 2);
+
+            var history = eventStore.GetHistory(new EntityId("an-entity"));
+
+            Assert.That(history, Is.Not.Null);
+
+            var replayedEvents = history!.Events.ToList();
+            Assert.That(replayedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(replayedEvents[1].Name, Is.EqualTo("second-event"));
+            Assert.That(replayedEvents[2].Name, Is.EqualTo("third-event"));
+        }
+
         private void GivenEntity(string entityId, int version = 1)
         {
             connection
