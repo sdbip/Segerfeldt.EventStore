@@ -25,21 +25,29 @@ namespace Segerfeldt.EventStore.Source
             command.Execute(connection);
         }
 
-        public T Reconstitute<T>(EntityId id) where T : IEntity
+        public TEntity Reconstitute<TEntity>(EntityId id) where TEntity : IEntity
         {
-            var reader = connection.CreateCommand("SELECT * FROM Events WHERE entity = @entityId ORDER BY version", ("@entityId", id.ToString()))
-                .ExecuteReader();
-            var events = new List<PublishedEvent>();
-            while (reader.Read())
-            {
-                events.Add(new PublishedEvent((string)reader["name"], (string)reader["details"]));
-            }
-
-            var constructor = typeof(T).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
-            if (constructor is null) throw new Exception("Invalid entity type. Constructor missing.");
-            var entity = (T)constructor.Invoke(new object[] { id, EntityVersion.New });
+            var events = GetPublishedEvents(id);
+            var entity = Instantiate<TEntity>(id, EntityVersion.New);
             entity.ReplayEvents(events);
             return entity;
+        }
+
+        private static TEntity Instantiate<TEntity>(EntityId id, EntityVersion version) where TEntity : IEntity
+        {
+            var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
+            if (constructor is null) throw new Exception("Invalid entity type. Constructor missing.");
+            return (TEntity)constructor.Invoke(new object[] { id, version });
+        }
+
+        private IEnumerable<PublishedEvent> GetPublishedEvents(EntityId id)
+        {
+            var reader = connection.CreateCommand("SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
+                    ("@entityId", id.ToString()))
+                .ExecuteReader();
+
+            while (reader.Read())
+                yield return new PublishedEvent((string)reader["name"], (string)reader["details"]);
         }
     }
 }
