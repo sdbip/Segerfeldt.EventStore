@@ -1,8 +1,8 @@
 using System.Data;
 
-namespace Segerfeldt.EventStore.Source
+namespace Segerfeldt.EventStore.Source.Internals
 {
-    public static class ConnectionExtension
+    internal static class ConnectionExtension
     {
         public static IDbCommand CreateCommand(this IDbTransaction transaction, string commandText, params (string name, object? value)[] parameters)
         {
