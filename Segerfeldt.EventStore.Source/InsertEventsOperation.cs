@@ -28,7 +28,22 @@ namespace Segerfeldt.EventStore.Source
 
         public void Execute(IDbConnection connection)
         {
-            ActiveOperation.Run(connection, this);
+            connection.Open();
+            var transaction = connection.BeginTransaction();
+            var activeOperation = new ActiveOperation(transaction, this);
+
+            try
+            {
+                activeOperation.Run();
+                transaction.Commit();
+                connection.Close();
+            }
+            catch
+            {
+                transaction.Rollback();
+                connection.Close();
+                throw;
+            }
         }
 
         private sealed class ActiveOperation
@@ -38,33 +53,13 @@ namespace Segerfeldt.EventStore.Source
             private readonly IDbTransaction transaction;
             private readonly InsertEventsOperation operation;
 
-            private ActiveOperation(IDbTransaction transaction, InsertEventsOperation operation)
+            public ActiveOperation(IDbTransaction transaction, InsertEventsOperation operation)
             {
                 this.transaction = transaction;
                 this.operation = operation;
             }
 
-            public static void Run(IDbConnection connection, InsertEventsOperation operation)
-            {
-                connection.Open();
-                var transaction = connection.BeginTransaction();
-                var activeOperation = new ActiveOperation(transaction, operation);
-
-                try
-                {
-                    activeOperation.Run();
-                    transaction.Commit();
-                    connection.Close();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    connection.Close();
-                    throw;
-                }
-            }
-
-            private void Run()
+            public void Run()
             {
                 var currentVersion = GetCurrentVersion();
                 if (operation.ExpectedVersion is not null && currentVersion != operation.ExpectedVersion)
