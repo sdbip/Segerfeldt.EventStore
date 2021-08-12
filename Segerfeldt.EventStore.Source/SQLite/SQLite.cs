@@ -1,3 +1,5 @@
+using Segerfeldt.EventStore.Source.Internals;
+
 using System.Data;
 using System.IO;
 

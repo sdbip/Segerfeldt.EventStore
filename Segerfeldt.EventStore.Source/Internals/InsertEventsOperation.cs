@@ -3,7 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Text.Json;
 
-namespace Segerfeldt.EventStore.Source
+namespace Segerfeldt.EventStore.Source.Internals
 {
     internal sealed class InsertEventsOperation
     {
