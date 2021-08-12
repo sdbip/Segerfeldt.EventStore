@@ -45,9 +45,20 @@ namespace Segerfeldt.EventStore.Source
                 "SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
                 ("@entityId", entityId.ToString()));
 
+            connection.Open();
             using var reader = command.ExecuteReader();
             var version = ReadEntityVersion(reader);
-            return version is not null ? new EntityHistory(version, ReadEvents(reader)) : null;
+            if (version is null)
+            {
+                connection.Close();
+                return null;
+            }
+
+            var events = ReadEvents(reader);
+
+            connection.Close();
+            return new EntityHistory(version, events);
+
         }
 
         private static EntityVersion? ReadEntityVersion(IDataReader reader) =>
@@ -59,7 +70,14 @@ namespace Segerfeldt.EventStore.Source
 
             var events = new List<PublishedEvent>();
             while (reader.Read())
-                events.Add(new PublishedEvent((string)reader["name"], (string)reader["details"], (string)reader["actor"]));
+            {
+                var name = (string)reader["name"];
+                var details = (string)reader["details"];
+                var actor = (string)reader["actor"];
+                var ticks = (long)reader["timestamp"];
+                events.Add(new PublishedEvent(name, details, actor, new DateTime(ticks, DateTimeKind.Utc)));
+            }
+
             return events;
         }
 

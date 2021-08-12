@@ -17,6 +17,8 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
             eventStore = new EventStore(connection);
+
+            SQLServer.SQLServer.CreateSchemaIfMissing(connection);
         }
 
         [TearDown]

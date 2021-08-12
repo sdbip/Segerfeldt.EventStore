@@ -11,7 +11,9 @@ namespace Segerfeldt.EventStore.Source.SQLite
         public static void CreateSchemaIfMissing(IDbConnection connection)
         {
             var schemaSQL = ReadSchemaSQLResource();
+            connection.Open();
             connection.CreateCommand(schemaSQL).ExecuteNonQuery();
+            connection.Close();
         }
 
         private static string ReadSchemaSQLResource()

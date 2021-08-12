@@ -10,7 +10,7 @@ CREATE TABLE Events (
     name TEXT,
     details TEXT,
     actor TEXT,
-    timestamp INT DEFAULT CURRENT_TIMESTAMP,
+    timestamp LONG DEFAULT CURRENT_TIMESTAMP,
     version INT,
     position INT,
 

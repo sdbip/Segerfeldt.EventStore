@@ -3,29 +3,40 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.Tests
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteReconstitutionTests
+    public class SQLServerReconstitutionTests
     {
-        private InMemoryConnection connection = null!;
+        private SqlConnection connection = null!;
         private EventStore eventStore = null!;
 
         [SetUp]
         public void Setup()
         {
-            connection = new InMemoryConnection();
+            connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
             eventStore = new EventStore(connection);
 
-            SQLite.SQLite.CreateSchemaIfMissing(connection);
+            SQLServer.SQLServer.CreateSchemaIfMissing(connection);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            connection.Open();
+            connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;").ExecuteNonQuery();
+            connection.Close();
         }
 
         [Test]
         public void ReconstitutesEntities()
         {
+            connection.Open();
             GivenEntity("an-entity", 3);
+            connection.Close();
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
@@ -44,8 +55,10 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReplaysEvent()
         {
+            connection.Open();
             GivenEntity("an-entity");
             GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
+            connection.Close();
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
@@ -65,10 +78,12 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReplaysMultipleEventsInOrder()
         {
+            connection.Open();
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", version: 1);
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
+            connection.Close();
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
@@ -84,8 +99,10 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void CanReadHistoryOnly()
         {
             var timestamp = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Utc);
+            connection.Open();
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", "johan", timestamp);
+            connection.Close();
 
             Assume.That(timestamp.Ticks, Is.EqualTo(637643857550000000L));
 
@@ -101,10 +118,12 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReadsHistoryInOrder()
         {
+            connection.Open();
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", version: 1);
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
+            connection.Close();
 
             var history = eventStore.GetHistory(new EntityId("an-entity"));
 
