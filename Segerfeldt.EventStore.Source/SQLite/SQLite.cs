@@ -12,8 +12,8 @@ namespace Segerfeldt.EventStore.Source.SQLite
         {
             var schemaSQL = ReadSchemaSQLResource();
             connection.Open();
-            connection.CreateCommand(schemaSQL).ExecuteNonQuery();
-            connection.Close();
+            try { connection.CreateCommand(schemaSQL).ExecuteNonQuery(); }
+            finally { connection.Close(); }
         }
 
         private static string ReadSchemaSQLResource()
