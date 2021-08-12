@@ -59,7 +59,7 @@ namespace Segerfeldt.EventStore.Source
 
             var events = new List<PublishedEvent>();
             while (reader.Read())
-                events.Add(new PublishedEvent((string)reader["name"], (string)reader["details"]));
+                events.Add(new PublishedEvent((string)reader["name"], (string)reader["details"], (string)reader["actor"]));
             return events;
         }
 

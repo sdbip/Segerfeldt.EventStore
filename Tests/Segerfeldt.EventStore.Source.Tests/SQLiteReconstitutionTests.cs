@@ -1,5 +1,6 @@
 using NUnit.Framework;
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -79,7 +80,22 @@ namespace Segerfeldt.EventStore.Source.Tests
             Assert.That(replayedEvents[2].Name, Is.EqualTo("third-event"));
         }
 
+        [Test]
         public void CanReadHistoryOnly()
+        {
+            GivenEntity("an-entity");
+            GivenEvent("an-entity", "first-event", "johan");
+
+            var history = eventStore.GetHistory(new EntityId("an-entity"));
+
+            Assert.That(history, Is.Not.Null);
+
+            var replayedEvents = history!.Events.ToList();
+            Assert.That(replayedEvents[0].Actor, Is.EqualTo("johan"));
+        }
+
+        [Test]
+        public void ReadsHistoryInOrder()
         {
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", version: 1);
@@ -100,6 +116,14 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             connection
                 .CreateCommand($"INSERT INTO Entities (id, version) VALUES ('{entityId}', {version})")
+                .ExecuteNonQuery();
+        }
+
+        private void GivenEvent(string entityId, string eventName, string actor)
+        {
+            connection
+                .CreateCommand("INSERT INTO Events (entity, name, details, actor, version, position) " +
+                               $"VALUES ('{entityId}', '{eventName}', '{{}}', '{actor}', 1, 1)")
                 .ExecuteNonQuery();
         }
 

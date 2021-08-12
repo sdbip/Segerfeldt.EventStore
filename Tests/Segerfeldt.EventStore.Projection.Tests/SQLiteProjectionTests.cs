@@ -39,6 +39,30 @@ namespace Segerfeldt.EventStore.Projection.Tests
             Assert.That(projectedEvents[2].Name, Is.EqualTo("third-event"));
         }
 
+        [Test]
+        public void AllowsSettingStartingPosition()
+        {
+
+        }
+
+        [Test]
+        public void ReportsStartingPosition()
+        {
+
+        }
+
+        [Test]
+        public void NotifiesNewEvents()
+        {
+
+        }
+
+        [Test]
+        public void EntityIdAndDetails()
+        {
+
+        }
+
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
         {
             connection
