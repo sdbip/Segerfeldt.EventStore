@@ -1,11 +1,11 @@
-CREATE TABLE Entities (
+CREATE TABLE IF NOT EXISTS Entities (
     id TEXT,
     version INT,
 
     PRIMARY KEY (id)
 );
 
-CREATE TABLE Events (
+CREATE TABLE IF NOT EXISTS Events (
     entity TEXT,
     name TEXT,
     details TEXT,

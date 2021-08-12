@@ -20,6 +20,12 @@ namespace Segerfeldt.EventStore.Source.Tests
         }
 
         [Test]
+        public void DoesNotCrashIfSchemaExists()
+        {
+            SQLite.SQLite.CreateSchemaIfMissing(connection);
+        }
+
+        [Test]
         public void CanPublishSingleEvent()
         {
             eventStore.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
