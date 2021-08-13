@@ -19,7 +19,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection = new InMemoryConnection();
             eventStore = new EventStore(connection);
 
-            SQLite.SQLite.CreateSchemaIfMissing(connection);
+            SQLite.Schema.CreateIfMissing(connection);
         }
 
         [Test]

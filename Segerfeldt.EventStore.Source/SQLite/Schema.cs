@@ -6,9 +6,9 @@ using System.IO;
 namespace Segerfeldt.EventStore.Source.SQLite
 {
     // ReSharper disable once InconsistentNaming
-    public static class SQLite
+    public static class Schema
     {
-        public static void CreateSchemaIfMissing(IDbConnection connection)
+        public static void CreateIfMissing(IDbConnection connection)
         {
             var schemaSQL = ReadSchemaSQLResource();
             connection.Open();
@@ -18,8 +18,8 @@ namespace Segerfeldt.EventStore.Source.SQLite
 
         private static string ReadSchemaSQLResource()
         {
-            var sqliteAssembly = typeof(SQLite).Assembly;
-            var sqliteNamespace = typeof(SQLite).Namespace;
+            var sqliteAssembly = typeof(Schema).Assembly;
+            var sqliteNamespace = typeof(Schema).Namespace;
             return new StreamReader(sqliteAssembly.GetManifestResourceStream($"{sqliteNamespace}.schema.sql")!).ReadToEnd();
         }
     }
