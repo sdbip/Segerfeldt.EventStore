@@ -114,6 +114,27 @@ namespace Segerfeldt.EventStore.Source.Tests
             Assert.That(replayedEvents[2].Name, Is.EqualTo("third-event"));
         }
 
+        [Test]
+        public void ReturnsTimestampsAsUTC()
+        {
+            connection.Open();
+            try
+            {
+                GivenEntity("an-entity");
+                GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+
+            Assert.That(entity?.ReplayedEvents, Is.Not.Null);
+            Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTime.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
+            Assert.That(entity?.ReplayedEvents?.First().Timestamp.Kind, Is.EqualTo(DateTimeKind.Utc));
+        }
+
         private void GivenEntity(string entityId, int version = 1)
         {
             connection
