@@ -43,7 +43,10 @@ namespace Segerfeldt.EventStore.Projection
                 while (reader.Read())
                 {
                     count++;
-                    var @event = new Event(reader.GetString(reader.GetOrdinal("name")));
+                    var @event = new Event(
+                        reader.GetString(reader.GetOrdinal("entity")),
+                        reader.GetString(reader.GetOrdinal("name")),
+                        reader.GetString(reader.GetOrdinal("details")));
                     lastReadPosition = reader.GetInt64(reader.GetOrdinal("position"));
                     foreach (var projection in projections)
                         projection(@event);

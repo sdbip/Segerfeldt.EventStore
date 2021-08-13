@@ -28,6 +28,22 @@ namespace Segerfeldt.EventStore.Projection.Tests
         }
 
         [Test]
+        public void ReportsEventsWithEntityIdAndDetails()
+        {
+            GivenEvent("an-entity", "first-event", @"{""value"":42}");
+
+            var projectedEvents = new List<Event>();
+            eventSource.AddProjection(projectedEvents.Add);
+
+            eventSource.Start();
+
+            Assert.That(projectedEvents, Is.Not.Empty);
+            Assert.That(projectedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(projectedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(projectedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        }
+
+        [Test]
         public void ReportsEventsOrderedByVersion()
         {
             GivenEvent("an-entity", "first-event", version: 1);
@@ -75,12 +91,6 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             Assert.That(projectedEvents, Is.Not.Empty);
             Assert.That(projectedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "late-event" }));
-        }
-
-        [Test]
-        public void EntityIdAndDetails()
-        {
-
         }
 
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
