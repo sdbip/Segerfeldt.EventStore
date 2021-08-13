@@ -4,13 +4,6 @@ namespace Segerfeldt.EventStore.Source.Tests
 {
     internal static class ConnectionExtension
     {
-        public static IDbCommand CreateCommand(this IDbTransaction transaction, string commandText, params (string name, object? value)[] parameters)
-        {
-            var command = transaction.Connection!.CreateCommand(commandText, parameters);
-            command.Transaction = transaction;
-            return command;
-        }
-
         public static IDbCommand CreateCommand(this IDbConnection connection, string commandText, params (string name, object? value)[] parameters)
         {
             var command = connection.CreateCommand();

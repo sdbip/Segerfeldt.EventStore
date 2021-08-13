@@ -24,6 +24,6 @@ namespace Segerfeldt.EventStore.Source
 
         public override bool Equals(object? obj) => obj is EntityVersion other && other.Value == Value;
         public override int GetHashCode() => Value;
-        public override string ToString() => Value == -2 ? "[Missing]" : Value == -1 ? "[New]" : $"[{Value}]";
+        public override string ToString() => Value switch { -2 => "[Missing]", -1 => "[New]", _ => $"[{Value}]" };
     }
 }
