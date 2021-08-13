@@ -35,8 +35,14 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void ReconstitutesEntities()
         {
             connection.Open();
-            GivenEntity("an-entity", 3);
-            connection.Close();
+            try
+            {
+                GivenEntity("an-entity", 3);
+            }
+            finally
+            {
+                connection.Close();
+            }
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
@@ -56,9 +62,15 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void ReplaysEvent()
         {
             connection.Open();
-            GivenEntity("an-entity");
-            GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
-            connection.Close();
+            try
+            {
+                GivenEntity("an-entity");
+                GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
+            }
+            finally
+            {
+                connection.Close();
+            }
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
@@ -79,11 +91,17 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void ReplaysMultipleEventsInOrder()
         {
             connection.Open();
-            GivenEntity("an-entity");
-            GivenEvent("an-entity", "first-event", version: 1);
-            GivenEvent("an-entity", "third-event", version: 3);
-            GivenEvent("an-entity", "second-event", version: 2);
-            connection.Close();
+            try
+            {
+                GivenEntity("an-entity");
+                GivenEvent("an-entity", "first-event", version: 1);
+                GivenEvent("an-entity", "third-event", version: 3);
+                GivenEvent("an-entity", "second-event", version: 2);
+            }
+            finally
+            {
+                connection.Close();
+            }
 
             var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
@@ -100,9 +118,15 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             var timestamp = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Utc);
             connection.Open();
-            GivenEntity("an-entity");
-            GivenEvent("an-entity", "first-event", "johan", timestamp);
-            connection.Close();
+            try
+            {
+                GivenEntity("an-entity");
+                GivenEvent("an-entity", "first-event", "johan", timestamp);
+            }
+            finally
+            {
+                connection.Close();
+            }
 
             Assume.That(timestamp.Ticks, Is.EqualTo(637643857550000000L));
 
@@ -119,11 +143,17 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void ReadsHistoryInOrder()
         {
             connection.Open();
-            GivenEntity("an-entity");
-            GivenEvent("an-entity", "first-event", version: 1);
-            GivenEvent("an-entity", "third-event", version: 3);
-            GivenEvent("an-entity", "second-event", version: 2);
-            connection.Close();
+            try
+            {
+                GivenEntity("an-entity");
+                GivenEvent("an-entity", "first-event", version: 1);
+                GivenEvent("an-entity", "third-event", version: 3);
+                GivenEvent("an-entity", "second-event", version: 2);
+            }
+            finally
+            {
+                connection.Close();
+            }
 
             var history = eventStore.GetHistory(new EntityId("an-entity"));
 
