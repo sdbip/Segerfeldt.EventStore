@@ -46,7 +46,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 Name = (object) "an-event",
                 Details = (object) @"{""meaning"":42}",
                 Version = (object) 0,
-                Position = (object) 0
+                Position = (object) 0L
             }));
         }
 
@@ -75,7 +75,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 Name = (object) "an-event",
                 Details = (object) @"{""meaning"":42}",
                 Version = (object) 0,
-                Position = (object) 0
+                Position = (object) 0L
             }));
         }
 

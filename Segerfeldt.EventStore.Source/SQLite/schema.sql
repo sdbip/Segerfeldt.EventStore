@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS Events (
     actor TEXT,
     timestamp TIMESTAMP,
     version INT,
-    position INT,
+    position BIGINT,
 
     FOREIGN KEY (entity) REFERENCES Entities (id)
 );
