@@ -83,7 +83,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CanReadHistoryOnly()
         {
-            var timestamp = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Utc);
+            var timestamp = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Unspecified);
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", "johan", timestamp);
 
