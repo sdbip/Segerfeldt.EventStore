@@ -12,7 +12,7 @@ CREATE TABLE Events (
     [name] NVARCHAR(128),
     details NVARCHAR(MAX),
     actor NVARCHAR(36),
-    [timestamp] BIGINT DEFAULT CONVERT(BIGINT, CURRENT_TIMESTAMP),
+    [timestamp] DATETIME DEFAULT CURRENT_TIMESTAMP,
     [version] INT,
     position INT,
 

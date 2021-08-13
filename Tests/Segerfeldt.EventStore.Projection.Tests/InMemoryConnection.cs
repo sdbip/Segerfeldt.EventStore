@@ -21,7 +21,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
         public string Database => implementor.Database;
         public ConnectionState State => implementor.State;
 
-        public InMemoryConnection() { implementor = new SQLiteConnection("Data Source = :memory:").OpenAndReturn(); }
+        public InMemoryConnection() { implementor = new SQLiteConnection("Data Source = :memory:; DateTimeKind=Utc").OpenAndReturn(); }
 
         public IDbTransaction BeginTransaction() => implementor.BeginTransaction();
 

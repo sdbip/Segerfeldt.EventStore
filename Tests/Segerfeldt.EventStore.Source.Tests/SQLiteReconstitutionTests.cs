@@ -87,8 +87,6 @@ namespace Segerfeldt.EventStore.Source.Tests
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", "johan", timestamp);
 
-            Assume.That(timestamp.Ticks, Is.EqualTo(637643857550000000L));
-
             var history = eventStore.GetHistory(new EntityId("an-entity"));
 
             Assert.That(history, Is.Not.Null);
@@ -128,7 +126,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection
                 .CreateCommand("INSERT INTO Events (entity, name, details, actor, timestamp, version, position) " +
                                $"VALUES ('{entityId}', '{eventName}', '{{}}', '{actor}', @timestamp, 1, 1)",
-                    ("@timestamp", timestamp.Ticks))
+                    ("@timestamp", timestamp))
                 .ExecuteNonQuery();
         }
 

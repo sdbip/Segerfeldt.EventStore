@@ -74,8 +74,8 @@ namespace Segerfeldt.EventStore.Source
                 var name = (string)reader["name"];
                 var details = (string)reader["details"];
                 var actor = (string)reader["actor"];
-                var ticks = (long)reader["timestamp"];
-                events.Add(new PublishedEvent(name, details, actor, new DateTime(ticks, DateTimeKind.Utc)));
+                var ticks = reader["timestamp"] as DateTime? ?? DateTime.MinValue;
+                events.Add(new PublishedEvent(name, details, actor, ticks));
             }
 
             return events;

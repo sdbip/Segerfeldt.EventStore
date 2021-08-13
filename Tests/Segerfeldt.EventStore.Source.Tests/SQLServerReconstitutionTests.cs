@@ -177,7 +177,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection
                 .CreateCommand("INSERT INTO Events (entity, name, details, actor, timestamp, version, position) " +
                                $"VALUES ('{entityId}', '{eventName}', '{{}}', '{actor}', @timestamp, 1, 1)",
-                    ("@timestamp", timestamp.Ticks))
+                    ("@timestamp", timestamp))
                 .ExecuteNonQuery();
         }
 
