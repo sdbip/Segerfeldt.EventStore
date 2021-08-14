@@ -10,7 +10,7 @@ namespace Segerfeldt.EventStore.Projection
         private readonly IDbConnection connection;
         private readonly IDelayConfiguration delayConfiguration;
         private readonly List<Action<Event>> projections = new();
-        private long lastReadPosition = -1;
+        private long lastReadPosition;
 
         public EventSource(IDbConnection connection, IDelayConfiguration delayConfiguration)
         {
@@ -23,8 +23,9 @@ namespace Segerfeldt.EventStore.Projection
             projections.Add(projection);
         }
 
-        public void Start()
+        public void Start(long? lastRead = null)
         {
+            lastReadPosition = lastRead ?? -1;
             NotifyNewEvents();
         }
 

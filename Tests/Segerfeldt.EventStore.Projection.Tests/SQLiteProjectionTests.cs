@@ -32,15 +32,14 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             GivenEvent("an-entity", "first-event", @"{""value"":42}");
 
-            var projectedEvents = new List<Event>();
-            eventSource.AddProjection(projectedEvents.Add);
+            var notifiedEvents = CaptureNotifiedEvents();
 
             eventSource.Start();
 
-            Assert.That(projectedEvents, Is.Not.Empty);
-            Assert.That(projectedEvents[0].EntityId, Is.EqualTo("an-entity"));
-            Assert.That(projectedEvents[0].Name, Is.EqualTo("first-event"));
-            Assert.That(projectedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+            Assert.That(notifiedEvents, Is.Not.Empty);
+            Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
         }
 
         [Test]
@@ -50,27 +49,14 @@ namespace Segerfeldt.EventStore.Projection.Tests
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
 
-            var projectedEvents = new List<Event>();
-            eventSource.AddProjection(projectedEvents.Add);
+            var notifiedEvents = CaptureNotifiedEvents();
 
             eventSource.Start();
 
-            Assert.That(projectedEvents.Count, Is.EqualTo(3));
-            Assert.That(projectedEvents[0].Name, Is.EqualTo("first-event"));
-            Assert.That(projectedEvents[1].Name, Is.EqualTo("second-event"));
-            Assert.That(projectedEvents[2].Name, Is.EqualTo("third-event"));
-        }
-
-        [Test]
-        public void AllowsSettingStartingPosition()
-        {
-
-        }
-
-        [Test]
-        public void ReportsStartingPosition()
-        {
-
+            Assert.That(notifiedEvents.Count, Is.EqualTo(3));
+            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
+            Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
         }
 
         [Test]
@@ -78,19 +64,36 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             delayConfiguration.Setup(c => c.NextDelay(It.IsAny<int>())).Returns(1);
 
-
-            var projectedEvents = new List<Event>();
-            eventSource.AddProjection(projectedEvents.Add);
+            var notifiedEvents = CaptureNotifiedEvents();
             GivenEvent("an-entity", "early-event", version: 1, position: 1);
             eventSource.Start();
-            projectedEvents.Clear();
+            notifiedEvents.Clear();
 
             GivenEvent("an-entity", "late-event", version: 2, position: 2);
 
-            Thread.Sleep(2);
+            Thread.Yield();
 
-            Assert.That(projectedEvents, Is.Not.Empty);
-            Assert.That(projectedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "late-event" }));
+            Assert.That(notifiedEvents, Is.Not.Empty);
+            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "late-event" }));
+        }
+
+        [Test]
+        public void AllowsSettingStartPosition()
+        {
+            GivenEvent("an-entity", "first-event", position: 32);
+            GivenEvent("an-entity", "second-event", position: 33);
+
+            var notifiedEvents = CaptureNotifiedEvents();
+
+            eventSource.Start(32);
+
+            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
+        }
+
+        [Test]
+        public void ReportsNewPosition()
+        {
+
         }
 
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
@@ -99,6 +102,13 @@ namespace Segerfeldt.EventStore.Projection.Tests
                 .CreateCommand("INSERT INTO Events (entity, name, details, actor, version, position) " +
                                $"VALUES ('{entityId}', '{eventName}', '{details}', 'test', {version}, {position})")
                 .ExecuteNonQuery();
+        }
+
+        private List<Event> CaptureNotifiedEvents()
+        {
+            var events = new List<Event>();
+            eventSource.AddProjection(events.Add);
+            return events;
         }
     }
 }
