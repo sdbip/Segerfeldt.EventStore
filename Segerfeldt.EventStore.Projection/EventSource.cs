@@ -44,11 +44,8 @@ namespace Segerfeldt.EventStore.Projection
                 while (reader.Read())
                 {
                     count++;
-                    var @event = new Event(
-                        reader.GetString(reader.GetOrdinal("entity")),
-                        reader.GetString(reader.GetOrdinal("name")),
-                        reader.GetString(reader.GetOrdinal("details")));
-                    lastReadPosition = reader.GetInt64(reader.GetOrdinal("position"));
+                    var @event = ReadEvent(reader);
+                    lastReadPosition = GetPosition(reader);
                     foreach (var projection in projections)
                         projection(@event);
                 }
@@ -61,5 +58,12 @@ namespace Segerfeldt.EventStore.Projection
                 Task.Delay(nextDelay).ContinueWith(_ => { NotifyNewEvents(); });
             }
         }
+
+        private static Event ReadEvent(IDataReader reader) => new(
+            reader.GetString(reader.GetOrdinal("entity")),
+            reader.GetString(reader.GetOrdinal("name")),
+            reader.GetString(reader.GetOrdinal("details")));
+
+        private static long GetPosition(IDataRecord record) => record.GetInt64(record.GetOrdinal("position"));
     }
 }
