@@ -30,7 +30,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             eventStore.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
-            var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+            using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
 
             Assert.That(new
@@ -59,7 +59,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
             eventStore.PublishChanges(entity.Object, "johan");
 
-            var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+            using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
 
             Assert.That(new

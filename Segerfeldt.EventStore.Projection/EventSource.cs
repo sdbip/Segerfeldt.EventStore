@@ -35,7 +35,7 @@ namespace Segerfeldt.EventStore.Projection
             var count = 0;
             try
             {
-                var reader = connection
+                using var reader = connection
                     .CreateCommand(
                         "SELECT * FROM Events WHERE position > @position ORDER BY version",
                         ("@position", lastReadPosition))
