@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Tests
 {
@@ -114,7 +115,14 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             var events = new List<Event>();
             foreach (var eventName in eventNames)
-                eventSource.AddProjection(eventName, events.Add);
+            {
+                eventSource.AddProjectionDelegate(eventName, e =>
+                {
+                    events.Add(e);
+                    return Task.CompletedTask;
+                });
+            }
+
             return events;
         }
     }

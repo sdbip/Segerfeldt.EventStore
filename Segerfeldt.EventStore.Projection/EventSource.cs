@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection
 {
+    public delegate Task ProjectionDelegate(Event @event);
+
     /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
     public class EventSource
     {
@@ -17,7 +20,7 @@ namespace Segerfeldt.EventStore.Projection
 
         private readonly IDbConnection connection;
         private readonly IPollingStrategy pollingStrategy;
-        private readonly Dictionary<string, List<Action<Event>>> projections = new();
+        private readonly Dictionary<string, List<ProjectionDelegate>> projectionDelegates = new();
         private long lastReadPosition;
 
         /// <summary>Notification after events have been processed</summary>
@@ -34,10 +37,11 @@ namespace Segerfeldt.EventStore.Projection
 
         /// <summary>Adds a projection to be notified of events</summary>
         /// <param name="eventName">the name of the event that invokes this projection</param>
-        /// <param name="projection">the function to call when the event is encountered</param>
-        public void AddProjection(string eventName, Action<Event> projection)
+        /// <param name="delegate">the function to call when the event is encountered</param>
+        public void AddProjectionDelegate(string eventName, ProjectionDelegate @delegate)
         {
-            projections.Add(eventName, new List<Action<Event>> { projection });
+            projectionDelegates.TryAdd(eventName, new List<ProjectionDelegate>());
+            projectionDelegates[eventName].Add(@delegate);
         }
 
         /// <summary>Start processing new events</summary>
@@ -67,20 +71,8 @@ namespace Segerfeldt.EventStore.Projection
 
         private void Notify(Event @event)
         {
-            if (!projections.TryGetValue(@event.Name, out var eventProjections)) return;
-
-            foreach (var projection in eventProjections)
-            {
-                try
-                {
-                    projection.Invoke(@event);
-                }
-                catch (Exception exception)
-                {
-                    Console.Error.WriteLine(exception.Message);
-                    Console.Error.WriteLine(exception.StackTrace);
-                }
-            }
+            if (projectionDelegates.TryGetValue(@event.Name, out var delegates))
+                Task.WhenAll(delegates.Select(d => d.Invoke(@event))).Wait();
         }
 
         private IEnumerable<Event> ReadEvents()
