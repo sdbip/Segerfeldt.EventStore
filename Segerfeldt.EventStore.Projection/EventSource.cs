@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection
 {
+    /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
     public class EventSource
     {
+        /// <summary>Arguments for the <see cref="EventSource.EventsProcessed"/> event</summary>
         public class EventsProcessedArgs : EventArgs
         {
+            /// <summary>The position that was handled. Always increasing.</summary>
             public long Position { get; init; }
         }
 
@@ -17,22 +20,31 @@ namespace Segerfeldt.EventStore.Projection
         private readonly Dictionary<string, List<Action<Event>>> projections = new();
         private long lastReadPosition;
 
+        /// <summary>Notification after events have been processed</summary>
         public event EventHandler<EventsProcessedArgs>? EventsProcessed;
 
+        /// <summary>Initializes a new <see cref="EventSource"/></summary>
+        /// <param name="connection">the database that stores your entities and events</param>
+        /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
         public EventSource(IDbConnection connection, IPollingStrategy? pollingStrategy = null)
         {
             this.connection = connection;
             this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
         }
 
+        /// <summary>Adds a projection to be notified of events</summary>
+        /// <param name="eventName">the name of the event that invokes this projection</param>
+        /// <param name="projection">the function to call when the event is encountered</param>
         public void AddProjection(string eventName, Action<Event> projection)
         {
             projections.Add(eventName, new List<Action<Event>> { projection });
         }
 
-        public void Start(long? lastRead = null)
+        /// <summary>Start processing new events</summary>
+        /// <param name="processedPosition">The last position already processed</param>
+        public void Start(long? processedPosition = null)
         {
-            lastReadPosition = lastRead ?? -1;
+            lastReadPosition = processedPosition ?? -1;
             NotifyNewEvents();
         }
 
