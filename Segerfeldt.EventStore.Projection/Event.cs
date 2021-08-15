@@ -8,11 +8,13 @@ namespace Segerfeldt.EventStore.Projection
         public string EntityId { get; }
         public string Name { get; }
         public string Details { get; }
+        public long Position { get; }
 
-        public Event(string entityId, string name, string details)
+        public Event(string entityId, string name, string details, long position)
         {
             Name = name;
             Details = details;
+            Position = position;
             EntityId = entityId;
         }
 

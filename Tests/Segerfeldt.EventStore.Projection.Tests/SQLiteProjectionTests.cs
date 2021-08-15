@@ -32,7 +32,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             GivenEvent("an-entity", "first-event", @"{""value"":42}");
 
-            var notifiedEvents = CaptureNotifiedEvents();
+            var notifiedEvents = CaptureNotifiedEvents("first-event");
 
             eventSource.Start();
 
@@ -49,11 +49,11 @@ namespace Segerfeldt.EventStore.Projection.Tests
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
 
-            var notifiedEvents = CaptureNotifiedEvents();
+            var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
 
             eventSource.Start();
 
-            Assert.That(notifiedEvents.Count, Is.EqualTo(3));
+            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
             Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
             Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
             Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
@@ -64,7 +64,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             delayConfiguration.Setup(c => c.NextDelay(It.IsAny<int>())).Returns(1);
 
-            var notifiedEvents = CaptureNotifiedEvents();
+            var notifiedEvents = CaptureNotifiedEvents("early-event", "late-event");
             GivenEvent("an-entity", "early-event", version: 1, position: 1);
             eventSource.Start();
             notifiedEvents.Clear();
@@ -83,7 +83,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             GivenEvent("an-entity", "first-event", position: 32);
             GivenEvent("an-entity", "second-event", position: 33);
 
-            var notifiedEvents = CaptureNotifiedEvents();
+            var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 
             eventSource.Start(32);
 
@@ -110,10 +110,11 @@ namespace Segerfeldt.EventStore.Projection.Tests
                 .ExecuteNonQuery();
         }
 
-        private List<Event> CaptureNotifiedEvents()
+        private List<Event> CaptureNotifiedEvents(params string[] eventNames)
         {
             var events = new List<Event>();
-            eventSource.AddProjection(events.Add);
+            foreach (var eventName in eventNames)
+                eventSource.AddProjection(eventName, events.Add);
             return events;
         }
     }

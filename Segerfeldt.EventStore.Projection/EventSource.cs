@@ -14,7 +14,7 @@ namespace Segerfeldt.EventStore.Projection
 
         private readonly IDbConnection connection;
         private readonly IPollingStrategy pollingStrategy;
-        private readonly List<Action<Event>> projections = new();
+        private readonly Dictionary<string, List<Action<Event>>> projections = new();
         private long lastReadPosition;
 
         public event EventHandler<EventsProcessedArgs>? EventsProcessed;
@@ -25,9 +25,9 @@ namespace Segerfeldt.EventStore.Projection
             this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
         }
 
-        public void AddProjection(Action<Event> projection)
+        public void AddProjection(string eventName, Action<Event> projection)
         {
-            projections.Add(projection);
+            projections.Add(eventName, new List<Action<Event>> { projection });
         }
 
         public void Start(long? lastRead = null)
@@ -38,8 +38,41 @@ namespace Segerfeldt.EventStore.Projection
 
         private void NotifyNewEvents()
         {
-            connection.Open();
             var count = 0;
+            var events = ReadEvents();
+            foreach (var @event in events)
+            {
+                count++;
+                lastReadPosition = @event.Position;
+                Notify(@event);
+
+                EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
+            }
+
+            var nextDelay = pollingStrategy.NextDelay(count);
+            Task.Delay(nextDelay).ContinueWith(_ => { NotifyNewEvents(); });
+        }
+
+        private void Notify(Event @event)
+        {
+            if (!projections.TryGetValue(@event.Name, out var eventProjections)) return;
+
+            foreach (var projection in eventProjections)
+            {
+                try
+                {
+                    projection.Invoke(@event);
+                }
+                catch (Exception exception)
+                {
+                    Console.Error.WriteLine(exception.Message);
+                    Console.Error.WriteLine(exception.StackTrace);
+                }
+            }
+        }
+
+        private IEnumerable<Event> ReadEvents()
+        {
             try
             {
                 using var reader = connection
@@ -49,30 +82,19 @@ namespace Segerfeldt.EventStore.Projection
                     .ExecuteReader();
 
                 while (reader.Read())
-                {
-                    count++;
-                    var @event = ReadEvent(reader);
-                    lastReadPosition = GetPosition(reader);
-                    foreach (var projection in projections)
-                        projection(@event);
-                    EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
-                }
+                    yield return ReadEvent(reader);
             }
             finally
             {
                 connection.Close();
-
-                var nextDelay = pollingStrategy.NextDelay(count);
-                Task.Delay(nextDelay).ContinueWith(_ => { NotifyNewEvents(); });
             }
         }
 
-        private static Event ReadEvent(IDataReader reader) => new(
-            reader.GetString(reader.GetOrdinal("entity")),
-            reader.GetString(reader.GetOrdinal("name")),
-            reader.GetString(reader.GetOrdinal("details")));
-
-        private static long GetPosition(IDataRecord record) => record.GetInt64(record.GetOrdinal("position"));
+        private static Event ReadEvent(IDataRecord record) => new(
+            record.GetString(record.GetOrdinal("entity")),
+            record.GetString(record.GetOrdinal("name")),
+            record.GetString(record.GetOrdinal("details")),
+            record.GetInt64(record.GetOrdinal("position")));
 
         private class DefaultPollingStrategy : IPollingStrategy
         {
