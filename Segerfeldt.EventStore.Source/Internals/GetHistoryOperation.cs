@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
+using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
@@ -14,19 +16,19 @@ namespace Segerfeldt.EventStore.Source.Internals
             this.entityId = entityId;
         }
 
-        public EntityHistory? Execute(IDbConnection connection)
+        public async Task<EntityHistory?> ExecuteAsync(DbConnection connection)
         {
-            var command = connection.CreateCommand(
+            DbCommand command = connection.CreateCommand(
                 "SELECT version FROM Entities WHERE id = @entityId;" +
                 "SELECT * FROM Events WHERE entity = @entityId ORDER BY version",
                 ("@entityId", entityId.ToString()));
 
-            connection.Open();
-            using var reader = command.ExecuteReader();
+            await connection.OpenAsync();
+            await using var reader = await command.ExecuteReaderAsync();
             var version = ReadEntityVersion(reader);
             if (version is null)
             {
-                connection.Close();
+                await connection.CloseAsync();
                 return null;
             }
 
@@ -34,7 +36,7 @@ namespace Segerfeldt.EventStore.Source.Internals
                 ? ReadEvents(reader).ToImmutableList()
                 : ImmutableList<PublishedEvent>.Empty;
 
-            connection.Close();
+            await connection.CloseAsync();
             return new EntityHistory(version, events);
         }
 

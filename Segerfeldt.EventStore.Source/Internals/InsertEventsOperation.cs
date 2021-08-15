@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
@@ -26,22 +27,22 @@ namespace Segerfeldt.EventStore.Source.Internals
             this.events = events.ToList();
         }
 
-        public void Execute(IDbConnection connection)
+        public async Task ExecuteAsync(DbConnection connection)
         {
-            connection.Open();
-            var transaction = connection.BeginTransaction();
+            await connection.OpenAsync();
+            var transaction = await connection.BeginTransactionAsync();
             var activeOperation = new ActiveOperation(transaction, this);
 
             try
             {
-                activeOperation.Run();
-                transaction.Commit();
-                connection.Close();
+                await activeOperation.RunAsync();
+                await transaction.CommitAsync();
+                await connection.CloseAsync();
             }
             catch
             {
-                transaction.Rollback();
-                connection.Close();
+                await transaction.RollbackAsync();
+                await connection.CloseAsync();
                 throw;
             }
         }
@@ -50,30 +51,30 @@ namespace Segerfeldt.EventStore.Source.Internals
         {
             private static readonly JsonSerializerOptions CamelCase = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-            private readonly IDbTransaction transaction;
+            private readonly DbTransaction transaction;
             private readonly InsertEventsOperation operation;
 
-            public ActiveOperation(IDbTransaction transaction, InsertEventsOperation operation)
+            public ActiveOperation(DbTransaction transaction, InsertEventsOperation operation)
             {
                 this.transaction = transaction;
                 this.operation = operation;
             }
 
-            public void Run()
+            public async Task RunAsync()
             {
-                var currentVersion = GetCurrentVersion();
+                var currentVersion = await GetCurrentVersionAsync();
                 if (operation.ExpectedVersion is not null && currentVersion != operation.ExpectedVersion)
                     throw new ConcurrentUpdateException(operation.ExpectedVersion, currentVersion);
 
-                if (currentVersion.IsNew) InsertEntity(operation.entityId, EntityVersion.Of(1));
+                if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, EntityVersion.Of(1));
 
-                var position = GetCurrentPosition() + 1;
+                var position = await GetCurrentPositionAsync() + 1;
                 var eventsAndVersions = operation.events.Zip(InfiniteVersionsFrom(currentVersion.Next())).ToList();
                 foreach (var (@event, version) in eventsAndVersions)
-                    InsertEvent(@event, version, position);
+                    await InsertEventAsync(@event, version, position);
 
                 var lastInsertedVersion = eventsAndVersions.Last().Second;
-                UpdateVersion(operation.entityId, lastInsertedVersion);
+                await UpdateVersionAsync(operation.entityId, lastInsertedVersion);
             }
 
             private static IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
@@ -87,22 +88,22 @@ namespace Segerfeldt.EventStore.Source.Internals
                 // ReSharper disable once IteratorNeverReturns
             }
 
-            private EntityVersion GetCurrentVersion()
+            private async Task<EntityVersion> GetCurrentVersionAsync()
             {
                 var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
                     ("@entityId", operation.entityId.ToString()));
-                return command.ExecuteScalar() is int versionValue
+                return await command.ExecuteScalarAsync() is int versionValue
                     ? EntityVersion.Of(versionValue)
                     : EntityVersion.New;
             }
 
-            private long GetCurrentPosition()
+            private async Task<long> GetCurrentPositionAsync()
             {
                 var command = transaction.CreateCommand("SELECT MAX(position) FROM Events");
-                return command.ExecuteScalar() as long? ?? -1;
+                return await command.ExecuteScalarAsync() as long? ?? -1;
             }
 
-            private void InsertEvent(UnpublishedEvent @event, EntityVersion version, long position)
+            private async Task InsertEventAsync(UnpublishedEvent @event, EntityVersion version, long position)
             {
                 var command = transaction.CreateCommand(
                     "INSERT INTO Events (entity, name, details, actor, version, position)" +
@@ -113,25 +114,25 @@ namespace Segerfeldt.EventStore.Source.Internals
                     ("@actor", operation.actor),
                     ("@version", version.Value),
                     ("@position", position));
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync();
             }
 
-            private void InsertEntity(EntityId id, EntityVersion version)
+            private async Task InsertEntityAsync(EntityId id, EntityVersion version)
             {
                 var command = transaction.CreateCommand(
                     "INSERT INTO Entities (id, version) VALUES (@id, @version)",
                     ("@id", id.ToString()),
                     ("@version", version.Value));
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync();
             }
 
-            private void UpdateVersion(EntityId id, EntityVersion version)
+            private async Task UpdateVersionAsync(EntityId id, EntityVersion version)
             {
                 var command = transaction.CreateCommand(
                     "UPDATE Entities SET version = @version WHERE id = @id",
                     ("@id", id.ToString()),
                     ("@version", version.Value));
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync();
             }
         }
     }

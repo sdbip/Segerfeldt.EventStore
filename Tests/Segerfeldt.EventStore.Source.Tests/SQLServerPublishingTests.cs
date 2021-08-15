@@ -2,14 +2,13 @@ using Moq;
 
 using NUnit.Framework;
 
-using System.Data;
 using System.Data.SqlClient;
 
 namespace Segerfeldt.EventStore.Source.Tests
 {
     public class SQLServerPublishingTests
     {
-        private IDbConnection connection = null!;
+        private SqlConnection connection = null!;
         private EventStore eventStore = null!;
 
         [SetUp]
@@ -101,7 +100,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
-            Assert.That(() => eventStore.PublishChanges(entity.Object, "johan"), Throws.Exception);
+            Assert.That(async () => await eventStore.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
         }
     }
 }

@@ -1,10 +1,10 @@
-using System.Data;
+using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Source.Tests
 {
     internal static class ConnectionExtension
     {
-        public static IDbCommand CreateCommand(this IDbConnection connection, string commandText, params (string name, object? value)[] parameters)
+        public static DbCommand CreateCommand(this DbConnection connection, string commandText, params (string name, object? value)[] parameters)
         {
             var command = connection.CreateCommand();
             command.CommandText = commandText;

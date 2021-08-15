@@ -1,13 +1,14 @@
 using System.Data;
+using System.Data.Common;
 using System.Data.SQLite;
 
 namespace Segerfeldt.EventStore.Source.Tests
 {
-    internal class InMemoryConnection : IDbConnection
+    internal class InMemoryConnection : DbConnection
     {
         private readonly SQLiteConnection implementor;
 
-        public string ConnectionString
+        public override string ConnectionString
         {
             get => implementor.ConnectionString;
             #nullable disable // This is a fucked up situation!
@@ -17,23 +18,20 @@ namespace Segerfeldt.EventStore.Source.Tests
                              // What is the point of that!?
         }
 
-        public int ConnectionTimeout => implementor.ConnectionTimeout;
-        public string Database => implementor.Database;
-        public ConnectionState State => implementor.State;
+        public override string Database => implementor.Database;
+        public override ConnectionState State => implementor.State;
+        public override string DataSource => implementor.DataSource!;
+        public override string ServerVersion => implementor.ServerVersion!;
 
         public InMemoryConnection() { implementor = new SQLiteConnection("Data Source = :memory:").OpenAndReturn(); }
 
-        public IDbTransaction BeginTransaction() => implementor.BeginTransaction();
+        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => implementor.BeginTransaction();
 
-        public void Dispose() { implementor.Dispose(); }
+        public override void ChangeDatabase(string databaseName) { implementor.ChangeDatabase(databaseName); }
 
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new System.NotImplementedException();
+        protected override DbCommand CreateDbCommand() => implementor.CreateCommand();
 
-        public void ChangeDatabase(string databaseName) { implementor.ChangeDatabase(databaseName); }
-
-        public IDbCommand CreateCommand() => implementor.CreateCommand();
-
-        public void Open() { }
-        public void Close() { }
+        public override void Open() { }
+        public override void Close() { }
     }
 }
