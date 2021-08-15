@@ -13,13 +13,13 @@ namespace Segerfeldt.EventStore.Projection.Tests
     {
         private InMemoryConnection connection = null!;
         private EventSource eventSource = null!;
-        private Mock<IDelayConfiguration> delayConfiguration = null!;
+        private Mock<IPollingStrategy> delayConfiguration = null!;
 
         [SetUp]
         public void Setup()
         {
             connection = new InMemoryConnection();
-            delayConfiguration = new Mock<IDelayConfiguration>();
+            delayConfiguration = new Mock<IPollingStrategy>();
             eventSource = new EventSource(connection, delayConfiguration.Object);
 
             connection

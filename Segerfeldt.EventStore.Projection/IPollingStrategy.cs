@@ -1,6 +1,6 @@
 namespace Segerfeldt.EventStore.Projection
 {
-    public interface IDelayConfiguration
+    public interface IPollingStrategy
     {
         int NextDelay(int count);
     }

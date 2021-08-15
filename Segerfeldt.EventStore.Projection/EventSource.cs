@@ -13,16 +13,16 @@ namespace Segerfeldt.EventStore.Projection
         }
 
         private readonly IDbConnection connection;
-        private readonly IDelayConfiguration delayConfiguration;
+        private readonly IPollingStrategy pollingStrategy;
         private readonly List<Action<Event>> projections = new();
         private long lastReadPosition;
 
         public event EventHandler<EventsProcessedArgs>? EventsProcessed;
 
-        public EventSource(IDbConnection connection, IDelayConfiguration delayConfiguration)
+        public EventSource(IDbConnection connection, IPollingStrategy? pollingStrategy = null)
         {
             this.connection = connection;
-            this.delayConfiguration = delayConfiguration;
+            this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
         }
 
         public void AddProjection(Action<Event> projection)
@@ -62,7 +62,7 @@ namespace Segerfeldt.EventStore.Projection
             {
                 connection.Close();
 
-                var nextDelay = delayConfiguration.NextDelay(count);
+                var nextDelay = pollingStrategy.NextDelay(count);
                 Task.Delay(nextDelay).ContinueWith(_ => { NotifyNewEvents(); });
             }
         }
@@ -73,5 +73,10 @@ namespace Segerfeldt.EventStore.Projection
             reader.GetString(reader.GetOrdinal("details")));
 
         private static long GetPosition(IDataRecord record) => record.GetInt64(record.GetOrdinal("position"));
+
+        private class DefaultPollingStrategy : IPollingStrategy
+        {
+            public int NextDelay(int count) => count == 0 ? 60_000 : 1_000;
+        }
     }
 }
