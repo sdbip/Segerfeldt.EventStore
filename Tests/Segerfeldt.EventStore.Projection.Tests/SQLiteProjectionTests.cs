@@ -93,7 +93,13 @@ namespace Segerfeldt.EventStore.Projection.Tests
         [Test]
         public void ReportsNewPosition()
         {
+            long? position = null;
+            eventSource.EventsProcessed += (_, args) => position = args.Position;
 
+            GivenEvent("an-entity", "an-event", position: 1);
+            eventSource.Start();
+
+            Assert.That(position, Is.EqualTo(1));
         }
 
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)

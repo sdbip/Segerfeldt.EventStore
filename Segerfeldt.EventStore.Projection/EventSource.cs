@@ -7,10 +7,17 @@ namespace Segerfeldt.EventStore.Projection
 {
     public class EventSource
     {
+        public class EventsProcessedArgs : EventArgs
+        {
+            public long Position { get; init; }
+        }
+
         private readonly IDbConnection connection;
         private readonly IDelayConfiguration delayConfiguration;
         private readonly List<Action<Event>> projections = new();
         private long lastReadPosition;
+
+        public event EventHandler<EventsProcessedArgs>? EventsProcessed;
 
         public EventSource(IDbConnection connection, IDelayConfiguration delayConfiguration)
         {
@@ -48,6 +55,7 @@ namespace Segerfeldt.EventStore.Projection
                     lastReadPosition = GetPosition(reader);
                     foreach (var projection in projections)
                         projection(@event);
+                    EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
                 }
             }
             finally
