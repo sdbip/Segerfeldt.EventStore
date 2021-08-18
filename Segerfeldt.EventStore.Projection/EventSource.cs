@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace Segerfeldt.EventStore.Projection
         private void NotifyNewEvents()
         {
             var count = 0;
-            var events = ReadEvents();
+            var events = ReadEvents().ToImmutableList();
             foreach (var @event in events)
             {
                 count++;
@@ -66,7 +67,7 @@ namespace Segerfeldt.EventStore.Projection
             }
 
             var nextDelay = pollingStrategy.NextDelay(count);
-            Task.Delay(nextDelay).ContinueWith(_ => { NotifyNewEvents(); });
+            Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
         }
 
         private void Notify(Event @event)
@@ -77,6 +78,7 @@ namespace Segerfeldt.EventStore.Projection
 
         private IEnumerable<Event> ReadEvents()
         {
+            connection.Open();
             try
             {
                 using var reader = connection

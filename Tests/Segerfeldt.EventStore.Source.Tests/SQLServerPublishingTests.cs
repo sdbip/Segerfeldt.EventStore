@@ -95,11 +95,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CannotPublishChangesIfRemoteUpdated()
         {
-            connection.Open();
-            connection
-                .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
-                .ExecuteNonQuery();
-            connection.Close();
+            GivenEntity();
 
             var entity = new Mock<IEntity>();
             entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
@@ -107,6 +103,21 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
             Assert.That(async () => await eventStore.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
+        }
+
+        private void GivenEntity()
+        {
+            connection.Open();
+            try
+            {
+                connection
+                    .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
+                    .ExecuteNonQuery();
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
     }
 }
