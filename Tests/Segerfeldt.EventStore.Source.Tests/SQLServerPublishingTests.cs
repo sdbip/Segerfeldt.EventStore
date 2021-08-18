@@ -24,8 +24,14 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void TearDown()
         {
             connection.Open();
-            connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;").ExecuteNonQuery();
-            connection.Close();
+            try
+            {
+                connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;").ExecuteNonQuery();
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
 
         [Test]
@@ -50,7 +56,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 Name = (object) "an-event",
                 Details = (object) @"{""meaning"":42}",
                 Version = (object) 0,
-                Position = (object) 0
+                Position = (object) 0L
             }));
             connection.Close();
         }
@@ -81,7 +87,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 Name = (object) "an-event",
                 Details = (object) @"{""meaning"":42}",
                 Version = (object) 0,
-                Position = (object) 0
+                Position = (object) 0L
             }));
             connection.Close();
         }

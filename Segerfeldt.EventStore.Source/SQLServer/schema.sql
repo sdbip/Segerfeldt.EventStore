@@ -14,7 +14,7 @@ CREATE TABLE Events (
     actor NVARCHAR(36),
     [timestamp] DATETIME DEFAULT CURRENT_TIMESTAMP,
     [version] INT,
-    position INT,
+    position BIGINT,
 
     FOREIGN KEY (entity) REFERENCES Entities (id)
 );
