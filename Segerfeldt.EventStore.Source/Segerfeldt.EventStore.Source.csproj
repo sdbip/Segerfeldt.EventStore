@@ -10,4 +10,8 @@
       <EmbeddedResource Include="SQLite\schema.sql" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
+    </ItemGroup>
+
 </Project>
