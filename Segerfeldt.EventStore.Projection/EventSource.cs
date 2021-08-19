@@ -58,11 +58,14 @@ namespace Segerfeldt.EventStore.Projection
         {
             const int maxCount = 200_000_000;
             var (events, largestPosition) = ReadEvents(lastReadPosition, maxCount);
-            lastReadPosition = largestPosition;
 
             foreach (var @event in events) Notify(@event);
 
-            EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
+            if (lastReadPosition != largestPosition)
+            {
+                lastReadPosition = largestPosition;
+                EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
+            }
 
             var nextDelay = pollingStrategy.NextDelay(events.Count);
             Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());

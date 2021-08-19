@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
-using Segerfeldt.EventStore.Projection;
+using Segerfeldt.EventStore.Projection.Hosting;
 
 using System.Data.SqlClient;
 
@@ -29,11 +29,9 @@ namespace ProjectionWebApplication
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectionWebApplication", Version = "v1" });
             });
 
-            var connectionString = configuration.GetConnectionString("events");
-            services.AddSingleton(p => new EventSource(new SqlConnection(connectionString)));
-
             services.AddSingleton<ScoreBoard>();
-            services.AddHostedService<HostedService>();
+            services.AddHostedEventSource(new SqlConnection(configuration.GetConnectionString("events")))
+                .AddProjections();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
