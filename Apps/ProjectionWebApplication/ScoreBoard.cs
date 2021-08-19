@@ -3,31 +3,26 @@ using Segerfeldt.EventStore.Projection;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjectionWebApplication
 {
-    public class ScoreBoard : IProjection
+    public class ScoreBoard : ProjectionBase
     {
-        private Dictionary<string, (string, int)> playerScores = new();
+        private readonly Dictionary<string, (string name, int score)> playerScores = new();
 
-        public IEnumerable<string> HandledEvents => new[] { "PlayerRegistered", "ScoreIncreased" };
         public IEnumerable<(string name, int score)> PlayerScores => playerScores.Select(pair => pair.Value).ToImmutableArray();
 
-        public Task InvokeAsync(Event @event)
+        [ProjectsEvent("PlayerRegistered")]
+        public void ProjectPlayerRegistered(string entityId, PlayerRegistration details)
         {
-            if (@event.Name == "PlayerRegistered")
-            {
-                var details = @event.DetailsAs<PlayerRegistration>()!;
-                playerScores[@event.EntityId] = (details.Name, 0);
-            }
-            if (@event.Name == "ScoreIncreased")
-            {
-                var existingValue = playerScores[@event.EntityId];
-                var details = @event.DetailsAs<ScoreIncreased>()!;
-                playerScores[@event.EntityId] =(existingValue.Item1, existingValue.Item2 + details.Points);
-            }
-            return Task.CompletedTask;
+            playerScores[entityId] = (details.Name, 0);
+        }
+
+        [ProjectsEvent("ScoreIncreased")]
+        public void ProjectScoreIncreased(string entityId, ScoreIncreased details)
+        {
+            var existingValue = playerScores[entityId];
+            playerScores[entityId] = (existingValue.name, existingValue.score + details.Points);
         }
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 
 namespace Segerfeldt.EventStore.Projection
@@ -25,5 +26,6 @@ namespace Segerfeldt.EventStore.Projection
         }
 
         public T? DetailsAs<T>() => JsonSerializer.Deserialize<T>(Details, CamelCase);
+        internal object? DetailsAs(Type type) => JsonSerializer.Deserialize(Details, type, CamelCase);
     }
 }
