@@ -56,11 +56,11 @@ namespace Segerfeldt.EventStore.Projection
         private void NotifyNewEvents()
         {
             var count = 0;
-            var events = ReadEvents().ToImmutableList();
+            var events = ReadEvents(lastReadPosition).ToImmutableList();
+            lastReadPosition = events.Aggregate(lastReadPosition, (p, e) => Math.Max(e.Position, p));
             foreach (var @event in events)
             {
                 count++;
-                lastReadPosition = @event.Position;
                 Notify(@event);
 
                 EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
@@ -72,11 +72,18 @@ namespace Segerfeldt.EventStore.Projection
 
         private void Notify(Event @event)
         {
-            if (projections.TryGetValue(@event.Name, out var delegates))
-                Task.WhenAll(delegates.Select(async d => await d.InvokeAsync(@event))).Wait();
+            try
+            {
+                if (projections.TryGetValue(@event.Name, out var delegates))
+                    Task.WhenAll(delegates.Select(async d => await d.InvokeAsync(@event))).Wait();
+            }
+            catch
+            {
+                System.Diagnostics.Debugger.Break();
+            }
         }
 
-        private IEnumerable<Event> ReadEvents()
+        private IEnumerable<Event> ReadEvents(long afterPosition)
         {
             connection.Open();
             try
@@ -84,7 +91,7 @@ namespace Segerfeldt.EventStore.Projection
                 using var reader = connection
                     .CreateCommand(
                         "SELECT * FROM Events WHERE position > @position ORDER BY version",
-                        ("@position", lastReadPosition))
+                        ("@position", afterPosition))
                     .ExecuteReader();
 
                 while (reader.Read())
