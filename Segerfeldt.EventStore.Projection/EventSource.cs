@@ -57,7 +57,7 @@ namespace Segerfeldt.EventStore.Projection
         {
             var count = 0;
             var events = ReadEvents(lastReadPosition).ToImmutableList();
-            lastReadPosition = events.Aggregate(lastReadPosition, (p, e) => Math.Max(e.Position, p));
+            lastReadPosition = GetLargestPosition(events, lastReadPosition);
             foreach (var @event in events)
             {
                 count++;
@@ -69,6 +69,11 @@ namespace Segerfeldt.EventStore.Projection
             var nextDelay = pollingStrategy.NextDelay(count);
             Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
         }
+
+        private static long GetLargestPosition(IEnumerable<Event> events, long minimum) =>
+            // Don't use the almost equivalent events.Max(e => e.Position).
+            // The list is often empty, and Max() will throw every time.
+            events.Aggregate(minimum, (p, e) => Math.Max(e.Position, p));
 
         private void Notify(Event @event)
         {
