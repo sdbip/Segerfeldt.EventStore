@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -55,10 +56,11 @@ namespace Segerfeldt.EventStore.Projection
 
         private void NotifyNewEvents()
         {
-            var events = ReadEvents(lastReadPosition).ToImmutableList();
-            lastReadPosition = GetLargestPosition(events, lastReadPosition);
-            foreach (var @event in events)
-                Notify(@event);
+            const int maxCount = 200_000_000;
+            var (events, largestPosition) = ReadEvents(lastReadPosition, maxCount);
+            lastReadPosition = largestPosition;
+
+            foreach (var @event in events) Notify(@event);
 
             EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
 
@@ -84,6 +86,19 @@ namespace Segerfeldt.EventStore.Projection
             }
         }
 
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+        private (IImmutableList<Event>, long largestPosition) ReadEvents(long afterPosition, int maxCount)
+        {
+            var events = ReadEvents(afterPosition).Take(maxCount);
+            var largestPosition = GetLargestPosition(events, afterPosition);
+
+            // There might be additional events after maxCount that have the same position as the largest in the list.
+            // Skip the events with the largest position so that we can be sure not to break in the middle of a run.
+
+            return events.Count() < maxCount ? (events.ToImmutableList(), largestPosition)
+                : (events.Where(e => e.Position < largestPosition).ToImmutableList(), largestPosition - 1);
+        }
+
         private IEnumerable<Event> ReadEvents(long afterPosition)
         {
             connection.Open();
@@ -91,7 +106,7 @@ namespace Segerfeldt.EventStore.Projection
             {
                 using var reader = connection
                     .CreateCommand(
-                        "SELECT * FROM Events WHERE position > @position ORDER BY version",
+                        "SELECT * FROM Events WHERE position > @position ORDER BY position, version",
                         ("@position", afterPosition))
                     .ExecuteReader();
 
