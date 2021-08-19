@@ -55,18 +55,14 @@ namespace Segerfeldt.EventStore.Projection
 
         private void NotifyNewEvents()
         {
-            var count = 0;
             var events = ReadEvents(lastReadPosition).ToImmutableList();
             lastReadPosition = GetLargestPosition(events, lastReadPosition);
             foreach (var @event in events)
-            {
-                count++;
                 Notify(@event);
 
-                EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
-            }
+            EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
 
-            var nextDelay = pollingStrategy.NextDelay(count);
+            var nextDelay = pollingStrategy.NextDelay(events.Count);
             Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
         }
 
