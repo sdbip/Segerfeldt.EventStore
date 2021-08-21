@@ -1,6 +1,7 @@
 ﻿using Segerfeldt.EventStore.Source.Internals;
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 
@@ -33,7 +34,7 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="actor">the actor/user who caused this change</param>
         public async Task PublishAsync(EntityId entityId, UnpublishedEvent @event, string actor)
         {
-            var operation = new InsertEventsOperation(entityId, actor, @event);
+            var operation = new InsertSingleEventOperation(@event, entityId, actor);
             await operation.ExecuteAsync(connection);
         }
 
@@ -42,7 +43,7 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="actor">the actor/user who caused these changes</param>
         public void PublishChanges(IEntity entity, string actor)
         {
-            PublishChangesAsync(entity, actor).Wait();
+            PublishChanges(new[] { entity }, actor);
         }
 
         /// <summary>Publish all new changes since reconstituting an entity</summary>
@@ -50,7 +51,23 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="actor">the actor/user who caused these changes</param>
         public async Task PublishChangesAsync(IEntity entity, string actor)
         {
-            var operation = new InsertEventsOperation(entity.Id, actor, entity.UnpublishedEvents) { ExpectedVersion = entity.Version };
+            await PublishChangesAsync(new[] { entity }, actor);
+        }
+
+        /// <summary>Publish all new changes since reconstituting an entity</summary>
+        /// <param name="entities">the entity whose events to publish</param>
+        /// <param name="actor">the actor/user who caused these changes</param>
+        public void PublishChanges(IEnumerable<IEntity> entities, string actor)
+        {
+            PublishChangesAsync(entities, actor).Wait();
+        }
+
+        /// <summary>Publish all new changes since reconstituting an entity</summary>
+        /// <param name="entities">the entities whose events to publish</param>
+        /// <param name="actor">the actor/user who caused these changes</param>
+        public async Task PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
+        {
+            var operation = new InsertEventsOperation(entities, actor);
             await operation.ExecuteAsync(connection);
         }
 
