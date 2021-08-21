@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -56,25 +55,40 @@ namespace Segerfeldt.EventStore.Projection
 
         private void NotifyNewEvents()
         {
-            const int maxCount = 200_000_000;
-            var (events, largestPosition) = ReadEvents(lastReadPosition, maxCount);
-
-            foreach (var @event in events) Notify(@event);
-
-            if (lastReadPosition != largestPosition)
+            var eventGroups = GroupByPosition(ReadEvents(lastReadPosition));
+            var count = 0;
+            foreach (var (position, events) in eventGroups)
             {
-                lastReadPosition = largestPosition;
+                lastReadPosition = position;
+                count += events.Count;
+
+                foreach (var @event in events) Notify(@event);
                 EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
             }
 
-            var nextDelay = pollingStrategy.NextDelay(events.Count);
+            var nextDelay = pollingStrategy.NextDelay(count);
             Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
         }
 
-        private static long GetLargestPosition(IEnumerable<Event> events, long minimum) =>
-            // Don't use the almost equivalent events.Max(e => e.Position).
-            // The list is often empty, and Max() will throw every time.
-            events.Aggregate(minimum, (p, e) => Math.Max(e.Position, p));
+        private static IEnumerable<(long position, IImmutableList<Event> events)> GroupByPosition(IEnumerable<Event> events)
+        {
+            var currentPosition = -1L;
+            var nextBatch = new List<Event>();
+            foreach (var @event in events)
+            {
+                if (@event.Position != currentPosition)
+                {
+                    if (nextBatch.Count > 0)
+                        yield return (currentPosition, nextBatch.ToImmutableList());
+                    nextBatch.Clear();
+                    currentPosition = @event.Position;
+                }
+
+                nextBatch.Add(@event);
+            }
+
+            if (nextBatch.Count > 0) yield return (currentPosition, nextBatch.ToImmutableList());
+        }
 
         private void Notify(Event @event)
         {
@@ -87,19 +101,6 @@ namespace Segerfeldt.EventStore.Projection
             {
                 System.Diagnostics.Debugger.Break();
             }
-        }
-
-        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-        private (IImmutableList<Event>, long largestPosition) ReadEvents(long afterPosition, int maxCount)
-        {
-            var events = ReadEvents(afterPosition).Take(maxCount);
-            var largestPosition = GetLargestPosition(events, afterPosition);
-
-            // There might be additional events after maxCount that have the same position as the largest in the list.
-            // Skip the events with the largest position so that we can be sure not to break in the middle of a run.
-
-            return events.Count() < maxCount ? (events.ToImmutableList(), largestPosition)
-                : (events.Where(e => e.Position < largestPosition).ToImmutableList(), largestPosition - 1);
         }
 
         private IEnumerable<Event> ReadEvents(long afterPosition)
