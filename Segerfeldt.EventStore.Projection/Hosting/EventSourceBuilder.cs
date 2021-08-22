@@ -25,14 +25,14 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 
         public void AddProjections(Assembly assembly)
         {
-            projectionTypes.AddRange(assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IProjection))));
+            projectionTypes.AddRange(assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IProjector))));
         }
 
         internal EventSource Build(IServiceProvider provider)
         {
             var eventSource = new EventSource(connection);
             foreach (var type in projectionTypes)
-                eventSource.AddProjection((IProjection)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
+                eventSource.AddProjection((IProjector)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
             return eventSource;
         }
     }

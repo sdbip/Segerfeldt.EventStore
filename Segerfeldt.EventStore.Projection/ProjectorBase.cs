@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection
 {
-    public abstract class ProjectionBase : IProjection
+    public abstract class ProjectorBase : IProjector
     {
         public IEnumerable<string> HandledEvents => GetPublicInstanceMethods()
             .Select(m => m.GetCustomAttribute<ProjectsEventAttribute>()?.Event)

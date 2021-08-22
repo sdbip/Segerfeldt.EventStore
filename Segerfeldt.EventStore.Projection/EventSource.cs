@@ -19,7 +19,7 @@ namespace Segerfeldt.EventStore.Projection
 
         private readonly IDbConnection connection;
         private readonly IPollingStrategy pollingStrategy;
-        private readonly Dictionary<string, List<IProjection>> projections = new();
+        private readonly Dictionary<string, List<IProjector>> projections = new();
         private long lastReadPosition;
 
         /// <summary>Notification after events have been processed</summary>
@@ -35,13 +35,13 @@ namespace Segerfeldt.EventStore.Projection
         }
 
         /// <summary>Adds a projection to be notified of events</summary>
-        /// <param name="projection">A projection object that will receive events as they appear</param>
-        public void AddProjection(IProjection projection)
+        /// <param name="projector">A projection object that will receive events as they appear</param>
+        public void AddProjection(IProjector projector)
         {
-            foreach (var eventName in projection.HandledEvents)
+            foreach (var eventName in projector.HandledEvents)
             {
-                projections.TryAdd(eventName, new List<IProjection>());
-                projections[eventName].Add(projection);
+                projections.TryAdd(eventName, new List<IProjector>());
+                projections[eventName].Add(projector);
             }
         }
 

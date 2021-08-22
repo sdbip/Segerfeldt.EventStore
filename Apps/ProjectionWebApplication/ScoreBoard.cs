@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ProjectionWebApplication
 {
-    public class ScoreBoard : ProjectionBase
+    public class ScoreBoard : ProjectorBase
     {
         private readonly Dictionary<string, (string name, int score)> playerScores = new();
 

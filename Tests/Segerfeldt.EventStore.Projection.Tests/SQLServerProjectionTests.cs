@@ -177,7 +177,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             var events = new List<Event>();
             foreach (var eventName in eventNames)
             {
-                eventSource.AddProjection(new DelegateProjection(events.Add, eventName));
+                eventSource.AddProjection(new DelegateProjector(events.Add, eventName));
             }
 
             return events;
