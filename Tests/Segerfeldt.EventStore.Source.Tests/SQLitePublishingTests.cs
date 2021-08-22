@@ -8,13 +8,13 @@ namespace Segerfeldt.EventStore.Source.Tests
     public class SQLitePublishingTests
     {
         private InMemoryConnection connection = null!;
-        private EventStore eventStore = null!;
+        private EventPublisher publisher = null!;
 
         [SetUp]
         public void Setup()
         {
             connection = new InMemoryConnection();
-            eventStore = new EventStore(connection);
+            publisher = new EventPublisher(connection);
 
             SQLite.Schema.CreateIfMissing(connection);
         }
@@ -28,7 +28,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CanPublishSingleEvent()
         {
-            eventStore.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+            publisher.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
             using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
@@ -57,7 +57,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
             entity.Setup(e => e.Version).Returns(EntityVersion.New);
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
-            eventStore.PublishChanges(entity.Object, "johan");
+            publisher.PublishChanges(entity.Object, "johan");
 
             using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
@@ -91,7 +91,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
-            Assert.That(() => eventStore.PublishChanges(entity.Object, "johan"), Throws.Exception);
+            Assert.That(() => publisher.PublishChanges(entity.Object, "johan"), Throws.Exception);
         }
     }
 }

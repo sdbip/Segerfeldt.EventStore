@@ -12,13 +12,13 @@ namespace Segerfeldt.EventStore.Source.Tests
     public class SQLServerReconstitutionTests
     {
         private SqlConnection connection = null!;
-        private EventStore eventStore = null!;
+        private EntityStore store = null!;
 
         [SetUp]
         public void Setup()
         {
             connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
-            eventStore = new EventStore(connection);
+            store = new EntityStore(connection);
 
             SQLServer.Schema.CreateIfMissing(connection);
         }
@@ -44,7 +44,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity, Is.Not.Null);
             Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
@@ -53,7 +53,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReturnsNullIfNoEntity()
         {
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity, Is.Null);
         }
@@ -72,7 +72,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
             Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -103,7 +103,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -130,7 +130,7 @@ namespace Segerfeldt.EventStore.Source.Tests
 
             Assume.That(timestamp.Ticks, Is.EqualTo(637643857550000000L));
 
-            var history = eventStore.GetHistory(new EntityId("an-entity"));
+            var history = store.GetHistory(new EntityId("an-entity"));
 
             Assert.That(history, Is.Not.Null);
 
@@ -155,7 +155,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var history = eventStore.GetHistory(new EntityId("an-entity"));
+            var history = store.GetHistory(new EntityId("an-entity"));
 
             Assert.That(history, Is.Not.Null);
 
@@ -179,7 +179,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
             Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTime.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));

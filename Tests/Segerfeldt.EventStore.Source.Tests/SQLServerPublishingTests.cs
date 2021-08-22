@@ -9,14 +9,13 @@ namespace Segerfeldt.EventStore.Source.Tests
     public class SQLServerPublishingTests
     {
         private SqlConnection connection = null!;
-        private EventStore eventStore = null!;
+        private EventPublisher publisher = null!;
 
         [SetUp]
         public void Setup()
         {
             connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
-            eventStore = new EventStore(connection);
-
+            publisher = new EventPublisher(connection);
             SQLServer.Schema.CreateIfMissing(connection);
         }
 
@@ -37,7 +36,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CanPublishSingleEvent()
         {
-            eventStore.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+            publisher.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
             connection.Open();
             using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -68,7 +67,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
             entity.Setup(e => e.Version).Returns(EntityVersion.New);
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
-            eventStore.PublishChanges(entity.Object, "johan");
+            publisher.PublishChanges(entity.Object, "johan");
 
             connection.Open();
             using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -102,7 +101,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
-            Assert.That(async () => await eventStore.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
+            Assert.That(async () => await publisher.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
         }
 
         private void GivenEntity()

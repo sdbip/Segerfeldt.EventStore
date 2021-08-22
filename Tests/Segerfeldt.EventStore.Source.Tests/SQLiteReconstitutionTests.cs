@@ -11,13 +11,13 @@ namespace Segerfeldt.EventStore.Source.Tests
     public class SQLiteReconstitutionTests
     {
         private InMemoryConnection connection = null!;
-        private EventStore eventStore = null!;
+        private EntityStore store = null!;
 
         [SetUp]
         public void Setup()
         {
             connection = new InMemoryConnection();
-            eventStore = new EventStore(connection);
+            store = new EntityStore(connection);
 
             SQLite.Schema.CreateIfMissing(connection);
         }
@@ -27,7 +27,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             GivenEntity("an-entity", 3);
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity, Is.Not.Null);
             Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
@@ -36,7 +36,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReturnsNullIfNoEntity()
         {
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity, Is.Null);
         }
@@ -47,7 +47,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             GivenEntity("an-entity");
             GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
             Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -70,7 +70,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -87,7 +87,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", "johan", timestamp);
 
-            var history = eventStore.GetHistory(new EntityId("an-entity"));
+            var history = store.GetHistory(new EntityId("an-entity"));
 
             Assert.That(history, Is.Not.Null);
 
@@ -104,7 +104,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
 
-            var history = eventStore.GetHistory(new EntityId("an-entity"));
+            var history = store.GetHistory(new EntityId("an-entity"));
 
             Assert.That(history, Is.Not.Null);
 
@@ -128,7 +128,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = eventStore.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
             Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTime.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));

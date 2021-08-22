@@ -12,7 +12,7 @@ namespace Segerfeldt.EventStore.Source
         /// this process, which invalidate any changes done here. Either the current operation will have to be
         /// aborted, or the entity must be reconstituted to the updated state, and the operation repeated.
         EntityVersion Version { get; }
-        /// <summary>Events that should be published when publishing changes in the <see cref="EventStore"/></summary>
+        /// <summary>Events that should be published when publishing changes in the <see cref="EntityStore"/></summary>
         IEnumerable<UnpublishedEvent> UnpublishedEvents { get; }
 
         /// <summary>Replay published events to reconstitute the state of the entity</summary>
