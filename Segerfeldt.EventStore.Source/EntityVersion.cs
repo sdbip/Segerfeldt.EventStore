@@ -1,9 +1,13 @@
+using Segerfeldt.EventStore.Utils;
+
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Segerfeldt.EventStore.Source
 {
     /// <summary>The version of an entity. Used for optimistic concurrency.</summary>
-    public sealed class EntityVersion
+    public sealed class EntityVersion : ValueObject<EntityVersion>
     {
         /// <summary>A new entity that has not been published/stored yet</summary>
         public static EntityVersion New => new(-1);
@@ -25,15 +29,12 @@ namespace Segerfeldt.EventStore.Source
             return new EntityVersion(value);
         }
 
+        protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create<object>(Value);
+
         /// <summary>The next <see cref="EntityVersion"/> after this</summary>
         /// <returns>a new <see cref="EntityVersion"/> with either the value 0 (if this is <see cref="New"/>), or this value + 1</returns>
         public EntityVersion Next() => Of(Value < 0 ? 0 : Value + 1);
 
-        public static bool operator ==(EntityVersion left, EntityVersion right) => Equals(left, right);
-        public static bool operator !=(EntityVersion left, EntityVersion right) => !Equals(left, right);
-
-        public override bool Equals(object? obj) => obj is EntityVersion other && other.Value == Value;
-        public override int GetHashCode() => Value;
         public override string ToString() => Value switch { -2 => "[Missing]", -1 => "[New]", _ => $"[{Value}]" };
     }
 }

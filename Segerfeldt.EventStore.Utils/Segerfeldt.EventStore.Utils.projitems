@@ -10,5 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)JSON.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ValueObject.cs" />
   </ItemGroup>
 </Project>
