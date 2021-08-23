@@ -12,6 +12,8 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>A new entity that has not been published/stored yet</summary>
         public static EntityVersion New => new(-1);
 
+        internal static EntityVersion Beginning => New;
+
         /// <summary>The actual value of the version</summary>
         internal int Value { get; }
         /// <summary>Whether this is a new entity, or it has been stored already</summary>

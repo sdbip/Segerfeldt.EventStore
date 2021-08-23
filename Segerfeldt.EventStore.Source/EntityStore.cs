@@ -1,4 +1,5 @@
 ﻿using Segerfeldt.EventStore.Source.Internals;
+using Segerfeldt.EventStore.Source.Snapshots;
 
 using System;
 using System.Data.Common;
@@ -29,13 +30,29 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="id">the unique identifier of the entity to reconstitute</param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
         /// <returns>the entity with the specified <paramref name="id"/></returns>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id) where TEntity : class, IEntity
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id) where TEntity : class, IEntity =>
+            await ReconstituteAsync<TEntity>(id, null);
+
+        /// <summary>Reconstitute the state of an entity from published events</summary>
+        /// <param name="snapshot">the snapshot of the entity</param>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        public TEntity? Reconstitute<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
+            ReconstituteAsync(snapshot).Result;
+
+        /// <summary>Reconstitute the state of an entity from published events</summary>
+        /// <param name="snapshot">the snapshot of the entity</param>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
+            await ReconstituteAsync(null, snapshot);
+
+        private async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId? id, ISnapshot<TEntity>? snapshot) where TEntity : class, IEntity
         {
-            var operation = new GetHistoryOperation(id);
+            var operation = new GetHistoryOperation(snapshot?.Id ?? id!, snapshot?.Version ?? EntityVersion.Beginning);
             var history = await operation.ExecuteAsync(connection);
             if (history is null) return null;
 
-            var entity = Instantiate<TEntity>(id, history.Version);
+            var entity = Instantiate<TEntity>(snapshot?.Id ?? id!, history.Version);
+            snapshot?.Restore(entity);
             entity.ReplayEvents(history.Events);
             return entity;
         }
@@ -51,7 +68,7 @@ namespace Segerfeldt.EventStore.Source
         /// <returns>the complete history of the entity</returns>
         public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId)
         {
-            var operation = new GetHistoryOperation(entityId);
+            var operation = new GetHistoryOperation(entityId, EntityVersion.Beginning);
             return await operation.ExecuteAsync(connection);
         }
 
