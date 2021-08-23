@@ -1,13 +1,12 @@
+using Segerfeldt.EventStore.Utils;
+
 using System;
-using System.Text.Json;
 
 namespace Segerfeldt.EventStore.Projection
 {
     /// <summary>An event notifying that the state of an entity has changed at the source</summary>
     public class Event
     {
-        private static readonly JsonSerializerOptions CamelCase = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
-
         /// <summary>The id of the entity that changed</summary>
         public string EntityId { get; }
         /// <summary>The name of the event, signifying what about the entity changed</summary>
@@ -25,7 +24,7 @@ namespace Segerfeldt.EventStore.Projection
             EntityId = entityId;
         }
 
-        public T? DetailsAs<T>() => JsonSerializer.Deserialize<T>(Details, CamelCase);
-        internal object? DetailsAs(Type type) => JsonSerializer.Deserialize(Details, type, CamelCase);
+        public T? DetailsAs<T>() => JSON.Deserialize<T>(Details);
+        internal object? DetailsAs(Type type) => JSON.Deserialize(Details, type);
     }
 }

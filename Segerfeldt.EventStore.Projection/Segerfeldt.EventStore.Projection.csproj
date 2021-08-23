@@ -10,4 +10,6 @@
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     </ItemGroup>
 
+    <Import Project="..\Segerfeldt.EventStore.Utils\Segerfeldt.EventStore.Utils.projitems" Label="Shared" />
+
 </Project>

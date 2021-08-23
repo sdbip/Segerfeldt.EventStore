@@ -14,4 +14,6 @@
       <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
     </ItemGroup>
 
+    <Import Project="..\Segerfeldt.EventStore.Utils\Segerfeldt.EventStore.Utils.projitems" Label="Shared" />
+
 </Project>

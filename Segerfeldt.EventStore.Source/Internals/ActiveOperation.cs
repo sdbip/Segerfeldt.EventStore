@@ -1,15 +1,14 @@
+using Segerfeldt.EventStore.Utils;
+
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
     internal abstract class ActiveOperation
     {
-        private static readonly JsonSerializerOptions CamelCase = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
         private readonly DbTransaction transaction;
         private readonly string actor;
 
@@ -41,7 +40,7 @@ namespace Segerfeldt.EventStore.Source.Internals
                 " VALUES (@entityId, @eventName, @details, @actor, @version, @position)",
                 ("@entityId", entityId.ToString()),
                 ("@eventName", @event.Name),
-                ("@details", JsonSerializer.Serialize(@event.Details, CamelCase)),
+                ("@details", JSON.Serialize(@event.Details)),
                 ("@actor", actor),
                 ("@version", version.Value),
                 ("@position", position));

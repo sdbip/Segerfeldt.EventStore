@@ -1,13 +1,12 @@
+using Segerfeldt.EventStore.Utils;
+
 using System;
-using System.Text.Json;
 
 namespace Segerfeldt.EventStore.Source
 {
     /// <summary>An event that has been published and is part of the official state of an entity</summary>
     public class PublishedEvent
     {
-        private static readonly JsonSerializerOptions CamelCase = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
-
         /// <summary>A name identifying what aspect of the entity changed</summary>
         public string Name { get; }
         /// <summary>A JSON-serialized object that specifies the details of the change</summary>
@@ -25,6 +24,6 @@ namespace Segerfeldt.EventStore.Source
             Timestamp = timestamp;
         }
 
-        public object DetailsAs(Type type) => JsonSerializer.Deserialize(Details, type, CamelCase)!;
+        public object DetailsAs(Type type) => JSON.Deserialize(Details, type)!;
     }
 }
