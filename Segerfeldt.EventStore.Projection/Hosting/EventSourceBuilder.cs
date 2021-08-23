@@ -12,20 +12,23 @@ namespace Segerfeldt.EventStore.Projection.Hosting
     {
         private readonly IDbConnection connection;
         private readonly List<Type> projectionTypes = new();
+        private Type? positionTrackerType;
 
         public EventSourceBuilder(IDbConnection connection)
         {
             this.connection = connection;
         }
 
-        public void AddProjections()
-        {
-            AddProjections(Assembly.GetEntryAssembly()!);
-        }
-
-        public void AddProjections(Assembly assembly)
+        public EventSourceBuilder AddProjections(Assembly assembly)
         {
             projectionTypes.AddRange(assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IProjector))));
+            return this;
+        }
+
+        public EventSourceBuilder SetPositionTracker<TPositionTracker>() where TPositionTracker : IPositionTracker
+        {
+            positionTrackerType = typeof(TPositionTracker);
+            return this;
         }
 
         internal EventSource Build(IServiceProvider provider)
@@ -33,7 +36,14 @@ namespace Segerfeldt.EventStore.Projection.Hosting
             var eventSource = new EventSource(connection);
             foreach (var type in projectionTypes)
                 eventSource.AddProjection((IProjector)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
+
+            if (GetPositionTracker(provider) is { } positionTracker)
+                eventSource.EventsProcessed += positionTracker.UpdatePosition;
+
             return eventSource;
         }
+
+        private IPositionTracker? GetPositionTracker(IServiceProvider provider) =>
+            positionTrackerType is not null ? (IPositionTracker?)provider.GetService(positionTrackerType) : null;
     }
 }

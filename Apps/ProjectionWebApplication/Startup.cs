@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Segerfeldt.EventStore.Projection.Hosting;
 
 using System.Data.SqlClient;
+using System.Reflection;
 
 namespace ProjectionWebApplication
 {
@@ -30,8 +31,10 @@ namespace ProjectionWebApplication
             });
 
             services.AddSingleton<ScoreBoard>();
+            services.AddSingleton<PositionTracker>();
             services.AddHostedEventSource(new SqlConnection(configuration.GetConnectionString("events")))
-                .AddProjections();
+                .AddProjections(Assembly.GetExecutingAssembly())
+                .SetPositionTracker<PositionTracker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
