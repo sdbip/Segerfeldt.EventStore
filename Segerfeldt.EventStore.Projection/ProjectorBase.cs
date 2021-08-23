@@ -1,3 +1,6 @@
+using JetBrains.Annotations;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -31,6 +34,18 @@ namespace Segerfeldt.EventStore.Projection
                 ? new object?[] { @event }
                 : new[] { @event.EntityId, @event.DetailsAs(parameterTypes[1]) };
             if (method.Invoke(this, args) is Task task) await task;
+        }
+
+        [AttributeUsage(AttributeTargets.Method)]
+        [MeansImplicitUse]
+        protected class ProjectsEventAttribute : Attribute
+        {
+            public string Event { get; }
+
+            public ProjectsEventAttribute(string @event)
+            {
+                Event = @event;
+            }
         }
     }
 }

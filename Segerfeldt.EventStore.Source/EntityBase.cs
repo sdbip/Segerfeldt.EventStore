@@ -1,3 +1,6 @@
+using JetBrains.Annotations;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -43,6 +46,18 @@ namespace Segerfeldt.EventStore.Source
             var type = method.GetParameters()[0].ParameterType;
             var args = new[] { type == typeof(PublishedEvent) ? @event : @event.DetailsAs(type) };
             method.Invoke(this, args);
+        }
+
+        [AttributeUsage(AttributeTargets.Method)]
+        [MeansImplicitUse]
+        protected class ReplaysEventAttribute : Attribute
+        {
+            public string Event { get; }
+
+            public ReplaysEventAttribute(string @event)
+            {
+                Event = @event;
+            }
         }
     }
 }
