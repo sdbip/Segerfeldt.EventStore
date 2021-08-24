@@ -42,18 +42,10 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="snapshot">the snapshot of the entity</param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity
-        {
-            var operation = new GetHistoryOperation(snapshot.Id, snapshot.Version);
-            var history = await operation.ExecuteAsync(connection);
-            if (history is null) return null;
-
-            var entity = Instantiate<TEntity>(snapshot.Id, history.Version);
-            snapshot.Restore(entity);
-            entity.ReplayEvents(history.Events);
-
-            return entity;
-        }
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
+            await GetHistoryAsync(snapshot.Id, snapshot.Version) is { } history
+                ? RestoreEntity(snapshot, history)
+                : null;
 
         /// <summary>Get the historical data about an entity</summary>
         /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
@@ -64,10 +56,18 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>Get the historical data about an entity</summary>
         /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
         /// <returns>the complete history of the entity</returns>
-        public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId)
+        public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId) =>
+            await GetHistoryAsync(entityId, EntityVersion.Beginning);
+
+        private async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion) =>
+            await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connection);
+
+        private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {
-            var operation = new GetHistoryOperation(entityId, EntityVersion.Beginning);
-            return await operation.ExecuteAsync(connection);
+            var entity = Instantiate<TEntity>(snapshot.Id, history.Version);
+            snapshot.Restore(entity);
+            entity.ReplayEvents(history.Events);
+            return entity;
         }
 
         private static TEntity Instantiate<TEntity>(EntityId id, EntityVersion version) where TEntity : IEntity
