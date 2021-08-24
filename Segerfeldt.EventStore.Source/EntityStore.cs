@@ -31,7 +31,7 @@ namespace Segerfeldt.EventStore.Source
         /// <typeparam name="TEntity">the type of the entity</typeparam>
         /// <returns>the entity with the specified <paramref name="id"/></returns>
         public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id) where TEntity : class, IEntity =>
-            await ReconstituteAsync<TEntity>(id, null);
+            await ReconstituteAsync(new NeverSnapshot<TEntity>(id));
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="snapshot">the snapshot of the entity</param>
@@ -42,18 +42,16 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="snapshot">the snapshot of the entity</param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
-            await ReconstituteAsync(null, snapshot);
-
-        private async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId? id, ISnapshot<TEntity>? snapshot) where TEntity : class, IEntity
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity
         {
-            var operation = new GetHistoryOperation(snapshot?.Id ?? id!, snapshot?.Version ?? EntityVersion.Beginning);
+            var operation = new GetHistoryOperation(snapshot.Id, snapshot.Version);
             var history = await operation.ExecuteAsync(connection);
             if (history is null) return null;
 
-            var entity = Instantiate<TEntity>(snapshot?.Id ?? id!, history.Version);
-            snapshot?.Restore(entity);
+            var entity = Instantiate<TEntity>(snapshot.Id, history.Version);
+            snapshot.Restore(entity);
             entity.ReplayEvents(history.Events);
+
             return entity;
         }
 
@@ -77,6 +75,18 @@ namespace Segerfeldt.EventStore.Source
             var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
             if (constructor is null) throw new Exception("Invalid entity type. Constructor missing.");
             return (TEntity)constructor.Invoke(new object[] { id, version });
+        }
+
+        /// <summary>An entity snapshot that was never made.</summary>
+        /// All events will have to be replayed to reconstitute from this snapshot.
+        private class NeverSnapshot<TEntity> : ISnapshot<TEntity> where TEntity : class, IEntity
+        {
+            public EntityId Id { get; }
+            public EntityVersion Version => EntityVersion.Beginning;
+
+            public NeverSnapshot(EntityId id) => Id = id;
+
+            public void Restore(TEntity entity) { } // Intentionally does nothing
         }
     }
 }

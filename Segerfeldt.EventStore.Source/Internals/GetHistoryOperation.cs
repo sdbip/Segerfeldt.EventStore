@@ -20,7 +20,7 @@ namespace Segerfeldt.EventStore.Source.Internals
 
         public async Task<EntityHistory?> ExecuteAsync(DbConnection connection)
         {
-            DbCommand command = connection.CreateCommand(
+            var command = connection.CreateCommand(
                 "SELECT version FROM Entities WHERE id = @entityId;" +
                 "SELECT * FROM Events WHERE entity = @entityId AND version > @entityVersion ORDER BY version",
                 ("@entityId", entityId.ToString()),
