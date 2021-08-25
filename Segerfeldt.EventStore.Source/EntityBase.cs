@@ -39,7 +39,13 @@ namespace Segerfeldt.EventStore.Source
         }
 
         private IEnumerable<MethodInfo> FindReplayMethods(PublishedEvent @event) =>
-            GetType().GetMethods().Where(m => m.GetCustomAttribute<ReplaysEventAttribute>()?.Event == @event.Name);
+            GetPublicInstanceMethods().Where(ReplaysEvent(@event.Name));
+
+        private IEnumerable<MethodInfo> GetPublicInstanceMethods() => GetType()
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance);
+
+        private static Func<MethodInfo, bool> ReplaysEvent(string eventName) =>
+            m => m.GetCustomAttribute<ReplaysEventAttribute>()?.Event == eventName;
 
         private void InvokeReplayMethod(MethodBase method, PublishedEvent @event)
         {
