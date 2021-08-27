@@ -10,5 +10,7 @@ namespace Segerfeldt.EventStore.Source.Snapshots
         /// <summary>Restores the state of an entity from this snapshot</summary>
         /// <param name="entity"></param>
         void Restore(TEntity entity);
+
+        void NotFound() => throw new UnknownEntityException(Id);
     }
 }

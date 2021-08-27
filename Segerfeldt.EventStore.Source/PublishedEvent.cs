@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Utils;
-
 using System;
 
 namespace Segerfeldt.EventStore.Source
@@ -24,6 +22,10 @@ namespace Segerfeldt.EventStore.Source
             Timestamp = timestamp;
         }
 
-        public object DetailsAs(Type type) => JSON.Deserialize(Details, type)!;
+        /// <summary>Parses the JSON details as a specific type</summary>
+        /// <typeparam name="T">The desired type</typeparam>
+        /// <returns>The typed object if it can be deserialized, null if it cannot</returns>
+        public T? DetailsAs<T>() => JSON.Deserialize<T>(Details);
+        internal object? DetailsAs(Type type) => JSON.Deserialize(Details, type);
     }
 }

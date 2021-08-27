@@ -10,9 +10,9 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 {
     public class EventSourceBuilder
     {
-        private readonly IDbConnection connection;
         private readonly List<Type> projectionTypes = new();
         private Type? positionTrackerType;
+        private readonly IDbConnection connection;
 
         public EventSourceBuilder(IDbConnection connection)
         {
@@ -33,12 +33,9 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 
         internal EventSource Build(IServiceProvider provider)
         {
-            var eventSource = new EventSource(connection);
+            var eventSource = new EventSource(connection, GetPositionTracker(provider));
             foreach (var type in projectionTypes)
-                eventSource.AddProjection((IProjector)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
-
-            if (GetPositionTracker(provider) is { } positionTracker)
-                eventSource.EventsProcessed += positionTracker.UpdatePosition;
+                eventSource.Register((IProjector)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
 
             return eventSource;
         }

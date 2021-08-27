@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace Segerfeldt.EventStore.Utils
+namespace Segerfeldt.EventStore
 {
     internal static class JSON
     {

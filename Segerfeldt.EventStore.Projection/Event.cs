@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Utils;
-
 using System;
 
 namespace Segerfeldt.EventStore.Projection

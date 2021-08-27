@@ -2,7 +2,6 @@ using JetBrains.Annotations;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,30 +10,41 @@ namespace Segerfeldt.EventStore.Projection
 {
     public abstract class ProjectorBase : IProjector
     {
-        public IEnumerable<string> HandledEvents => GetPublicInstanceMethods()
-            .Select(m => m.GetCustomAttribute<ProjectsEventAttribute>()?.Event)
-            .OfType<string>();
+        private readonly Lazy<Dictionary<string, IEnumerable<MethodInfo>>> lazyMethods;
+
+        public IEnumerable<string> HandledEvents => lazyMethods.Value.Keys;
+
+        protected ProjectorBase()
+        {
+            lazyMethods = new Lazy<Dictionary<string, IEnumerable<MethodInfo>>>(
+                () => GetPublicInstanceMethods()
+                    .Select(m => (method: m, attribute: m.GetCustomAttribute<ProjectsEventAttribute>()))
+                    .Where(ma => ma.attribute is not null)
+                    .Select(ma => (ma.method, ma.attribute!))
+                    .GroupBy(ma => ma.Item2.Event)
+                    .ToDictionary(g => g.Key, g => g.Select(ma => ma.method)));
+        }
 
         public async Task InvokeAsync(Event @event)
         {
-            var methods = FindProjectionMethods(@event);
-            foreach (var method in methods)
-                await InvokeProjectionMethod(method, @event);
+            if (!lazyMethods.Value.TryGetValue(@event.Name, out var methods)) return;
+
+            var tasks = methods
+                .Select(m => InvokeMethod(m, @event))
+                .OfType<Task>();
+            await Task.WhenAll(tasks);
         }
 
-        private IEnumerable<MethodInfo> FindProjectionMethods(Event @event) => GetPublicInstanceMethods()
-            .Where(m => m.GetCustomAttribute<ProjectsEventAttribute>()?.Event == @event.Name);
+        private object? InvokeMethod(MethodBase method, Event @event)
+        {
+            var parameters = method.GetParameters();
+            var arguments = parameters.Length == 2
+                ? new[] {@event.EntityId, @event.DetailsAs(parameters[1].ParameterType)}
+                : new object?[]{@event};
+            return method.Invoke(this, arguments);
+        }
 
         private IEnumerable<MethodInfo> GetPublicInstanceMethods() => GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance);
-
-        private async Task InvokeProjectionMethod(MethodBase method, Event @event)
-        {
-            var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToImmutableList();
-            var args = parameterTypes[0] == typeof(Event)
-                ? new object?[] { @event }
-                : new[] { @event.EntityId, @event.DetailsAs(parameterTypes[1]) };
-            if (method.Invoke(this, args) is Task task) await task;
-        }
 
         [AttributeUsage(AttributeTargets.Method)]
         [MeansImplicitUse]

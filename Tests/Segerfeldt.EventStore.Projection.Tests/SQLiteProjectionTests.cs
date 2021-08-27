@@ -14,13 +14,15 @@ namespace Segerfeldt.EventStore.Projection.Tests
         private InMemoryConnection connection = null!;
         private EventSource eventSource = null!;
         private Mock<IPollingStrategy> delayConfiguration = null!;
+        private Mock<IPositionTracker> positionTracker = null!;
 
         [SetUp]
         public void Setup()
         {
             connection = new InMemoryConnection();
             delayConfiguration = new Mock<IPollingStrategy>();
-            eventSource = new EventSource(connection, delayConfiguration.Object);
+            positionTracker = new Mock<IPositionTracker>();
+            eventSource = new EventSource(connection, positionTracker.Object, delayConfiguration.Object);
 
             connection
                 .CreateCommand("CREATE TABLE Events (entity TEXT, name TEXT, details TEXT, actor TEXT, timestamp INT DEFAULT CURRENT_TIMESTAMP, version INT, position INT)")
@@ -34,7 +36,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             var notifiedEvents = CaptureNotifiedEvents("first-event");
 
-            eventSource.Start();
+            eventSource.StartProjecting();
 
             Assert.That(notifiedEvents, Is.Not.Empty);
             Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
@@ -51,7 +53,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
 
-            eventSource.Start();
+            eventSource.StartProjecting();
 
             Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
             Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
@@ -66,7 +68,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             var notifiedEvents = CaptureNotifiedEvents("early-event", "late-event");
             GivenEvent("an-entity", "early-event", version: 1, position: 1);
-            eventSource.Start();
+            eventSource.StartProjecting();
             notifiedEvents.Clear();
 
             GivenEvent("an-entity", "late-event", version: 2, position: 2);
@@ -82,10 +84,11 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             GivenEvent("an-entity", "first-event", position: 32);
             GivenEvent("an-entity", "second-event", position: 33);
+            positionTracker.Setup(t => t.GetLastFinishedProjectionId()).Returns(32);
 
             var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 
-            eventSource.Start(32);
+            eventSource.StartProjecting();
 
             Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
         }
@@ -93,13 +96,18 @@ namespace Segerfeldt.EventStore.Projection.Tests
         [Test]
         public void ReportsNewPosition()
         {
-            long? position = null;
-            eventSource.EventsProcessed += (_, args) => position = args.Position;
+            long? startingPosition = null;
+            long? finishedPosition = null;
+            positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
+                .Callback<long>(l => startingPosition = l);
+            positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
+                .Callback<long>(l => finishedPosition = l);
 
             GivenEvent("an-entity", "an-event", position: 1);
-            eventSource.Start();
+            eventSource.StartProjecting();
 
-            Assert.That(position, Is.EqualTo(1));
+            Assert.That(startingPosition, Is.EqualTo(1));
+            Assert.That(finishedPosition, Is.EqualTo(1));
         }
 
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
@@ -115,7 +123,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             var events = new List<Event>();
             foreach (var eventName in eventNames)
             {
-                eventSource.AddProjection(new DelegateProjector(events.Add, eventName));
+                eventSource.Register(new DelegateProjector(events.Add, eventName));
             }
 
             return events;

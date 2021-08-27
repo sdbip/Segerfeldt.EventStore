@@ -1,8 +1,8 @@
 ﻿using Segerfeldt.EventStore.Source.Internals;
 using Segerfeldt.EventStore.Source.Snapshots;
 
-using System;
 using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source
@@ -28,10 +28,11 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="id">the unique identifier of the entity to reconstitute</param>
+        /// <param name="cancellationToken"></param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
         /// <returns>the entity with the specified <paramref name="id"/></returns>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id) where TEntity : class, IEntity =>
-            await ReconstituteAsync(new NeverSnapshot<TEntity>(id));
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+            await ReconstituteAsync(new NeverSnapshot<TEntity>(id), cancellationToken);
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="snapshot">the snapshot of the entity</param>
@@ -41,11 +42,18 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="snapshot">the snapshot of the entity</param>
+        /// <param name="cancellationToken"></param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
-            await GetHistoryAsync(snapshot.Id, snapshot.Version) is { } history
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+            await GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken) is { } history
                 ? RestoreEntity(snapshot, history)
-                : null;
+                : NotFound(snapshot);
+
+        private static TEntity? NotFound<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity
+        {
+            snapshot.NotFound();
+            return null;
+        }
 
         /// <summary>Get the historical data about an entity</summary>
         /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
@@ -55,12 +63,13 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>Get the historical data about an entity</summary>
         /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>the complete history of the entity</returns>
-        public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId) =>
-            await GetHistoryAsync(entityId, EntityVersion.Beginning);
+        public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, CancellationToken cancellationToken = default) =>
+            await GetHistoryAsync(entityId, EntityVersion.Beginning, cancellationToken);
 
-        private async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion) =>
-            await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connection);
+        private async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion, CancellationToken cancellationToken) =>
+            await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connection, cancellationToken);
 
         private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {
@@ -73,7 +82,7 @@ namespace Segerfeldt.EventStore.Source
         private static TEntity Instantiate<TEntity>(EntityId id, EntityVersion version) where TEntity : IEntity
         {
             var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
-            if (constructor is null) throw new Exception("Invalid entity type. Constructor missing.");
+            if (constructor is null) throw new InvalidEntityException(typeof(TEntity));
             return (TEntity)constructor.Invoke(new object[] { id, version });
         }
 
@@ -87,6 +96,7 @@ namespace Segerfeldt.EventStore.Source
             public NeverSnapshot(EntityId id) => Id = id;
 
             public void Restore(TEntity entity) { } // Intentionally does nothing
+            public void NotFound() { } // Intentionally does nothing
         }
     }
 }

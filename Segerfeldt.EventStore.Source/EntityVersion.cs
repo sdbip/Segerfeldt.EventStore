@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Utils;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -35,7 +33,7 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>The next <see cref="EntityVersion"/> after this</summary>
         /// <returns>a new <see cref="EntityVersion"/> with either the value 0 (if this is <see cref="New"/>), or this value + 1</returns>
-        public EntityVersion Next() => Of(Value < 0 ? 0 : Value + 1);
+        internal EntityVersion Next() => Of(Value < 0 ? 0 : Value + 1);
 
         public override string ToString() => Value switch { -2 => "[Missing]", -1 => "[New]", _ => $"[{Value}]" };
     }

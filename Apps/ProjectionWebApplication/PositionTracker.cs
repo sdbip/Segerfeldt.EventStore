@@ -1,5 +1,4 @@
 using Segerfeldt.EventStore.Projection;
-using Segerfeldt.EventStore.Projection.Hosting;
 
 namespace ProjectionWebApplication
 {
@@ -7,9 +6,13 @@ namespace ProjectionWebApplication
     {
         public long? Position { get; private set; }
 
-        public void UpdatePosition(object? sender, EventSource.EventsProcessedArgs args)
+        public long? GetLastFinishedProjectionId() => null;
+
+        public void OnProjectionStarting(long position) { }
+
+        public void OnProjectionFinished(long position)
         {
-            Position = args.Position;
+            Position = position;
         }
     }
 }

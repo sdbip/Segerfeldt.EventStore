@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Segerfeldt.EventStore.Utils
+namespace Segerfeldt.EventStore.Source
 {
     /// <summary>Abstract superclass that can help creating value-object classes.</summary>
     /// <typeparam name="TSubclass"></typeparam>

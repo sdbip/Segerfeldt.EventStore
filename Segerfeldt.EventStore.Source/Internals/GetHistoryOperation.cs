@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
@@ -18,7 +19,7 @@ namespace Segerfeldt.EventStore.Source.Internals
             this.entityVersion = entityVersion;
         }
 
-        public async Task<EntityHistory?> ExecuteAsync(DbConnection connection)
+        public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
         {
             var command = connection.CreateCommand(
                 "SELECT version FROM Entities WHERE id = @entityId;" +
@@ -26,8 +27,8 @@ namespace Segerfeldt.EventStore.Source.Internals
                 ("@entityId", entityId.ToString()),
                 ("@entityVersion", entityVersion.Value));
 
-            await connection.OpenAsync();
-            await using var reader = await command.ExecuteReaderAsync();
+            await connection.OpenAsync(cancellationToken);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             var version = ReadEntityVersion(reader);
             if (version is null)
             {
@@ -35,7 +36,7 @@ namespace Segerfeldt.EventStore.Source.Internals
                 return null;
             }
 
-            var events = reader.NextResult()
+            var events = await reader.NextResultAsync(cancellationToken)
                 ? ReadEvents(reader).ToImmutableList()
                 : ImmutableList<PublishedEvent>.Empty;
 

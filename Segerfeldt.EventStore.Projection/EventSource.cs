@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
@@ -10,46 +9,42 @@ namespace Segerfeldt.EventStore.Projection
     /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
     public class EventSource
     {
-        /// <summary>Arguments for the <see cref="EventSource.EventsProcessed"/> event</summary>
-        public class EventsProcessedArgs : EventArgs
-        {
-            /// <summary>The position that was handled. Always increasing.</summary>
-            public long Position { get; init; }
-        }
-
         private readonly IDbConnection connection;
+        private readonly IPositionTracker? tracker;
         private readonly IPollingStrategy pollingStrategy;
-        private readonly Dictionary<string, List<IProjector>> projections = new();
+        private readonly Dictionary<string, ICollection<IProjector>> projectors = new();
         private long lastReadPosition;
-
-        /// <summary>Notification after events have been processed</summary>
-        public event EventHandler<EventsProcessedArgs>? EventsProcessed;
 
         /// <summary>Initializes a new <see cref="EventSource"/></summary>
         /// <param name="connection">the database that stores your entities and events</param>
+        /// <param name="tracker"></param>
         /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-        public EventSource(IDbConnection connection, IPollingStrategy? pollingStrategy = null)
+        public EventSource(IDbConnection connection, IPositionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
         {
             this.connection = connection;
+            this.tracker = tracker;
             this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
         }
 
-        /// <summary>Adds a projection to be notified of events</summary>
-        /// <param name="projector">A projection object that will receive events as they appear</param>
-        public void AddProjection(IProjector projector)
+        /// <summary>
+        /// Register a projector that will be notified whenever new events occur
+        /// </summary>
+        /// <param name="projector">the projector to register</param>
+        public void Register(IProjector projector)
         {
             foreach (var eventName in projector.HandledEvents)
             {
-                projections.TryAdd(eventName, new List<IProjector>());
-                projections[eventName].Add(projector);
+                if (projectors.ContainsKey(eventName))
+                    projectors[eventName].Add(projector);
+                else
+                    projectors[eventName] = new List<IProjector> {projector};
             }
         }
 
-        /// <summary>Start processing new events</summary>
-        /// <param name="processedPosition">The last position already processed</param>
-        public void Start(long? processedPosition = null)
+        /// <summary>Start projecting the source state</summary>
+        public void StartProjecting()
         {
-            lastReadPosition = processedPosition ?? -1;
+            lastReadPosition = tracker?.GetLastFinishedProjectionId() ?? -1;
             NotifyNewEvents();
         }
 
@@ -62,8 +57,9 @@ namespace Segerfeldt.EventStore.Projection
                 lastReadPosition = position;
                 count += events.Count;
 
+                tracker?.OnProjectionStarting(position);
                 foreach (var @event in events) Notify(@event);
-                EventsProcessed?.Invoke(this, new EventsProcessedArgs { Position = lastReadPosition });
+                tracker?.OnProjectionFinished(position);
             }
 
             var nextDelay = pollingStrategy.NextDelay(count);
@@ -94,7 +90,7 @@ namespace Segerfeldt.EventStore.Projection
         {
             try
             {
-                if (projections.TryGetValue(@event.Name, out var delegates))
+                if (projectors.TryGetValue(@event.Name, out var delegates))
                     Task.WhenAll(delegates.Select(async d => await d.InvokeAsync(@event))).Wait();
             }
             catch
