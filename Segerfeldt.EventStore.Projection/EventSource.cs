@@ -34,10 +34,10 @@ namespace Segerfeldt.EventStore.Projection
         {
             foreach (var eventName in projector.HandledEvents)
             {
-                if (projectors.ContainsKey(eventName))
-                    projectors[eventName].Add(projector);
+                if (projectors.ContainsKey(eventName.Name))
+                    projectors[eventName.Name].Add(projector);
                 else
-                    projectors[eventName] = new List<IProjector> {projector};
+                    projectors[eventName.Name] = new List<IProjector> {projector};
             }
         }
 
@@ -90,14 +90,20 @@ namespace Segerfeldt.EventStore.Projection
         {
             try
             {
-                if (projectors.TryGetValue(@event.Name, out var delegates))
-                    Task.WhenAll(delegates.Select(async d => await d.InvokeAsync(@event))).Wait();
+                var tasks = GetHandlingProjectors(@event)
+                    .Select(async d => await d.InvokeAsync(@event));
+                Task.WhenAll(tasks).Wait();
             }
             catch
             {
                 System.Diagnostics.Debugger.Break();
             }
         }
+
+        private IEnumerable<IProjector> GetHandlingProjectors(Event @event) =>
+            projectors.ContainsKey(@event.Name.Name)
+                ? projectors[@event.Name.Name].Where(d => d.HandlesEvent(@event))
+                : ImmutableList<IProjector>.Empty;
 
         private IEnumerable<Event> ReadEvents(long afterPosition)
         {
@@ -122,8 +128,7 @@ namespace Segerfeldt.EventStore.Projection
 
         private static Event ReadEvent(IDataRecord record) => new(
             record.GetString(record.GetOrdinal("entity")),
-            record.GetString(record.GetOrdinal("type")),
-            record.GetString(record.GetOrdinal("name")),
+            new EventName(record.GetString(record.GetOrdinal("type")), record.GetString(record.GetOrdinal("name"))),
             record.GetString(record.GetOrdinal("details")),
             record.GetInt64(record.GetOrdinal("position")));
 

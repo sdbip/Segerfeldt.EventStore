@@ -70,7 +70,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             Assert.That(notifiedEvents, Is.Not.Empty);
             Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
-            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[0].Name.Name, Is.EqualTo("first-event"));
             Assert.That(notifiedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
         }
 
@@ -86,10 +86,10 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             eventSource.StartProjecting();
 
-            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
-            Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
-            Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
+            Assert.That(notifiedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(notifiedEvents[0].Name.Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[1].Name.Name, Is.EqualTo("second-event"));
+            Assert.That(notifiedEvents[2].Name.Name, Is.EqualTo("third-event"));
         }
 
         [Test]
@@ -126,7 +126,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             eventSource.StartProjecting();
             Task.Yield();
 
-            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
+            Assert.That(notifiedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "second-event" }));
         }
 
         [Test]

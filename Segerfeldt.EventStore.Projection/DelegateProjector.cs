@@ -12,17 +12,17 @@ namespace Segerfeldt.EventStore.Projection
     {
         private readonly Delegate @delegate;
 
-        public IEnumerable<string> HandledEvents { get; }
+        public IEnumerable<EventName> HandledEvents { get; }
 
         /// <summary>Initialize a new <see cref="DelegateProjector"/></summary>
         /// <param name="delegate">the delegate to call when events are notified</param>
         /// <param name="handledEvents">the events this delegate handles</param>
-        public DelegateProjector(AsyncProjectionDelegate @delegate, params string[] handledEvents) : this(@delegate, (IEnumerable<string>)handledEvents) { }
+        public DelegateProjector(AsyncProjectionDelegate @delegate, params EventName[] handledEvents) : this(@delegate, (IEnumerable<EventName>)handledEvents) { }
 
         /// <summary>Initialize a new <see cref="DelegateProjector"/></summary>
         /// <param name="delegate">the delegate to call when events are notified</param>
         /// <param name="handledEvents">the events this delegate handles</param>
-        public DelegateProjector(AsyncProjectionDelegate @delegate, IEnumerable<string> handledEvents)
+        public DelegateProjector(AsyncProjectionDelegate @delegate, IEnumerable<EventName> handledEvents)
         {
             HandledEvents = handledEvents;
             this.@delegate = @delegate;
@@ -31,12 +31,12 @@ namespace Segerfeldt.EventStore.Projection
         /// <summary>Initialize a new <see cref="DelegateProjector"/></summary>
         /// <param name="delegate">the delegate to call when events are notified</param>
         /// <param name="handledEvents">the events this delegate handles</param>
-        public DelegateProjector(ProjectionDelegate @delegate, params string[] handledEvents) : this(@delegate, (IEnumerable<string>)handledEvents) { }
+        public DelegateProjector(ProjectionDelegate @delegate, params EventName[] handledEvents) : this(@delegate, (IEnumerable<EventName>)handledEvents) { }
 
         /// <summary>Initialize a new <see cref="DelegateProjector"/></summary>
         /// <param name="delegate">the delegate to call when events are notified</param>
         /// <param name="handledEvents">the events this delegate handles</param>
-        public DelegateProjector(ProjectionDelegate @delegate, IEnumerable<string> handledEvents)
+        public DelegateProjector(ProjectionDelegate @delegate, IEnumerable<EventName> handledEvents)
         {
             HandledEvents = handledEvents;
             this.@delegate = @delegate;
