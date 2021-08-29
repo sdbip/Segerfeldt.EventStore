@@ -1,6 +1,6 @@
 namespace Segerfeldt.EventStore.Source.Snapshots
 {
-    public interface ISnapshot<TEntity> where TEntity : class, IEntity
+    public interface ISnapshot<in TEntity> where TEntity : class, IEntity
     {
         /// <summary>the id of this entity</summary>
         EntityId Id { get; }
@@ -11,7 +11,5 @@ namespace Segerfeldt.EventStore.Source.Snapshots
         /// <summary>Restores the state of an entity from this snapshot</summary>
         /// <param name="entity"></param>
         void Restore(TEntity entity);
-
-        void NotFound() => throw new UnknownEntityException(Id);
     }
 }
