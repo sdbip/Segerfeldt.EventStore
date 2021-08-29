@@ -46,10 +46,12 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="snapshot">the snapshot of the entity</param>
         /// <param name="cancellationToken"></param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
-            await GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken) is { } history && history.Type == snapshot.EntityType
-                ? RestoreEntity(snapshot, history)
-                : NotFound(snapshot);
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
+        {
+            if (await GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken) is not { } history) return NotFound(snapshot);
+            if (history.Type != snapshot.EntityType) throw new IncorrectTypeException(snapshot.EntityType, history.Type);
+            return RestoreEntity(snapshot, history);
+        }
 
         private static TEntity? NotFound<TEntity>(ISnapshot<TEntity> snapshot) where TEntity : class, IEntity
         {

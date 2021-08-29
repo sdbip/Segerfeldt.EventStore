@@ -7,11 +7,11 @@ namespace Segerfeldt.EventStore.Projection
     {
         /// <summary>The id of the entity that changed</summary>
         public string EntityId { get; }
-        /// <summary>The name of the event, signifying what about the entity changed</summary>
+        /// <summary>The name of the event, indicating in how the state has changed</summary>
         public EventName Name { get; }
         /// <summary>Details regarding the change</summary>
         public string Details { get; }
-        /// <summary>The position of this event in the stream. Useful when updating a database and restarting the application</summary>
+        /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
         public long Position { get; }
 
         public Event(string entityId, EventName name, string details, long position)
