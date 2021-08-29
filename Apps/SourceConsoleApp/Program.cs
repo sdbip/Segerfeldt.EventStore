@@ -11,10 +11,10 @@ var publisher = new EventPublisher(connection);
 var store = new EntityStore(connection);
 
 var entityId = new EntityId("player3");
-var increment = new ScoreIncrement {Points = 2};
-
 var player = await store.ReconstituteAsync<Player>(entityId) ?? Player.RegisterNew(entityId, "Jones");
-player.AwardPoints(3);
+
+const int points = 2;
+player.AwardPoints(points);
 
 await publisher.PublishChangesAsync(player, "johan");
-Console.WriteLine($"Player {player.Name} increased score by {increment.Points} points");
+Console.WriteLine($"Player {player.Name} increased score by {points} points");

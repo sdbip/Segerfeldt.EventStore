@@ -6,6 +6,9 @@ namespace SourceConsoleApp
 {
     internal class Player : EntityBase
     {
+        private const string PlayerRegistered = "PlayerRegistered";
+        private const string ScoreIncreased = "ScoreIncreased";
+
         public string Name { get; private set; } = null!;
         public int Score { get; private set; }
 
@@ -14,7 +17,7 @@ namespace SourceConsoleApp
         public static Player RegisterNew(EntityId id, string name)
         {
             var player = new Player(id, EntityVersion.New) { Name = name };
-            player.Add(new UnpublishedEvent("PlayerRegistered", new {Name = name}));
+            player.Add(new UnpublishedEvent(PlayerRegistered, new {Name = name}));
             return player;
         }
 
@@ -27,13 +30,13 @@ namespace SourceConsoleApp
             }
 
             Score += points;
-            var increment = new ScoreIncrement {Points = points};
-            Add(new UnpublishedEvent("ScoreIncreased", increment));
+            var increment = new ScoreIncrement(points);
+            Add(new UnpublishedEvent(ScoreIncreased, increment));
         }
 
-        [ReplaysEvent("PlayerRegistered")]
+        [ReplaysEvent(PlayerRegistered)]
         public void ReplayPlayerRegistered(Registration registration) { Name = registration.Name; }
-        [ReplaysEvent("ScoreIncreased")]
+        [ReplaysEvent(ScoreIncreased)]
         public void ReplayScoreIncreased(ScoreIncrement increment) { Score += increment.Points; }
     }
 
