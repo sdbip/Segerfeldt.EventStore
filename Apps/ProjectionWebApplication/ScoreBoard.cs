@@ -19,13 +19,13 @@ namespace ProjectionWebApplication
         }
 
         [ProjectsEvent("ScoreIncreased")]
-        public void ProjectScoreIncreased(string entityId, ScoreIncreased details)
+        public void ProjectScoreIncreased(string entityId, ScoreIncrement details)
         {
-            var existingValue = playerScores[entityId];
-            playerScores[entityId] = (existingValue.name, existingValue.score + details.Points);
+            var (unchangingName, previousScore) = playerScores[entityId];
+            playerScores[entityId] = (unchangingName, previousScore + details.Points);
         }
     }
 
-    public record ScoreIncreased(int Points);
+    public record ScoreIncrement(int Points);
     public record PlayerRegistration(string Name);
 }
