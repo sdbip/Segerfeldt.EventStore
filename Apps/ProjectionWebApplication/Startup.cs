@@ -33,7 +33,7 @@ namespace ProjectionWebApplication
             services.AddSingleton<ScoreBoard>();
             services.AddSingleton<PositionTracker>();
             services.AddHostedEventSource(new SqlConnection(configuration.GetConnectionString("events")))
-                .AddProjections(Assembly.GetExecutingAssembly())
+                .AddReceptacles(Assembly.GetExecutingAssembly())
                 .SetPositionTracker<PositionTracker>();
         }
 

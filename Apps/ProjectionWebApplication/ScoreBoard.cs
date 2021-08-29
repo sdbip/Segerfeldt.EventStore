@@ -6,20 +6,20 @@ using System.Linq;
 
 namespace ProjectionWebApplication
 {
-    public class ScoreBoard : ProjectorBase
+    public class ScoreBoard : ReceptacleBase
     {
         private readonly Dictionary<string, (string name, int score)> playerScores = new();
 
         public IEnumerable<(string name, int score)> PlayerScores => playerScores.Select(pair => pair.Value).ToImmutableArray();
 
-        [ProjectsEvent("PlayerRegistered")]
-        public void ProjectPlayerRegistered(string entityId, PlayerRegistration details)
+        [ReceivesEvent("PlayerRegistered")]
+        public void ReceivePlayerRegistered(string entityId, PlayerRegistration details)
         {
             playerScores[entityId] = (details.Name, 0);
         }
 
-        [ProjectsEvent("ScoreIncreased")]
-        public void ProjectScoreIncreased(string entityId, ScoreIncrement details)
+        [ReceivesEvent("ScoreIncreased")]
+        public void ReceiveScoreIncreased(string entityId, ScoreIncrement details)
         {
             var (unchangingName, previousScore) = playerScores[entityId];
             playerScores[entityId] = (unchangingName, previousScore + details.Points);

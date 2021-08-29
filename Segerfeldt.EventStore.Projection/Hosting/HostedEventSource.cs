@@ -16,7 +16,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            eventSource.StartProjecting();
+            eventSource.StartReceiving();
             return Task.CompletedTask;
         }
 

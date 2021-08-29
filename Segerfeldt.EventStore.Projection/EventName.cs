@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-
 namespace Segerfeldt.EventStore.Projection
 {
-    public class EventName : ValueObject<EventName>
+    public class EventName
     {
         public string Name { get; }
         public string? EntityType { get; }
@@ -13,19 +11,12 @@ namespace Segerfeldt.EventStore.Projection
             Name = name;
         }
 
-        private EventName(string name)
-        {
-            Name = name;
-        }
+        public static implicit operator EventName(string name) => AcceptingAnyEntityType(name);
+        private static EventName AcceptingAnyEntityType(string name) => new(null!, name);
 
-        public static implicit operator EventName(string name) => MatchingAnyEntity(name);
-        private static EventName MatchingAnyEntity(string name) => new(name);
-
-        public bool Handles(EventName @event) => IsSameName(@event) && IsMatchingType(@event);
+        public bool IndicatesAcceptanceOf(EventName @event) => IsSameName(@event) && IsMatchingType(@event);
 
         private bool IsSameName(EventName @event) => Name == @event.Name;
         private bool IsMatchingType(EventName @event) => EntityType is null || EntityType == @event.EntityType;
-
-        protected override IEnumerable<object> GetEqualityComponents() => throw new System.NotImplementedException();
     }
 }

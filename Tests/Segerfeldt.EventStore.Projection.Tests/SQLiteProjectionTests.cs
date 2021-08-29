@@ -36,14 +36,14 @@ namespace Segerfeldt.EventStore.Projection.Tests
             GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", @"{""value"":42}");
 
-            var notifiedEvents = CaptureNotifiedEvents("first-event");
+            var receivedEvents = CaptureReceivedEvents("first-event");
 
-            eventSource.StartProjecting();
+            eventSource.StartReceiving();
 
-            Assert.That(notifiedEvents, Is.Not.Empty);
-            Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
-            Assert.That(notifiedEvents[0].Name.Name, Is.EqualTo("first-event"));
-            Assert.That(notifiedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+            Assert.That(receivedEvents, Is.Not.Empty);
+            Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(receivedEvents[0].Name.Name, Is.EqualTo("first-event"));
+            Assert.That(receivedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
         }
 
         [Test]
@@ -54,14 +54,14 @@ namespace Segerfeldt.EventStore.Projection.Tests
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
 
-            var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
+            var receivedEvents = CaptureReceivedEvents("first-event", "second-event", "third-event");
 
-            eventSource.StartProjecting();
+            eventSource.StartReceiving();
 
-            Assert.That(notifiedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-            Assert.That(notifiedEvents[0].Name.Name, Is.EqualTo("first-event"));
-            Assert.That(notifiedEvents[1].Name.Name, Is.EqualTo("second-event"));
-            Assert.That(notifiedEvents[2].Name.Name, Is.EqualTo("third-event"));
+            Assert.That(receivedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(receivedEvents[0].Name.Name, Is.EqualTo("first-event"));
+            Assert.That(receivedEvents[1].Name.Name, Is.EqualTo("second-event"));
+            Assert.That(receivedEvents[2].Name.Name, Is.EqualTo("third-event"));
         }
 
         [Test]
@@ -70,17 +70,17 @@ namespace Segerfeldt.EventStore.Projection.Tests
             delayConfiguration.Setup(c => c.NextDelay(It.IsAny<int>())).Returns(1);
 
             GivenEntity("an-entity");
-            var notifiedEvents = CaptureNotifiedEvents("early-event", "late-event");
+            var receivedEvents = CaptureReceivedEvents("early-event", "late-event");
             GivenEvent("an-entity", "early-event", version: 1, position: 1);
-            eventSource.StartProjecting();
-            notifiedEvents.Clear();
+            eventSource.StartReceiving();
+            receivedEvents.Clear();
 
             GivenEvent("an-entity", "late-event", version: 2, position: 2);
 
             Thread.Yield();
 
-            Assert.That(notifiedEvents, Is.Not.Empty);
-            Assert.That(notifiedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "late-event" }));
+            Assert.That(receivedEvents, Is.Not.Empty);
+            Assert.That(receivedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "late-event" }));
         }
 
         [Test]
@@ -91,11 +91,11 @@ namespace Segerfeldt.EventStore.Projection.Tests
             GivenEvent("an-entity", "second-event", position: 33);
             positionTracker.Setup(t => t.GetLastFinishedProjectionId()).Returns(32);
 
-            var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
+            var receivedEvents = CaptureReceivedEvents("first-event", "second-event");
 
-            eventSource.StartProjecting();
+            eventSource.StartReceiving();
 
-            Assert.That(notifiedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "second-event" }));
+            Assert.That(receivedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "second-event" }));
         }
 
         [Test]
@@ -110,7 +110,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             GivenEntity("an-entity");
             GivenEvent("an-entity", "an-event", position: 1);
-            eventSource.StartProjecting();
+            eventSource.StartReceiving();
 
             Assert.That(startingPosition, Is.EqualTo(1));
             Assert.That(finishedPosition, Is.EqualTo(1));
@@ -132,12 +132,12 @@ namespace Segerfeldt.EventStore.Projection.Tests
                 .ExecuteNonQuery();
         }
 
-        private List<Event> CaptureNotifiedEvents(params string[] eventNames)
+        private List<Event> CaptureReceivedEvents(params string[] eventNames)
         {
             var events = new List<Event>();
             foreach (var eventName in eventNames)
             {
-                eventSource.Register(new DelegateProjector(events.Add, eventName));
+                eventSource.Register(new DelegateReceptacle(events.Add, eventName));
             }
 
             return events;

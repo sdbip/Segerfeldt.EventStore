@@ -10,7 +10,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 {
     public class EventSourceBuilder
     {
-        private readonly List<Type> projectionTypes = new();
+        private readonly List<Type> receptacleTypes = new();
         private Type? positionTrackerType;
         private readonly IDbConnection connection;
 
@@ -19,9 +19,9 @@ namespace Segerfeldt.EventStore.Projection.Hosting
             this.connection = connection;
         }
 
-        public EventSourceBuilder AddProjections(Assembly assembly)
+        public EventSourceBuilder AddReceptacles(Assembly assembly)
         {
-            projectionTypes.AddRange(assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IProjector))));
+            receptacleTypes.AddRange(assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IReceptacle))));
             return this;
         }
 
@@ -34,8 +34,8 @@ namespace Segerfeldt.EventStore.Projection.Hosting
         internal EventSource Build(IServiceProvider provider)
         {
             var eventSource = new EventSource(connection, GetPositionTracker(provider));
-            foreach (var type in projectionTypes)
-                eventSource.Register((IProjector)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
+            foreach (var type in receptacleTypes)
+                eventSource.Register((IReceptacle)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
 
             return eventSource;
         }

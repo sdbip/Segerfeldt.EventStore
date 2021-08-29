@@ -12,7 +12,7 @@ namespace Segerfeldt.EventStore.Projection
         private readonly IDbConnection connection;
         private readonly IPositionTracker? tracker;
         private readonly IPollingStrategy pollingStrategy;
-        private readonly Dictionary<string, ICollection<IProjector>> projectors = new();
+        private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = new();
         private long lastReadPosition;
 
         /// <summary>Initializes a new <see cref="EventSource"/></summary>
@@ -29,20 +29,20 @@ namespace Segerfeldt.EventStore.Projection
         /// <summary>
         /// Register a projector that will be notified whenever new events occur
         /// </summary>
-        /// <param name="projector">the projector to register</param>
-        public void Register(IProjector projector)
+        /// <param name="receptacle">the projector to register</param>
+        public void Register(IReceptacle receptacle)
         {
-            foreach (var eventName in projector.HandledEvents)
+            foreach (var eventName in receptacle.AcceptedEventNames)
             {
-                if (projectors.ContainsKey(eventName.Name))
-                    projectors[eventName.Name].Add(projector);
+                if (receptacles.ContainsKey(eventName.Name))
+                    receptacles[eventName.Name].Add(receptacle);
                 else
-                    projectors[eventName.Name] = new List<IProjector> {projector};
+                    receptacles[eventName.Name] = new List<IReceptacle> {receptacle};
             }
         }
 
         /// <summary>Start projecting the source state</summary>
-        public void StartProjecting()
+        public void StartReceiving()
         {
             lastReadPosition = tracker?.GetLastFinishedProjectionId() ?? -1;
             NotifyNewEvents();
@@ -90,8 +90,8 @@ namespace Segerfeldt.EventStore.Projection
         {
             try
             {
-                var tasks = GetHandlingProjectors(@event)
-                    .Select(async d => await d.InvokeAsync(@event));
+                var tasks = GetAcceptingReceptacles(@event)
+                    .Select(async d => await d.ReceiveAsync(@event));
                 Task.WhenAll(tasks).Wait();
             }
             catch
@@ -100,10 +100,10 @@ namespace Segerfeldt.EventStore.Projection
             }
         }
 
-        private IEnumerable<IProjector> GetHandlingProjectors(Event @event) =>
-            projectors.ContainsKey(@event.Name.Name)
-                ? projectors[@event.Name.Name].Where(d => d.HandlesEvent(@event))
-                : ImmutableList<IProjector>.Empty;
+        private IEnumerable<IReceptacle> GetAcceptingReceptacles(Event @event) =>
+            receptacles.ContainsKey(@event.Name.Name)
+                ? receptacles[@event.Name.Name].Where(d => d.Accepts(@event))
+                : ImmutableList<IReceptacle>.Empty;
 
         private IEnumerable<Event> ReadEvents(long afterPosition)
         {
