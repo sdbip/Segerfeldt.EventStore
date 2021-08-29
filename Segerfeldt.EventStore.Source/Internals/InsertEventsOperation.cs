@@ -16,7 +16,7 @@ namespace Segerfeldt.EventStore.Source.Internals
             this.actor = actor;
         }
 
-        public async Task ExecuteAsync(DbConnection connection)
+        public async Task<StreamPositions> ExecuteAsync(DbConnection connection)
         {
             await connection.OpenAsync();
             var transaction = await connection.BeginTransactionAsync();
@@ -24,9 +24,10 @@ namespace Segerfeldt.EventStore.Source.Internals
 
             try
             {
-                await activeOperation.RunAsync();
+                var result = await activeOperation.RunAsync();
                 await transaction.CommitAsync();
                 await connection.CloseAsync();
+                return result;
             }
             catch
             {
@@ -46,7 +47,7 @@ namespace Segerfeldt.EventStore.Source.Internals
                 this.operation = operation;
             }
 
-            public async Task RunAsync()
+            public async Task<StreamPositions> RunAsync()
             {
                 foreach (var entity in operation.entities)
                 {
@@ -57,9 +58,16 @@ namespace Segerfeldt.EventStore.Source.Internals
                     if (currentVersion.IsNew) await InsertEntityAsync(entity.Id, entity.Type, entity.Version);
                 }
 
-                foreach (var entity in operation.entities)
-                    await InsertEventsAsync(entity.Id,
-                        entity.UnpublishedEvents.Zip(InfiniteVersionsFrom(entity.Version.Next())));
+                var tuples = await Task.WhenAll(
+                    operation.entities.Select(async entity =>
+                    {
+                        var version = await InsertEventsAsync(entity.Id,
+                            entity.UnpublishedEvents.Zip(InfiniteVersionsFrom(entity.Version.Next())));
+                        return (entity.Id, version);
+                    })
+                );
+
+                return new StreamPositions(await GetCurrentPositionAsync(), tuples);
 
                 IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
                 {

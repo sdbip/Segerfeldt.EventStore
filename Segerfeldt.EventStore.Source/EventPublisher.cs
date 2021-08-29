@@ -20,55 +20,51 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>Publish a single event for an entity</summary>
         /// <param name="entityId">the unique identifier for this entity</param>
+        /// <param name="type"></param>
         /// <param name="event">the event to publish</param>
         /// <param name="actor">the actor/user who caused this change</param>
-        public void Publish(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
-        {
-            PublishAsync(entityId, type, @event, actor).Wait();
-        }
+        public StreamPosition Publish(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor) =>
+            PublishAsync(entityId, type, @event, actor).Result;
 
         /// <summary>Publish a single event for an entity</summary>
         /// <param name="entityId">the unique identifier for this entity</param>
         /// <param name="type">the type of the entity if it has to be created</param>
         /// <param name="event">the event to publish</param>
         /// <param name="actor">the actor/user who caused this change</param>
-        public async Task PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
+        public async Task<StreamPosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
         {
             var operation = new InsertSingleEventOperation(@event, entityId, type, actor);
-            await operation.ExecuteAsync(connection);
+            return await operation.ExecuteAsync(connection);
         }
 
         /// <summary>Publish all new changes since reconstituting an entity</summary>
         /// <param name="entity">the entity whose events to publish</param>
         /// <param name="actor">the actor/user who caused these changes</param>
-        public void PublishChanges(IEntity entity, string actor)
-        {
-            PublishChanges(new[] { entity }, actor);
-        }
+        public StreamPosition PublishChanges(IEntity entity, string actor) =>
+            PublishChangesAsync(entity, actor).Result;
 
         /// <summary>Publish all new changes since reconstituting an entity</summary>
         /// <param name="entity">the entity whose events to publish</param>
         /// <param name="actor">the actor/user who caused these changes</param>
-        public async Task PublishChangesAsync(IEntity entity, string actor)
+        public async Task<StreamPosition> PublishChangesAsync(IEntity entity, string actor)
         {
-            await PublishChangesAsync(new[] { entity }, actor);
+            var streamPositions = await PublishChangesAsync(new[] { entity }, actor);
+            return new StreamPosition(streamPositions.StorePosition, streamPositions.GetVersion(entity.Id));
         }
 
         /// <summary>Publish all new changes since reconstituting an entity</summary>
         /// <param name="entities">the entity whose events to publish</param>
         /// <param name="actor">the actor/user who caused these changes</param>
-        public void PublishChanges(IEnumerable<IEntity> entities, string actor)
-        {
-            PublishChangesAsync(entities, actor).Wait();
-        }
+        public StreamPositions PublishChanges(IEnumerable<IEntity> entities, string actor) =>
+            PublishChangesAsync(entities, actor).Result;
 
         /// <summary>Publish all new changes since reconstituting an entity</summary>
         /// <param name="entities">the entities whose events to publish</param>
         /// <param name="actor">the actor/user who caused these changes</param>
-        public async Task PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
+        public async Task<StreamPositions> PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
         {
             var operation = new InsertEventsOperation(entities, actor);
-            await operation.ExecuteAsync(connection);
+            return await operation.ExecuteAsync(connection);
         }
     }
 }

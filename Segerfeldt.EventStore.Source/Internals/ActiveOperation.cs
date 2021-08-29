@@ -64,7 +64,7 @@ namespace Segerfeldt.EventStore.Source.Internals
             await command.ExecuteNonQueryAsync();
         }
 
-        protected async Task InsertEventsAsync(EntityId entityId, IEnumerable<(UnpublishedEvent @event, EntityVersion version)> eventsAndVersions)
+        protected async Task<EntityVersion> InsertEventsAsync(EntityId entityId, IEnumerable<(UnpublishedEvent @event, EntityVersion version)> eventsAndVersions)
         {
             var ev = eventsAndVersions.ToList();
             var position = await GetCurrentPositionAsync() + 1;
@@ -73,6 +73,7 @@ namespace Segerfeldt.EventStore.Source.Internals
 
             var lastInsertedVersion = ev.Last().version;
             await UpdateVersionAsync(entityId, lastInsertedVersion);
+            return lastInsertedVersion;
         }
     }
 }
