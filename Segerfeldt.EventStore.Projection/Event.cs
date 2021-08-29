@@ -7,6 +7,8 @@ namespace Segerfeldt.EventStore.Projection
     {
         /// <summary>The id of the entity that changed</summary>
         public string EntityId { get; }
+        /// <summary>The type of the entity that changed</summary>
+        public string EntityType { get; }
         /// <summary>The name of the event, signifying what about the entity changed</summary>
         public string Name { get; }
         /// <summary>Details regarding the change</summary>
@@ -14,12 +16,13 @@ namespace Segerfeldt.EventStore.Projection
         /// <summary>The position of this event in the stream. Useful when updating a database and restarting the application</summary>
         public long Position { get; }
 
-        public Event(string entityId, string name, string details, long position)
+        public Event(string entityId, string entityType, string name, string details, long position)
         {
+            EntityId = entityId;
+            EntityType = entityType;
             Name = name;
             Details = details;
             Position = position;
-            EntityId = entityId;
         }
 
         public T? DetailsAs<T>() => JSON.Deserialize<T>(Details);

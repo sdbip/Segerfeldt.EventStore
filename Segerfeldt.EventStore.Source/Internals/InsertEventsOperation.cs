@@ -54,7 +54,7 @@ namespace Segerfeldt.EventStore.Source.Internals
                     if (entity.Version != currentVersion)
                         throw new ConcurrentUpdateException(entity.Version, currentVersion);
 
-                    if (currentVersion.IsNew) await InsertEntityAsync(entity.Id, EntityVersion.Of(1));
+                    if (currentVersion.IsNew) await InsertEntityAsync(entity.Id, entity.Type, entity.Version);
                 }
 
                 foreach (var entity in operation.entities)

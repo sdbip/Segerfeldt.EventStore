@@ -1,6 +1,7 @@
 IF OBJECT_ID('Entities') IS NULL
 CREATE TABLE Entities (
     id NVARCHAR(128),
+    [type] NVARCHAR(128),
     [version] INT DEFAULT 0,
 
     PRIMARY KEY (id)

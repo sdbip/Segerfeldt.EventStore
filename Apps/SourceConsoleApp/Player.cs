@@ -6,13 +6,15 @@ namespace SourceConsoleApp
 {
     internal class Player : EntityBase
     {
+        public static readonly EntityType EntityType = new("Player");
+
         private const string PlayerRegistered = "PlayerRegistered";
         private const string ScoreIncreased = "ScoreIncreased";
 
         public string Name { get; private set; } = null!;
         public int Score { get; private set; }
 
-        public Player(EntityId id, EntityVersion version) : base(id, version) { }
+        public Player(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
 
         public static Player RegisterNew(EntityId id, string name)
         {

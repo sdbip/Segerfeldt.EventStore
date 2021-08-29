@@ -37,7 +37,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             internal PublishedEvent? ReplayedEvent { get; private set; }
             internal TestData? ReplayedData { get; private set; }
 
-            public TestEntity(EntityId id, EntityVersion version) : base(id, version) { }
+            public TestEntity(EntityId id, EntityVersion version) : base(id, new EntityType("Test"), version) { }
 
             [ReplaysEvent(ReplayAsEvent)]
             public void ReplayEvent(PublishedEvent @event)

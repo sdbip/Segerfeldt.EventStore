@@ -22,15 +22,15 @@ namespace Segerfeldt.EventStore.Source.Internals
         public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
         {
             var command = connection.CreateCommand(
-                "SELECT version FROM Entities WHERE id = @entityId;" +
+                "SELECT type, version FROM Entities WHERE id = @entityId;" +
                 "SELECT * FROM Events WHERE entity = @entityId AND version > @entityVersion ORDER BY version",
                 ("@entityId", entityId.ToString()),
                 ("@entityVersion", entityVersion.Value));
 
             await connection.OpenAsync(cancellationToken);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-            var version = ReadEntityVersion(reader);
-            if (version is null)
+            var entityData = ReadEntityData(reader);
+            if (entityData is null)
             {
                 await connection.CloseAsync();
                 return null;
@@ -41,11 +41,13 @@ namespace Segerfeldt.EventStore.Source.Internals
                 : ImmutableList<PublishedEvent>.Empty;
 
             await connection.CloseAsync();
-            return new EntityHistory(version, events);
+
+            var (type, version) = entityData.Value;
+            return new EntityHistory(type, version, events);
         }
 
-        private static EntityVersion? ReadEntityVersion(IDataReader reader) =>
-            reader.Read() ? EntityVersion.Of((int)reader[0]) : null;
+        private static (EntityType, EntityVersion)? ReadEntityData(IDataReader reader) =>
+            reader.Read() ? (new EntityType((string)reader[0]), EntityVersion.Of((int)reader[1])) : null;
 
         private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
         {

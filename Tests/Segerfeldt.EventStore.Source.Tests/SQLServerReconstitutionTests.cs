@@ -37,14 +37,14 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection.Open();
             try
             {
-                GivenEntity("an-entity", 3);
+                GivenEntity("an-entity", "a-type", 3);
             }
             finally
             {
                 connection.Close();
             }
 
-            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
             Assert.That(entity, Is.Not.Null);
             Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
@@ -53,7 +53,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReturnsNullIfNoEntity()
         {
-            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
             Assert.That(entity, Is.Null);
         }
@@ -64,7 +64,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection.Open();
             try
             {
-                GivenEntity("an-entity");
+                GivenEntity("an-entity", "a-type");
                 GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
             }
             finally
@@ -72,7 +72,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
             Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -93,7 +93,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection.Open();
             try
             {
-                GivenEntity("an-entity");
+                GivenEntity("an-entity", "a-type");
                 GivenEvent("an-entity", "first-event", version: 1);
                 GivenEvent("an-entity", "third-event", version: 3);
                 GivenEvent("an-entity", "second-event", version: 2);
@@ -103,7 +103,7 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -120,7 +120,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection.Open();
             try
             {
-                GivenEntity("an-entity");
+                GivenEntity("an-entity", "a-type");
                 GivenEvent("an-entity", "first-event", "johan", timestamp);
             }
             finally
@@ -145,7 +145,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection.Open();
             try
             {
-                GivenEntity("an-entity");
+                GivenEntity("an-entity", "a-type");
                 GivenEvent("an-entity", "first-event", version: 1);
                 GivenEvent("an-entity", "third-event", version: 3);
                 GivenEvent("an-entity", "second-event", version: 2);
@@ -171,7 +171,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             connection.Open();
             try
             {
-                GivenEntity("an-entity");
+                GivenEntity("an-entity", "a-type");
                 GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
             }
             finally
@@ -179,17 +179,17 @@ namespace Segerfeldt.EventStore.Source.Tests
                 connection.Close();
             }
 
-            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"));
+            var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
             Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTime.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
             Assert.That(entity?.ReplayedEvents?.First().Timestamp.Kind, Is.EqualTo(DateTimeKind.Utc));
         }
 
-        private void GivenEntity(string entityId, int version = 1)
+        private void GivenEntity(string entityId, string entityType, int version = 1)
         {
             connection
-                .CreateCommand($"INSERT INTO Entities (id, version) VALUES ('{entityId}', {version})")
+                .CreateCommand($"INSERT INTO Entities (id, type, version) VALUES ('{entityId}', '{entityType}', {version})")
                 .ExecuteNonQuery();
         }
 
@@ -215,6 +215,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             public EntityId Id { get; }
             public EntityVersion Version { get; }
+            public EntityType Type => new EntityType("MyEntity");
             public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
             public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }

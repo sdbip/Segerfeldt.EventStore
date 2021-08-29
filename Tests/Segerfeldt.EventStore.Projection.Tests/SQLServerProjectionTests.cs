@@ -155,7 +155,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             try
             {
                 using var command = connection
-                    .CreateCommand($"INSERT INTO Entities (id, version) VALUES ('{entityId}', {version})");
+                    .CreateCommand($"INSERT INTO Entities (id, type, version) VALUES ('{entityId}', 'a-type', {version})");
                 command.ExecuteNonQuery();
             }
             finally

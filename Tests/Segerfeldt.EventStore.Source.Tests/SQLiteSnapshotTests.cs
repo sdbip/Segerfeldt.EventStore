@@ -26,9 +26,9 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CreatesEntityObject()
         {
-            GivenEntity("an-entity", 42);
+            GivenEntity("an-entity", "a-type", 42);
 
-            var snapshot = new Snapshot(new EntityId("an-entity"), EntityVersion.Of(13)) {Value = 19};
+            var snapshot = new Snapshot(new EntityId("an-entity"), new EntityType("a-type"), EntityVersion.Of(13)) {Value = 19};
             var entity = store.Reconstitute(snapshot);
 
             Assert.That(new {entity?.Id, entity?.Version, entity?.SnapshotValue},
@@ -38,21 +38,21 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void ReplaysPublishedEvents()
         {
-            GivenEntity("an-entity");
+            GivenEntity("an-entity", "a-type");
             GivenEvent("an-entity", "at-snapshot-event", version: 42);
             GivenEvent("an-entity", "after-snapshot-event", version: 43);
 
-            var snapshot = new Snapshot(new EntityId("an-entity"), EntityVersion.Of(42));
+            var snapshot = new Snapshot(new EntityId("an-entity"), new EntityType("a-type"), EntityVersion.Of(42));
             var entity = store.Reconstitute(snapshot);
 
             Assert.That(entity?.ReplayedEvents?.Select(e => e.Name),
                 Is.EquivalentTo(new[] { "after-snapshot-event" }));
         }
 
-        private void GivenEntity(string entityId, int version = 1)
+        private void GivenEntity(string entityId, string entityType, int version = 1)
         {
             connection
-                .CreateCommand($"INSERT INTO Entities (id, version) VALUES ('{entityId}', {version})")
+                .CreateCommand($"INSERT INTO Entities (id, type, version) VALUES ('{entityId}', '{entityType}', {version})")
                 .ExecuteNonQuery();
         }
 
@@ -67,13 +67,15 @@ namespace Segerfeldt.EventStore.Source.Tests
         private class Snapshot : ISnapshot<MyEntity>
         {
             public EntityId Id { get; }
+            public EntityType EntityType { get; }
             public EntityVersion Version { get; }
 
             public int Value { get; init; }
 
-            public Snapshot(EntityId id, EntityVersion version)
+            public Snapshot(EntityId id, EntityType entityType, EntityVersion version)
             {
                 Id = id;
+                EntityType = entityType;
                 Version = version;
             }
 
@@ -88,6 +90,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             public EntityId Id { get; }
             public EntityVersion Version { get; }
+            public EntityType Type => new("MyEntity");
             public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
             public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }

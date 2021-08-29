@@ -28,7 +28,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CanPublishSingleEvent()
         {
-            publisher.Publish(new EntityId("an-entity"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+            publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
             using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
             reader.Read();
@@ -55,6 +55,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         {
             var entity = new Mock<IEntity>();
             entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+            entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
             entity.Setup(e => e.Version).Returns(EntityVersion.New);
             entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
             publisher.PublishChanges(entity.Object, "johan");

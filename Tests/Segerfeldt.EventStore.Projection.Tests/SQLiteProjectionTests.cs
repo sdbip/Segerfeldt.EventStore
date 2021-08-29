@@ -25,13 +25,15 @@ namespace Segerfeldt.EventStore.Projection.Tests
             eventSource = new EventSource(connection, positionTracker.Object, delayConfiguration.Object);
 
             connection
-                .CreateCommand("CREATE TABLE Events (entity TEXT, name TEXT, details TEXT, actor TEXT, timestamp INT DEFAULT CURRENT_TIMESTAMP, version INT, position INT)")
+                .CreateCommand("CREATE TABLE Entities (id TEXT, type TEXT, version INT);" +
+                               "CREATE TABLE Events (entity TEXT, name TEXT, details TEXT, actor TEXT, timestamp INT DEFAULT CURRENT_TIMESTAMP, version INT, position INT)")
                 .ExecuteNonQuery();
         }
 
         [Test]
         public void ReportsEventsWithEntityIdAndDetails()
         {
+            GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", @"{""value"":42}");
 
             var notifiedEvents = CaptureNotifiedEvents("first-event");
@@ -47,6 +49,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
         [Test]
         public void ReportsEventsOrderedByVersion()
         {
+            GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", version: 1);
             GivenEvent("an-entity", "third-event", version: 3);
             GivenEvent("an-entity", "second-event", version: 2);
@@ -66,6 +69,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
         {
             delayConfiguration.Setup(c => c.NextDelay(It.IsAny<int>())).Returns(1);
 
+            GivenEntity("an-entity");
             var notifiedEvents = CaptureNotifiedEvents("early-event", "late-event");
             GivenEvent("an-entity", "early-event", version: 1, position: 1);
             eventSource.StartProjecting();
@@ -82,6 +86,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
         [Test]
         public void AllowsSettingStartPosition()
         {
+            GivenEntity("an-entity");
             GivenEvent("an-entity", "first-event", position: 32);
             GivenEvent("an-entity", "second-event", position: 33);
             positionTracker.Setup(t => t.GetLastFinishedProjectionId()).Returns(32);
@@ -103,11 +108,20 @@ namespace Segerfeldt.EventStore.Projection.Tests
             positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
                 .Callback<long>(l => finishedPosition = l);
 
+            GivenEntity("an-entity");
             GivenEvent("an-entity", "an-event", position: 1);
             eventSource.StartProjecting();
 
             Assert.That(startingPosition, Is.EqualTo(1));
             Assert.That(finishedPosition, Is.EqualTo(1));
+        }
+
+        private void GivenEntity(string entityId)
+        {
+            connection
+                .CreateCommand("INSERT INTO Entities (id, type, version) " +
+                               $"VALUES ('{entityId}', 'a-type', 2)")
+                .ExecuteNonQuery();
         }
 
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)

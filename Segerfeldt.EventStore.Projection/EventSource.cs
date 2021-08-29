@@ -106,7 +106,8 @@ namespace Segerfeldt.EventStore.Projection
             {
                 using var reader = connection
                     .CreateCommand(
-                        "SELECT * FROM Events WHERE position > @position ORDER BY position, version",
+                        "SELECT Events.*, Entities.type FROM Events JOIN Entities ON Events.entity = Entities.id " +
+                        "  WHERE position > @position ORDER BY position, version",
                         ("@position", afterPosition))
                     .ExecuteReader();
 
@@ -121,6 +122,7 @@ namespace Segerfeldt.EventStore.Projection
 
         private static Event ReadEvent(IDataRecord record) => new(
             record.GetString(record.GetOrdinal("entity")),
+            record.GetString(record.GetOrdinal("type")),
             record.GetString(record.GetOrdinal("name")),
             record.GetString(record.GetOrdinal("details")),
             record.GetInt64(record.GetOrdinal("position")));

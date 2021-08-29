@@ -11,7 +11,7 @@ var publisher = new EventPublisher(connection);
 var store = new EntityStore(connection);
 
 var entityId = new EntityId("player3");
-var player = await store.ReconstituteAsync<Player>(entityId) ?? Player.RegisterNew(entityId, "Jones");
+var player = await store.ReconstituteAsync<Player>(entityId, Player.EntityType) ?? Player.RegisterNew(entityId, "Jones");
 
 const int points = 2;
 player.AwardPoints(points);

@@ -21,18 +21,20 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="id">the unique identifier of the entity to reconstitute</param>
+        /// <param name="type"></param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
         /// <returns>the entity with the specified <paramref name="id"/></returns>
-        public TEntity? Reconstitute<TEntity>(EntityId id) where TEntity : class, IEntity =>
-            ReconstituteAsync<TEntity>(id).Result;
+        public TEntity? Reconstitute<TEntity>(EntityId id, EntityType type) where TEntity : class, IEntity =>
+            ReconstituteAsync<TEntity>(id, type).Result;
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="id">the unique identifier of the entity to reconstitute</param>
+        /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
         /// <returns>the entity with the specified <paramref name="id"/></returns>
-        public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
-            await ReconstituteAsync(new NeverSnapshot<TEntity>(id), cancellationToken);
+        public async Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id, EntityType type, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+            await ReconstituteAsync(new NeverSnapshot<TEntity>(id, type), cancellationToken);
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
         /// <param name="snapshot">the snapshot of the entity</param>
@@ -45,7 +47,7 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="cancellationToken"></param>
         /// <typeparam name="TEntity">the type of the entity</typeparam>
         public async Task<TEntity?> ReconstituteAsync<TEntity>(ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
-            await GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken) is { } history
+            await GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken) is { } history && history.Type == snapshot.EntityType
                 ? RestoreEntity(snapshot, history)
                 : NotFound(snapshot);
 
@@ -91,9 +93,14 @@ namespace Segerfeldt.EventStore.Source
         private class NeverSnapshot<TEntity> : ISnapshot<TEntity> where TEntity : class, IEntity
         {
             public EntityId Id { get; }
+            public EntityType EntityType { get; }
             public EntityVersion Version => EntityVersion.Beginning;
 
-            public NeverSnapshot(EntityId id) => Id = id;
+            public NeverSnapshot(EntityId id, EntityType entityType)
+            {
+                Id = id;
+                EntityType = entityType;
+            }
 
             public void Restore(TEntity entity) { } // Intentionally does nothing
             public void NotFound() { } // Intentionally does nothing

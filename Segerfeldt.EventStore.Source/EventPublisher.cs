@@ -22,18 +22,19 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="entityId">the unique identifier for this entity</param>
         /// <param name="event">the event to publish</param>
         /// <param name="actor">the actor/user who caused this change</param>
-        public void Publish(EntityId entityId, UnpublishedEvent @event, string actor)
+        public void Publish(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
         {
-            PublishAsync(entityId, @event, actor).Wait();
+            PublishAsync(entityId, type, @event, actor).Wait();
         }
 
         /// <summary>Publish a single event for an entity</summary>
         /// <param name="entityId">the unique identifier for this entity</param>
+        /// <param name="type">the type of the entity if it has to be created</param>
         /// <param name="event">the event to publish</param>
         /// <param name="actor">the actor/user who caused this change</param>
-        public async Task PublishAsync(EntityId entityId, UnpublishedEvent @event, string actor)
+        public async Task PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
         {
-            var operation = new InsertSingleEventOperation(@event, entityId, actor);
+            var operation = new InsertSingleEventOperation(@event, entityId, type, actor);
             await operation.ExecuteAsync(connection);
         }
 

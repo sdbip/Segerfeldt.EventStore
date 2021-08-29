@@ -45,11 +45,12 @@ namespace Segerfeldt.EventStore.Source.Internals
             await command.ExecuteNonQueryAsync();
         }
 
-        protected async Task InsertEntityAsync(EntityId id, EntityVersion version)
+        protected async Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version)
         {
             var command = transaction.CreateCommand(
-                "INSERT INTO Entities (id, version) VALUES (@id, @version)",
+                "INSERT INTO Entities (id, type, version) VALUES (@id, @type, @version)",
                 ("@id", id.ToString()),
+                ("@type", type.ToString()),
                 ("@version", version.Value));
             await command.ExecuteNonQueryAsync();
         }

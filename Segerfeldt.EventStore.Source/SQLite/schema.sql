@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS Entities (
     id TEXT,
+    type TEXT,
     version INT,
 
     PRIMARY KEY (id)

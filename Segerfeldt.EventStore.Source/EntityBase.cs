@@ -12,12 +12,14 @@ namespace Segerfeldt.EventStore.Source
     {
         private readonly List<UnpublishedEvent> unpublishedEvents = new();
         public EntityId Id { get; }
+        public EntityType Type { get; }
         public EntityVersion Version { get; }
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => unpublishedEvents.ToImmutableList();
 
-        protected EntityBase(EntityId id, EntityVersion version)
+        protected EntityBase(EntityId id, EntityType type, EntityVersion version)
         {
             Id = id;
+            Type = type;
             Version = version;
         }
 

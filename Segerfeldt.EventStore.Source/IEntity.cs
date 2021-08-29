@@ -7,6 +7,8 @@ namespace Segerfeldt.EventStore.Source
     {
         /// <summary>A unique identifier for this entity</summary>
         EntityId Id { get; }
+        /// <summary>The type of the entity</summary>
+        EntityType Type { get; }
         /// <summary>The version of this entity when reconstituted from storage.</summary>
         /// If this value is stored different in the database, there will have been concurrent changes outside
         /// this process, which invalidate any changes done here. Either the current operation will have to be
