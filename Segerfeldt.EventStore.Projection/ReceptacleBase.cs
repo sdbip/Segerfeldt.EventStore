@@ -10,18 +10,18 @@ namespace Segerfeldt.EventStore.Projection
 {
     public abstract class ReceptacleBase : IReceptacle
     {
-        private readonly Lazy<Dictionary<EventName, IEnumerable<MethodInfo>>> lazyMethods;
+        private readonly Lazy<Dictionary<AcceptedEventName, IEnumerable<MethodInfo>>> lazyMethods;
 
-        public IEnumerable<EventName> AcceptedEventNames => lazyMethods.Value.Keys;
+        public IEnumerable<AcceptedEventName> AcceptedEventNames => lazyMethods.Value.Keys;
 
         protected ReceptacleBase()
         {
-            lazyMethods = new Lazy<Dictionary<EventName, IEnumerable<MethodInfo>>>(
+            lazyMethods = new Lazy<Dictionary<AcceptedEventName, IEnumerable<MethodInfo>>>(
                 () => GetPublicInstanceMethods()
                     .Select(m => (method: m, attribute: m.GetCustomAttribute<ReceivesEventAttribute>()))
                     .Where(ma => ma.attribute is not null)
                     .Select(ma => (ma.method, attribute: ma.attribute!))
-                    .GroupBy(ma => ma.attribute.EventName)
+                    .GroupBy(ma => ma.attribute.AcceptedEventName)
                     .ToDictionary(g => g.Key, g => g.Select(ma => ma.method)));
         }
 
@@ -53,7 +53,7 @@ namespace Segerfeldt.EventStore.Projection
             public string Name { get; }
             public string? EntityType { get; init; }
 
-            public EventName EventName => EntityType is null ? Name : new EventName(EntityType, Name);
+            public AcceptedEventName AcceptedEventName => EntityType is null ? Name : new AcceptedEventName(EntityType, Name);
 
             public ReceivesEventAttribute(string @event)
             {

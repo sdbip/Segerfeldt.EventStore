@@ -101,8 +101,8 @@ namespace Segerfeldt.EventStore.Projection
         }
 
         private IEnumerable<IReceptacle> GetAcceptingReceptacles(Event @event) =>
-            receptacles.ContainsKey(@event.Name.Name)
-                ? receptacles[@event.Name.Name].Where(d => d.Accepts(@event))
+            receptacles.ContainsKey(@event.Name)
+                ? receptacles[@event.Name].Where(d => d.Accepts(@event))
                 : ImmutableList<IReceptacle>.Empty;
 
         private IEnumerable<Event> ReadEvents(long afterPosition)
@@ -128,7 +128,8 @@ namespace Segerfeldt.EventStore.Projection
 
         private static Event ReadEvent(IDataRecord record) => new(
             record.GetString(record.GetOrdinal("entity")),
-            new EventName(record.GetString(record.GetOrdinal("type")), record.GetString(record.GetOrdinal("name"))),
+            record.GetString(record.GetOrdinal("name")),
+            record.GetString(record.GetOrdinal("type")),
             record.GetString(record.GetOrdinal("details")),
             record.GetInt64(record.GetOrdinal("position")));
 

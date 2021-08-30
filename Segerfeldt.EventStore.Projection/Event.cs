@@ -8,16 +8,19 @@ namespace Segerfeldt.EventStore.Projection
         /// <summary>The id of the entity that changed</summary>
         public string EntityId { get; }
         /// <summary>The name of the event, indicating in how the state has changed</summary>
-        public EventName Name { get; }
+        public string Name { get; }
+        /// <summary>The type of entity publishing this event, used as a namespace for duplicated event names</summary>
+        public string EntityType { get; }
         /// <summary>Details regarding the change</summary>
         public string Details { get; }
         /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
         public long Position { get; }
 
-        public Event(string entityId, EventName name, string details, long position)
+        public Event(string entityId, string name, string entityType, string details, long position)
         {
             EntityId = entityId;
             Name = name;
+            EntityType = entityType;
             Details = details;
             Position = position;
         }

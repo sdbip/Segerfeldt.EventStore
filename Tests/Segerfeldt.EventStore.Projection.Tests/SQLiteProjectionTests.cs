@@ -42,7 +42,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             Assert.That(receivedEvents, Is.Not.Empty);
             Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
-            Assert.That(receivedEvents[0].Name.Name, Is.EqualTo("first-event"));
+            Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
             Assert.That(receivedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
         }
 
@@ -58,10 +58,10 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             eventSource.StartReceiving();
 
-            Assert.That(receivedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-            Assert.That(receivedEvents[0].Name.Name, Is.EqualTo("first-event"));
-            Assert.That(receivedEvents[1].Name.Name, Is.EqualTo("second-event"));
-            Assert.That(receivedEvents[2].Name.Name, Is.EqualTo("third-event"));
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(receivedEvents[1].Name, Is.EqualTo("second-event"));
+            Assert.That(receivedEvents[2].Name, Is.EqualTo("third-event"));
         }
 
         [Test]
@@ -80,7 +80,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             Thread.Yield();
 
             Assert.That(receivedEvents, Is.Not.Empty);
-            Assert.That(receivedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "late-event" }));
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "late-event" }));
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             eventSource.StartReceiving();
 
-            Assert.That(receivedEvents.Select(e => e.Name.Name), Is.EquivalentTo(new[] { "second-event" }));
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
         }
 
         [Test]

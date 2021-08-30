@@ -20,7 +20,7 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>Publish a single event for an entity</summary>
         /// <param name="entityId">the unique identifier for this entity</param>
-        /// <param name="type"></param>
+        /// <param name="type">the type of the entity if it needs to be created</param>
         /// <param name="event">the event to publish</param>
         /// <param name="actor">the actor/user who caused this change</param>
         public StreamPosition Publish(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor) =>
