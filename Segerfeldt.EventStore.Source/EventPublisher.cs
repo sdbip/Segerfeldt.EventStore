@@ -1,7 +1,6 @@
 ﻿using Segerfeldt.EventStore.Source.Internals;
 
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source
