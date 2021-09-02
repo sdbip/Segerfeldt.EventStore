@@ -12,8 +12,8 @@ namespace Segerfeldt.EventStore.Source
         /// <returns>the ordered values of all the components needed to compare this specific value with other instance</returns>
         protected abstract IEnumerable<object> GetEqualityComponents();
 
-        public static bool operator ==(ValueObject<TSubclass> left, ValueObject<TSubclass> right) => Equals(left, right);
-        public static bool operator !=(ValueObject<TSubclass> left, ValueObject<TSubclass> right) => !Equals(left, right);
+        public static bool operator ==(ValueObject<TSubclass>? left, ValueObject<TSubclass>? right) => Equals(left, right);
+        public static bool operator !=(ValueObject<TSubclass>? left, ValueObject<TSubclass>? right) => !Equals(left, right);
 
         public override bool Equals(object? obj) =>
             obj is TSubclass other && other.GetType() == GetType() &&
