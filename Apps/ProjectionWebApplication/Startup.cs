@@ -5,8 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
+using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.Hosting;
 
+using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 
@@ -32,7 +34,7 @@ namespace ProjectionWebApplication
 
             services.AddSingleton<ScoreBoard>();
             services.AddSingleton<PositionTracker>();
-            services.AddHostedEventSource(new SqlConnection(configuration.GetConnectionString("events")))
+            services.AddHostedEventSource(new SqlConnectionPool(configuration.GetConnectionString("events")))
                 .AddReceptacles(Assembly.GetExecutingAssembly())
                 .SetPositionTracker<PositionTracker>();
         }
@@ -55,5 +57,17 @@ namespace ProjectionWebApplication
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
+    }
+
+    public class SqlConnectionPool : IConnectionPool
+    {
+        private readonly string connectionString;
+
+        public SqlConnectionPool(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
+
+        public IDbConnection CreateConnection() => new SqlConnection(connectionString);
     }
 }

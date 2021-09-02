@@ -15,7 +15,8 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void Setup()
         {
             connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
-            publisher = new EventPublisher(connection);
+            var connectionPool = new SingletonConnectionPool(connection);
+            publisher = new EventPublisher(connectionPool);
             SQLServer.Schema.CreateIfMissing(connection);
         }
 

@@ -1,7 +1,6 @@
 ﻿using Segerfeldt.EventStore.Source.Internals;
 using Segerfeldt.EventStore.Source.Snapshots;
 
-using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,13 +9,13 @@ namespace Segerfeldt.EventStore.Source
     /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
     public sealed class EntityStore
     {
-        private readonly DbConnection connection;
+        private readonly IConnectionPool connectionPool;
 
         /// <summary>Initialize a new <see cref="EntityStore"/></summary>
-        /// <param name="connection">a connection to the database that stores the state of entities as sequences of events</param>
-        public EntityStore(DbConnection connection)
+        /// <param name="connectionPool">opens connections to the database that stores the state of entities as sequences of events</param>
+        public EntityStore(IConnectionPool connectionPool)
         {
-            this.connection = connection;
+            this.connectionPool = connectionPool;
         }
 
         /// <summary>Reconstitute the state of an entity from published events</summary>
@@ -68,7 +67,7 @@ namespace Segerfeldt.EventStore.Source
             await GetHistoryAsync(entityId, EntityVersion.Beginning, cancellationToken);
 
         private async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion, CancellationToken cancellationToken) =>
-            await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connection, cancellationToken);
+            await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
 
         private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {

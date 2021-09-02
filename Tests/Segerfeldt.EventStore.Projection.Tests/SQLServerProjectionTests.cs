@@ -24,7 +24,10 @@ namespace Segerfeldt.EventStore.Projection.Tests
             connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
             delayConfiguration = new Mock<IPollingStrategy>();
             positionTracker = new Mock<IPositionTracker>();
-            eventSource = new EventSource(new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;"), positionTracker.Object, delayConfiguration.Object);
+
+            var connectionPool = new Mock<IConnectionPool>();
+            connectionPool.Setup(pool => pool.CreateConnection()).Returns(new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;"));
+            eventSource = new EventSource(connectionPool.Object, positionTracker.Object, delayConfiguration.Object);
 
             delayConfiguration
                 .Setup(c => c.NextDelay(It.IsAny<int>()))

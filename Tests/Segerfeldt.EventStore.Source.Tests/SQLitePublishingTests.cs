@@ -14,7 +14,8 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void Setup()
         {
             connection = new InMemoryConnection();
-            publisher = new EventPublisher(connection);
+            var connectionPool = new SingletonConnectionPool(connection);
+            publisher = new EventPublisher(connectionPool);
 
             SQLite.Schema.CreateIfMissing(connection);
         }

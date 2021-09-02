@@ -17,7 +17,8 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void Setup()
         {
             connection = new InMemoryConnection();
-            store = new EntityStore(connection);
+            var connectionPool = new SingletonConnectionPool(connection);
+            store = new EntityStore(connectionPool);
 
             SQLite.Schema.CreateIfMissing(connection);
         }

@@ -20,9 +20,11 @@ namespace Segerfeldt.EventStore.Projection.Tests
         public void Setup()
         {
             connection = new InMemoryConnection();
+            var connectionPool = new Mock<IConnectionPool>();
+            connectionPool.Setup(pool => pool.CreateConnection()).Returns(connection);
             delayConfiguration = new Mock<IPollingStrategy>();
             positionTracker = new Mock<IPositionTracker>();
-            eventSource = new EventSource(connection, positionTracker.Object, delayConfiguration.Object);
+            eventSource = new EventSource(connectionPool.Object, positionTracker.Object, delayConfiguration.Object);
 
             connection
                 .CreateCommand("CREATE TABLE Entities (id TEXT, type TEXT, version INT);" +

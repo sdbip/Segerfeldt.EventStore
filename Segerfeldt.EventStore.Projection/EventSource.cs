@@ -16,12 +16,12 @@ namespace Segerfeldt.EventStore.Projection
         private long lastReadPosition;
 
         /// <summary>Initializes a new <see cref="EventSource"/></summary>
-        /// <param name="connection">the database that stores your entities and events</param>
+        /// <param name="connectionPool">opens connections to the database that stores your entities and events</param>
         /// <param name="tracker"></param>
         /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-        public EventSource(IDbConnection connection, IPositionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+        public EventSource(IConnectionPool connectionPool, IPositionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
         {
-            this.connection = connection;
+            connection = connectionPool.CreateConnection();
             this.tracker = tracker;
             this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
         }

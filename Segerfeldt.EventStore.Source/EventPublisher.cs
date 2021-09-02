@@ -9,13 +9,13 @@ namespace Segerfeldt.EventStore.Source
     /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
     public sealed class EventPublisher
     {
-        private readonly DbConnection connection;
+        private readonly IConnectionPool connectionPool;
 
         /// <summary>Initialize a new <see cref="EventPublisher"/></summary>
-        /// <param name="connection">a connection to the database that stores the state of entities as sequences of events</param>
-        public EventPublisher(DbConnection connection)
+        /// <param name="connectionPool">opens connections to the database that stores the state of entities as sequences of events</param>
+        public EventPublisher(IConnectionPool connectionPool)
         {
-            this.connection = connection;
+            this.connectionPool = connectionPool;
         }
 
         /// <summary>Publish a single event for an entity</summary>
@@ -34,7 +34,7 @@ namespace Segerfeldt.EventStore.Source
         public async Task<StreamPosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
         {
             var operation = new InsertSingleEventOperation(@event, entityId, type, actor);
-            return await operation.ExecuteAsync(connection);
+            return await operation.ExecuteAsync(connectionPool.CreateConnection());
         }
 
         /// <summary>Publish all new changes since reconstituting an entity</summary>
@@ -64,7 +64,7 @@ namespace Segerfeldt.EventStore.Source
         public async Task<StreamPositions> PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
         {
             var operation = new InsertEventsOperation(entities, actor);
-            return await operation.ExecuteAsync(connection);
+            return await operation.ExecuteAsync(connectionPool.CreateConnection());
         }
     }
 }

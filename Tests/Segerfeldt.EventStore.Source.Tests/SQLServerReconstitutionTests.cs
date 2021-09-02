@@ -18,7 +18,8 @@ namespace Segerfeldt.EventStore.Source.Tests
         public void Setup()
         {
             connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
-            store = new EntityStore(connection);
+            var connectionPool = new SingletonConnectionPool(connection);
+            store = new EntityStore(connectionPool);
 
             SQLServer.Schema.CreateIfMissing(connection);
         }
