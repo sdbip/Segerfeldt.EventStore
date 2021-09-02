@@ -13,7 +13,7 @@ namespace Segerfeldt.EventStore.Source
         internal static EntityVersion Beginning => New;
 
         /// <summary>The actual value of the version</summary>
-        internal int Value { get; }
+        public int Value { get; }
         /// <summary>Whether this is a new entity, or it has been stored already</summary>
         public bool IsNew => Value < 0;
 
