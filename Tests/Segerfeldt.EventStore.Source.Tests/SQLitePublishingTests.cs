@@ -2,6 +2,8 @@ using Moq;
 
 using NUnit.Framework;
 
+using System;
+
 namespace Segerfeldt.EventStore.Source.Tests
 {
     // ReSharper disable once InconsistentNaming
@@ -79,6 +81,23 @@ namespace Segerfeldt.EventStore.Source.Tests
                 Version = (object) 0,
                 Position = (object) 0L
             }));
+        }
+
+        [Test]
+        public void WillNotPublishChangesIfThereAreNoEvents()
+        {
+            var entity = new Mock<IEntity>();
+            entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+            entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
+            entity.Setup(e => e.Version).Returns(EntityVersion.New);
+            entity.Setup(e => e.UnpublishedEvents).Returns(Array.Empty<UnpublishedEvent>());
+            publisher.PublishChanges(entity.Object, "johan");
+
+            connection.Open();
+            var count = connection.CreateCommand("SELECT COUNT(*) FROM Events").ExecuteScalar();
+            connection.Close();
+
+            Assert.That(count, Is.Zero);
         }
 
         [Test]

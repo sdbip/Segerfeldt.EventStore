@@ -12,7 +12,7 @@ namespace Segerfeldt.EventStore.Source.Internals
 
         public InsertEventsOperation(IEnumerable<IEntity> entities, string actor)
         {
-            this.entities = entities;
+            this.entities = entities.Where(e => e.UnpublishedEvents.Any());
             this.actor = actor;
         }
 
