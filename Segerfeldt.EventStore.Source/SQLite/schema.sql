@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Events (
     name TEXT,
     details TEXT,
     actor TEXT,
-    timestamp TIMESTAMP,
+    timestamp TIMESTAMP default current_timestamp,
     version INT,
     position BIGINT,
 
