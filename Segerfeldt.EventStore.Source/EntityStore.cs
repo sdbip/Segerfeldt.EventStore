@@ -69,6 +69,20 @@ namespace Segerfeldt.EventStore.Source
         private async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion, CancellationToken cancellationToken) =>
             await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
 
+        /// <summary>Whether there exists an entity with a specific id</summary>
+        /// <param name="entityId">the id to verify</param>
+        /// <param name="entityType">the expected type of the entity</param>
+        /// <returns>true if there is an entity with the given id, false otherwise</returns>
+        public bool ContainsEntity(EntityId entityId, EntityType? entityType = null) => ContainsEntityAsync(entityId, entityType).Result;
+
+        /// <summary>Whether there exists an entity with a specific id</summary>
+        /// <param name="entityId">the id to verify</param>
+        /// <param name="entityType">the expected type of the entity</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>true if there is an entity with the given id, false otherwise</returns>
+        public async Task<bool> ContainsEntityAsync(EntityId entityId, EntityType? entityType = null, CancellationToken cancellationToken = default) =>
+            await new IsKnownEntityOperation(entityId, entityType).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
+
         private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {
             var entity = Instantiate<TEntity>(snapshot.Id, history.Version);

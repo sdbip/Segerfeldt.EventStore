@@ -116,6 +116,20 @@ namespace Segerfeldt.EventStore.Source.Tests
         }
 
         [Test]
+        public void CanVerifyExistence()
+        {
+            GivenEntity("an-entity", "a-type");
+
+            Assert.That(store.ContainsEntity(new EntityId("an-entity")), Is.True);
+        }
+
+        [Test]
+        public void CanDetectNonExistence()
+        {
+            Assert.That(store.ContainsEntity(new EntityId("an-entity")), Is.False);
+        }
+
+        [Test]
         public void ReturnsTimestampsAsUTC()
         {
             connection.Open();
