@@ -79,7 +79,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             GivenEvent("an-entity", "late-event", version: 2, position: 2);
 
-            Thread.Yield();
+            Thread.Sleep(100);
 
             Assert.That(receivedEvents, Is.Not.Empty);
             Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "late-event" }));

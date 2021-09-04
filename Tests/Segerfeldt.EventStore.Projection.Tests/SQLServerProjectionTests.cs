@@ -111,7 +111,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
 
             GivenEvent("an-entity", "an-event", version: 2, position: 2);
 
-            Thread.Sleep(30);
+            Thread.Sleep(100);
 
             Assert.That(notifiedEvents.Select(e => e.Position), Is.EquivalentTo(new[] { 2L }));
         }

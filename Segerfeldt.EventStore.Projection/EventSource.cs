@@ -32,12 +32,12 @@ namespace Segerfeldt.EventStore.Projection
         /// <param name="receptacle">the projector to register</param>
         public void Register(IReceptacle receptacle)
         {
-            foreach (var eventName in receptacle.AcceptedEventNames)
+            foreach (var eventName in receptacle.AcceptedEvents)
             {
-                if (receptacles.ContainsKey(eventName.Name))
-                    receptacles[eventName.Name].Add(receptacle);
+                if (receptacles.ContainsKey(eventName))
+                    receptacles[eventName].Add(receptacle);
                 else
-                    receptacles[eventName.Name] = new List<IReceptacle> {receptacle};
+                    receptacles[eventName] = new List<IReceptacle> {receptacle};
             }
         }
 
@@ -90,7 +90,7 @@ namespace Segerfeldt.EventStore.Projection
         {
             try
             {
-                var tasks = GetAcceptingReceptacles(@event)
+                var tasks = GetReceptacles(@event)
                     .Select(async d => await d.ReceiveAsync(@event));
                 Task.WhenAll(tasks).Wait();
             }
@@ -100,9 +100,9 @@ namespace Segerfeldt.EventStore.Projection
             }
         }
 
-        private IEnumerable<IReceptacle> GetAcceptingReceptacles(Event @event) =>
+        private IEnumerable<IReceptacle> GetReceptacles(Event @event) =>
             receptacles.ContainsKey(@event.Name)
-                ? receptacles[@event.Name].Where(d => d.Accepts(@event))
+                ? receptacles[@event.Name]
                 : ImmutableList<IReceptacle>.Empty;
 
         private IEnumerable<Event> ReadEvents(long afterPosition)

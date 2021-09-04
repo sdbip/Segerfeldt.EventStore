@@ -10,18 +10,18 @@ namespace Segerfeldt.EventStore.Projection
 {
     public abstract class ReceptacleBase : IReceptacle
     {
-        private readonly Lazy<Dictionary<AcceptedEventName, IEnumerable<MethodInfo>>> lazyMethods;
+        private readonly Lazy<Dictionary<string, IEnumerable<MethodInfo>>> lazyMethods;
 
-        public IEnumerable<AcceptedEventName> AcceptedEventNames => lazyMethods.Value.Keys;
+        public IEnumerable<string> AcceptedEvents => lazyMethods.Value.Keys;
 
         protected ReceptacleBase()
         {
-            lazyMethods = new Lazy<Dictionary<AcceptedEventName, IEnumerable<MethodInfo>>>(
+            lazyMethods = new Lazy<Dictionary<string, IEnumerable<MethodInfo>>>(
                 () => GetPublicInstanceMethods()
                     .Select(m => (method: m, attribute: m.GetCustomAttribute<ReceivesEventAttribute>()))
                     .Where(ma => ma.attribute is not null)
                     .Select(ma => (ma.method, attribute: ma.attribute!))
-                    .GroupBy(ma => ma.attribute.AcceptedEventName)
+                    .GroupBy(ma => ma.attribute.Name)
                     .ToDictionary(g => g.Key, g => g.Select(ma => ma.method)));
         }
 
@@ -30,6 +30,7 @@ namespace Segerfeldt.EventStore.Projection
             if (!lazyMethods.Value.TryGetValue(@event.Name, out var methods)) return;
 
             var tasks = methods
+                .Where(m => m.GetCustomAttribute<ReceivesEventAttribute>()!.Accepts(@event))
                 .Select(m => InvokeMethod(m, @event))
                 .OfType<Task>();
             await Task.WhenAll(tasks);
@@ -53,12 +54,9 @@ namespace Segerfeldt.EventStore.Projection
             public string Name { get; }
             public string? EntityType { get; init; }
 
-            public AcceptedEventName AcceptedEventName => EntityType is null ? Name : new AcceptedEventName(EntityType, Name);
+            public ReceivesEventAttribute(string @event) => Name = @event;
 
-            public ReceivesEventAttribute(string @event)
-            {
-                Name = @event;
-            }
+            public bool Accepts(Event @event) => Name == @event.Name && EntityType is null || EntityType == @event.EntityType;
         }
     }
 }
