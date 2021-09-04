@@ -3,7 +3,6 @@
 using SourceConsoleApp;
 
 using System;
-using System.Data.SqlClient;
 
 const string connectionString = "Server=localhost;Database=test;User Id=sa;Password=S_12345678;";
 var connectionPool = new SqlConnectionPool(connectionString);

@@ -1,7 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using System.Data;
-
 namespace Segerfeldt.EventStore.Projection.Hosting
 {
     public static class ServiceCollectionExtension

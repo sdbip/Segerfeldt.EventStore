@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 using NUnit.Framework;
 
 namespace Segerfeldt.EventStore.Projection.Tests
