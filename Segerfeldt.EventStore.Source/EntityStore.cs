@@ -81,7 +81,7 @@ namespace Segerfeldt.EventStore.Source
         /// <param name="cancellationToken"></param>
         /// <returns>true if there is an entity with the given id, false otherwise</returns>
         public async Task<bool> ContainsEntityAsync(EntityId entityId, EntityType? entityType = null, CancellationToken cancellationToken = default) =>
-            await new IsKnownEntityOperation(entityId, entityType).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
+            await new ContainsEntityOperation(entityId, entityType).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
 
         private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {

@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
-    internal class IsKnownEntityOperation
+    internal class ContainsEntityOperation
     {
         private readonly EntityId entityId;
         private readonly EntityType? entityType;
 
-        public IsKnownEntityOperation(EntityId entityId, EntityType? entityType)
+        public ContainsEntityOperation(EntityId entityId, EntityType? entityType)
         {
             this.entityId = entityId;
             this.entityType = entityType;
