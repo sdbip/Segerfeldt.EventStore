@@ -69,19 +69,29 @@ namespace Segerfeldt.EventStore.Source
         private async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion, CancellationToken cancellationToken) =>
             await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
 
-        /// <summary>Whether there exists an entity with a specific id</summary>
+        /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
         /// <param name="entityId">the id to verify</param>
-        /// <param name="entityType">the expected type of the entity</param>
         /// <returns>true if there is an entity with the given id, false otherwise</returns>
-        public bool ContainsEntity(EntityId entityId, EntityType? entityType = null) => ContainsEntityAsync(entityId, entityType).Result;
+        public bool ContainsEntity(EntityId entityId) => ContainsEntityAsync(entityId).Result;
 
-        /// <summary>Whether there exists an entity with a specific id</summary>
+        /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
         /// <param name="entityId">the id to verify</param>
-        /// <param name="entityType">the expected type of the entity</param>
         /// <param name="cancellationToken"></param>
         /// <returns>true if there is an entity with the given id, false otherwise</returns>
-        public async Task<bool> ContainsEntityAsync(EntityId entityId, EntityType? entityType = null, CancellationToken cancellationToken = default) =>
-            await new ContainsEntityOperation(entityId, entityType).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
+        public async Task<bool> ContainsEntityAsync(EntityId entityId, CancellationToken cancellationToken = default) =>
+            await GetEntityTypeAsync(entityId, cancellationToken) is not null;
+
+        /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
+        /// <param name="entityId">the id to verify</param>
+        /// <returns>true if there is an entity with the given id, false otherwise</returns>
+        public EntityType? GetEntityType(EntityId entityId) => GetEntityTypeAsync(entityId).Result;
+
+        /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
+        /// <param name="entityId">the id to verify</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>true if there is an entity with the given id, false otherwise</returns>
+        public async Task<EntityType?> GetEntityTypeAsync(EntityId entityId, CancellationToken cancellationToken = default) =>
+            await new LookupEntityTypeOperation(entityId).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
 
         private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {
