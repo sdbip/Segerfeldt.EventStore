@@ -11,11 +11,11 @@ namespace Segerfeldt.EventStore.Projection.Hosting
     {
         private readonly List<Type> receptacleTypes = new();
         private Type? positionTrackerType;
-        private readonly IConnectionPool connectionPool;
+        private readonly Func<IServiceProvider, IConnectionPool> getConnectionPool;
 
-        public EventSourceBuilder(IConnectionPool connectionPool)
+        public EventSourceBuilder(Func<IServiceProvider, IConnectionPool> getConnectionPool)
         {
-            this.connectionPool = connectionPool;
+            this.getConnectionPool = getConnectionPool;
         }
 
         public EventSourceBuilder AddReceptacles(Assembly assembly)
@@ -32,7 +32,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 
         internal EventSource Build(IServiceProvider provider)
         {
-            var eventSource = new EventSource(connectionPool, GetPositionTracker(provider));
+            var eventSource = new EventSource(getConnectionPool(provider), GetPositionTracker(provider));
             foreach (var type in receptacleTypes)
                 eventSource.Register((IReceptacle)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
 
