@@ -12,9 +12,9 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>The user that published this event</summary>
         public string Actor { get; }
         /// <summary>The instant this event was published</summary>
-        public DateTime Timestamp { get; }
+        public DateTimeOffset Timestamp { get; }
 
-        public PublishedEvent(string name, string details, string actor, DateTime timestamp)
+        public PublishedEvent(string name, string details, string actor, DateTimeOffset timestamp)
         {
             Name = name;
             Details = details;

@@ -27,7 +27,7 @@ namespace Segerfeldt.EventStore.Source.Tests
             Require.That(entity.ReplayedData, Is.EqualTo(new TestData("string", 42)));
         }
 
-        private static PublishedEvent PublishedEvent(string name, string details) => new(name, details, "actor", DateTime.UtcNow);
+        private static PublishedEvent PublishedEvent(string name, string details) => new(name, details, "actor", DateTimeOffset.UtcNow);
 
         private class TestEntity : EntityBase
         {

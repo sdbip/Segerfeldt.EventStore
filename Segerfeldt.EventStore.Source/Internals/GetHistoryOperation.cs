@@ -60,10 +60,10 @@ namespace Segerfeldt.EventStore.Source.Internals
                 );
         }
 
-        private static DateTime ReadDateTimeUTC(IDataRecord reader)
+        private static DateTimeOffset ReadDateTimeUTC(IDataRecord reader)
         {
-            var timestampWithoutKind = reader["timestamp"] as DateTime? ?? DateTime.MinValue;
-            return new DateTime(timestampWithoutKind.Ticks, DateTimeKind.Utc);
+            var timestampUTC = reader["timestamp"] as DateTime? ?? DateTime.MinValue;
+            return new DateTimeOffset(timestampUTC.Ticks, TimeSpan.Zero);
         }
     }
 }

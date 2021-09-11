@@ -84,7 +84,8 @@ namespace Segerfeldt.EventStore.Source.Tests
         [Test]
         public void CanReadHistoryOnly()
         {
-            var timestamp = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Unspecified);
+            var timestampUTC = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Utc);
+            var timestamp = new DateTimeOffset(timestampUTC, TimeSpan.Zero);
             GivenEntity("an-entity", "a-type");
             GivenEvent("an-entity", "first-event", "johan", timestamp);
 
@@ -146,8 +147,8 @@ namespace Segerfeldt.EventStore.Source.Tests
             var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
             Assert.That(entity?.ReplayedEvents, Is.Not.Null);
-            Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTime.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
-            Assert.That(entity?.ReplayedEvents?.First().Timestamp.Kind, Is.EqualTo(DateTimeKind.Utc));
+            Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTimeOffset.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
+            Assert.That(entity?.ReplayedEvents?.First().Timestamp.Offset, Is.EqualTo(TimeSpan.Zero));
         }
 
         private void GivenEntity(string entityId, string entityType, int version = 1)
@@ -157,12 +158,12 @@ namespace Segerfeldt.EventStore.Source.Tests
                 .ExecuteNonQuery();
         }
 
-        private void GivenEvent(string entityId, string eventName, string actor, DateTime timestamp)
+        private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
         {
             connection
                 .CreateCommand("INSERT INTO Events (entity, name, details, actor, timestamp, version, position) " +
                                $"VALUES ('{entityId}', '{eventName}', '{{}}', '{actor}', @timestamp, 1, 1)",
-                    ("@timestamp", timestamp))
+                    ("@timestamp", timestamp.DateTime))
                 .ExecuteNonQuery();
         }
 
