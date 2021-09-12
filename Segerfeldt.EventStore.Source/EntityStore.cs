@@ -6,8 +6,25 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source
 {
+    public interface IEntityStore
+    {
+        /// <summary>Reconstitute the state of an entity from published events</summary>
+        /// <param name="id">the unique identifier of the entity to reconstitute</param>
+        /// <param name="type"></param>
+        /// <param name="cancellationToken"></param>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <returns>the entity with the specified <paramref name="id"/></returns>
+        Task<TEntity?> ReconstituteAsync<TEntity>(EntityId id, EntityType type, CancellationToken cancellationToken = default) where TEntity : class, IEntity;
+
+        /// <summary>Get the historical data about an entity</summary>
+        /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>the complete history of the entity</returns>
+        Task<EntityHistory?> GetHistoryAsync(EntityId entityId, CancellationToken cancellationToken = default);
+    }
+
     /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
-    public sealed class EntityStore
+    public sealed class EntityStore : IEntityStore
     {
         private readonly IConnectionPool connectionPool;
 
@@ -93,7 +110,7 @@ namespace Segerfeldt.EventStore.Source
         public async Task<EntityType?> GetEntityTypeAsync(EntityId entityId, CancellationToken cancellationToken = default) =>
             await new LookupEntityTypeOperation(entityId).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
 
-        private static TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
+        private TEntity RestoreEntity<TEntity>(ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
         {
             var entity = Instantiate<TEntity>(snapshot.Id, history.Version);
             snapshot.Restore(entity);
@@ -101,11 +118,12 @@ namespace Segerfeldt.EventStore.Source
             return entity;
         }
 
-        private static TEntity Instantiate<TEntity>(EntityId id, EntityVersion version) where TEntity : IEntity
+        private TEntity Instantiate<TEntity>(EntityId id, EntityVersion version) where TEntity : IEntity
         {
-            var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
+            var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) }) ??
+                              typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion), typeof(EntityStore) });
             if (constructor is null) throw new InvalidEntityException(typeof(TEntity));
-            return (TEntity)constructor.Invoke(new object[] { id, version });
+            return (TEntity)constructor.Invoke(constructor.GetParameters().Length == 2 ? new object[] { id, version } : new object[] { id, version, this });
         }
 
         /// <summary>An entity snapshot that was never made.</summary>
