@@ -11,14 +11,14 @@ using System.Text.Json;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
-    public static class HistoryEndpoint
+    public static class Commanding
     {
-        public static void AddHistoryDocumentation(this SwaggerGenOptions swaggerOptions)
+        public static void AddCommandsDocumentation(this SwaggerGenOptions swaggerOptions)
         {
             swaggerOptions.DocumentFilter<HistoryDocumentFilter>();
         }
 
-        public static void MapHistory(this IEndpointRouteBuilder endpoints)
+        public static void MapCommands(this IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGet("history/{id}", async context =>
             {
