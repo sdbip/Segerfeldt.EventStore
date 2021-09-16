@@ -38,7 +38,10 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             {
                 if (handlerType.GetCustomAttribute<HandlesCommandAttribute>(false) is not { } attribute) continue;
                 var pattern = attribute.Pattern;
-                endpoints.MapPost(pattern, async context => { await HandleCommand(handlerType, context); });
+                if (attribute.IsHttpGet)
+                    endpoints.MapGet(pattern, async context => { await HandleCommand(handlerType, context); });
+                else
+                    endpoints.MapPost(pattern, async context => { await HandleCommand(handlerType, context); });
             }
         }
 
@@ -66,7 +69,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             var handler = ActivatorUtilities.CreateInstance(context.RequestServices, handlerType);
             var method = handler.GetType().GetMethod(nameof(ICommandHandler<int>.Handle))!;
 
-            var command = await DeserializeCommand(method, context);
+            object? command;
+            if (context.Request.Method == HttpMethods.Get)
+                command = DeserializeQueryCommand(method, context);
+            else
+                command = await DeserializeCommand(method, context);
 
             var actionResult = await ExecuteHandlerAsync(handler, method, command, context);
             if (!actionResult.GetType().IsGenericType)
@@ -87,6 +94,15 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
             context.Response.StatusCode = StatusCodes.Status200OK;
             await JSON.SerializeAsync(context.Response.Body, dto);
+        }
+
+        private static object? DeserializeQueryCommand(MethodInfo method, HttpContext context)
+        {
+            var commandType = method.GetParameters()[0].ParameterType;
+            var command = commandType.GetConstructor(Array.Empty<Type>())?.Invoke(Array.Empty<object>());
+            foreach (var (key, value) in context.Request.Query)
+                commandType.GetProperty(key, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public)?.SetValue(command, value.FirstOrDefault());
+            return command;
         }
 
         private static async Task<object?> DeserializeCommand(MethodBase method, HttpContext context)

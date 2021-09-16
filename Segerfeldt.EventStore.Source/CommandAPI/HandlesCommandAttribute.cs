@@ -10,10 +10,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
     {
         public string Entity { get; }
         public string? Property { get; init; }
+        public bool IsHttpGet { get; init; }
 
         internal string Pattern => Property is not null
-            ? $"{Entity}/{{id}}/{Property}"
-            : $"{Entity}";
+            ? $"{Entity.ToLowerInvariant()}/{{id}}/{Property}"
+            : $"{Entity.ToLowerInvariant()}";
 
         public HandlesCommandAttribute(string entity)
         {

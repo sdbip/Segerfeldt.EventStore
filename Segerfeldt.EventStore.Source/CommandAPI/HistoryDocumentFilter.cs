@@ -18,7 +18,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {
             var operation = new OpenApiOperation { Summary = "Returns the entire history of an entity" };
-            operation.Tags.Add(new OpenApiTag { Name = "Historicity" });
+            operation.Tags.Add(new OpenApiTag { Name = "History" });
 
             operation.Responses.Add("200", new OpenApiResponse
             {

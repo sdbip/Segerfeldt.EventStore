@@ -30,7 +30,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 var operation = CreateOpenApiOperation(handlerType, attribute, context);
                 if (operation is null) continue;
 
-                swaggerDoc.Paths.Add(attribute.Pattern, new OpenApiPathItem { Operations = { { OperationType.Post, operation } } });
+                swaggerDoc.Paths.Add(attribute.Pattern, new OpenApiPathItem { Operations = { { attribute.IsHttpGet ? OperationType.Get : OperationType.Post, operation } } });
             }
         }
 
@@ -55,13 +55,6 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             {
                 Summary = commandSchema?.Description,
                 OperationId = handlerType.Name,
-                RequestBody = new OpenApiRequestBody
-                {
-                    Content =
-                    {
-                        ["application/json"] = new OpenApiMediaType { Schema = requestSchema, }
-                    }
-                },
                 Responses = new OpenApiResponses
                 {
                     ["200"] = new()
@@ -77,6 +70,28 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                     new OpenApiTag { Name = attribute.Entity }
                 }
             };
+
+            if (attribute.IsHttpGet)
+            {
+                foreach (var property in commandType.GetProperties())
+                {
+                    operation.Parameters.Add(
+                        new OpenApiParameter
+                        {
+                            Name = property.Name,
+                            In = ParameterLocation.Query,
+                            Schema = new OpenApiSchema { Type = "string" },
+                            Description = commandSchema?.Properties.FirstOrDefault(p => string.Equals(p.Key, property.Name, StringComparison.InvariantCultureIgnoreCase)).Value?.Description
+                        });
+                }
+            }
+            else
+            {
+                operation.RequestBody = new OpenApiRequestBody
+                {
+                    Content = { ["application/json"] = new OpenApiMediaType { Schema = requestSchema, } }
+                };
+            }
 
             if (attribute.Property is not null)
             {
