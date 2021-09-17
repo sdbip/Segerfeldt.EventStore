@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
+    public record EmptyCommand;
+
     public interface ICommandHandler<in TCommand>
     {
         public Task<ActionResult> Handle(TCommand command, HttpContext context);
