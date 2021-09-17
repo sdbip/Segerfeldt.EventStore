@@ -66,22 +66,23 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             var handler = ActivatorUtilities.CreateInstance(context.RequestServices, handlerType);
             var method = handler.GetType().GetMethod(nameof(ICommandHandler<int>.Handle))!;
 
+            var commandType = method.GetParameters()[0].ParameterType;
             object? command;
             if (context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Delete)
-                command = DeserializeQueryCommand(method, context);
+                command = DeserializeQueryCommand(commandType, context);
             else
-                command = await DeserializeCommand(method, context);
+                command = await DeserializeCommand(commandType, context);
 
-            var actionResult = await ExecuteHandlerAsync(handler, method, command, context);
+            var actionResult = await ExecuteHandlerAsync(handler, method, command, new CommandContext(context));
             if (!actionResult.GetType().IsGenericType)
             {
                 await ApplyResult(actionResult, context);
                 return;
             }
 
-            var dto = actionResult.GetType().IsGenericType
-                ? actionResult.GetType().GetProperty(nameof(ActionResult<int>.Value))?.GetValue(actionResult)
-                : null;
+            var dto = !actionResult.GetType().IsGenericType
+                ? null
+                : actionResult.GetType().GetProperty(nameof(ActionResult<int>.Value))?.GetValue(actionResult);
             if (dto is null)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -93,22 +94,18 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             await JSON.SerializeAsync(context.Response.Body, dto);
         }
 
-        private static object? DeserializeQueryCommand(MethodInfo method, HttpContext context)
+        private static object? DeserializeQueryCommand(Type commandType, HttpContext context)
         {
-            var commandType = method.GetParameters()[0].ParameterType;
             var command = commandType.GetConstructor(Array.Empty<Type>())?.Invoke(Array.Empty<object>());
             foreach (var (key, value) in context.Request.Query)
                 commandType.GetProperty(key, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public)?.SetValue(command, value.FirstOrDefault());
             return command;
         }
 
-        private static async Task<object?> DeserializeCommand(MethodBase method, HttpContext context)
-        {
-            var commandType = method.GetParameters()[0].ParameterType;
-            return await JSON.DeserializeAsync(context.Request.Body, commandType);
-        }
+        private static async Task<object?> DeserializeCommand(Type commandType, HttpContext context) =>
+            await JSON.DeserializeAsync(context.Request.Body, commandType);
 
-        private static async Task<object> ExecuteHandlerAsync(object? handler, MethodBase method, object? command, HttpContext context)
+        private static async Task<object> ExecuteHandlerAsync(object? handler, MethodBase method, object? command, CommandContext context)
         {
             var task = (Task)method.Invoke(handler, new[] { command, context })!;
             await task;

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Threading.Tasks;
@@ -9,11 +8,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
     public interface ICommandHandler<in TCommand>
     {
-        public Task<ActionResult> Handle(TCommand command, HttpContext context);
+        public Task<ActionResult> Handle(TCommand command, CommandContext context);
     }
 
     public interface ICommandHandler<in TCommand, TDTO>
     {
-        public Task<ActionResult<TDTO>> Handle(TCommand command, HttpContext context);
+        public Task<ActionResult<TDTO>> Handle(TCommand command, CommandContext context);
     }
 }
