@@ -26,7 +26,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
         public static void MapCommands(this IEndpointRouteBuilder endpoints, params Assembly[] assemblies)
         {
-            endpoints.MapGet("history/{id}", GetHistory);
+            endpoints.MapGet("history/{entityId}", GetHistory);
 
             var handlerTypes = assemblies
                 .SelectMany(assembly => assembly
@@ -38,16 +38,13 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             {
                 if (handlerType.GetCustomAttribute<HandlesCommandAttribute>(false) is not { } attribute) continue;
                 var pattern = attribute.Pattern;
-                if (attribute.IsHttpGet)
-                    endpoints.MapGet(pattern, async context => { await HandleCommand(handlerType, context); });
-                else
-                    endpoints.MapPost(pattern, async context => { await HandleCommand(handlerType, context); });
+                endpoints.MapMethods(pattern, new []{attribute.Method.ToString()}, async context => { await HandleCommand(handlerType, context); });
             }
         }
 
         private static async Task GetHistory(HttpContext context)
         {
-            var id = (string?)context.GetRouteValue("id");
+            var id = (string?)context.GetRouteValue("entityId");
             var store = context.RequestServices.GetRequiredService<EntityStore>();
 
             var history = await store.GetHistoryAsync(new EntityId(id!));
@@ -70,7 +67,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             var method = handler.GetType().GetMethod(nameof(ICommandHandler<int>.Handle))!;
 
             object? command;
-            if (context.Request.Method == HttpMethods.Get)
+            if (context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Delete)
                 command = DeserializeQueryCommand(method, context);
             else
                 command = await DeserializeCommand(method, context);

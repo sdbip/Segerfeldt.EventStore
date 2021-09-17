@@ -22,15 +22,22 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 .SelectMany(assembly => assembly
                     .GetExportedTypes()
                     .Where(type => type.IsClass)
-                    .Where(type => !type.IsAbstract));
+                    .Where(type => !type.IsAbstract)
+                    .Where(type => type.GetCustomAttribute<HandlesCommandAttribute>() is not null))
+                .GroupBy(type => type.GetCustomAttribute<HandlesCommandAttribute>(false)!.Pattern);
 
-            foreach (var handlerType in handlerTypes)
+            foreach (var group in handlerTypes)
             {
-                if (handlerType.GetCustomAttribute<HandlesCommandAttribute>(false) is not { } attribute) continue;
-                var operation = CreateOpenApiOperation(handlerType, attribute, context);
-                if (operation is null) continue;
+                var pathItem = new OpenApiPathItem();
+                foreach (var handlerType in group)
+                {
+                    var attribute = handlerType.GetCustomAttribute<HandlesCommandAttribute>(false)!;
+                    var operation = CreateOpenApiOperation(handlerType, attribute, context);
+                    if (operation is null) continue;
 
-                swaggerDoc.Paths.Add(attribute.Pattern, new OpenApiPathItem { Operations = { { attribute.IsHttpGet ? OperationType.Get : OperationType.Post, operation } } });
+                    pathItem.Operations.Add(attribute.Method, operation);
+                }
+                swaggerDoc.Paths.Add(group.Key, pathItem);
             }
         }
 
@@ -71,34 +78,50 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 }
             };
 
-            if (attribute.IsHttpGet)
+            switch (attribute.Method)
             {
-                foreach (var property in commandType.GetProperties())
+                case OperationType.Get:
                 {
-                    operation.Parameters.Add(
-                        new OpenApiParameter
-                        {
-                            Name = property.Name,
-                            In = ParameterLocation.Query,
-                            Schema = new OpenApiSchema { Type = "string" },
-                            Description = commandSchema?.Properties.FirstOrDefault(p => string.Equals(p.Key, property.Name, StringComparison.InvariantCultureIgnoreCase)).Value?.Description
-                        });
+                    foreach (var property in commandType.GetProperties())
+                    {
+                        operation.Parameters.Add(
+                            new OpenApiParameter
+                            {
+                                Name = property.Name,
+                                In = ParameterLocation.Query,
+                                Schema = new OpenApiSchema { Type = "string" },
+                                Description = commandSchema?.Properties.FirstOrDefault(p => string.Equals(p.Key, property.Name, StringComparison.InvariantCultureIgnoreCase)).Value?.Description
+                            });
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                operation.RequestBody = new OpenApiRequestBody
-                {
-                    Content = { ["application/json"] = new OpenApiMediaType { Schema = requestSchema, } }
-                };
+                case OperationType.Post or OperationType.Put or OperationType.Patch:
+                    operation.RequestBody = new OpenApiRequestBody
+                    {
+                        Content = { ["application/json"] = new OpenApiMediaType { Schema = requestSchema, } }
+                    };
+                    break;
             }
 
-            if (attribute.Property is not null)
+            if (attribute.Method == OperationType.Delete)
             {
                 operation.Parameters.Add(
                     new OpenApiParameter
                     {
-                        Name = "id",
+                        Name = attribute.EntityIdOrDefault,
+                        In = ParameterLocation.Path,
+                        Schema = new OpenApiSchema { Type = "string" },
+                        Description = $"the entity id of the {attribute.Entity} to delete"
+                    });
+            }
+
+            else if (attribute.Property is not null)
+            {
+                operation.Parameters.Add(
+                    new OpenApiParameter
+                    {
+                        Name = attribute.EntityIdOrDefault,
                         In = ParameterLocation.Path,
                         Schema = new OpenApiSchema { Type = "string" },
                         Description = $"the entity id of the {attribute.Entity} to modify"
