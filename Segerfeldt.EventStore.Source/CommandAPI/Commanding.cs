@@ -36,7 +36,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
             foreach (var handlerType in handlerTypes)
             {
-                if (handlerType.GetCustomAttribute<HandlesCommandAttribute>(false) is not { } attribute) continue;
+                if (handlerType.GetCustomAttribute<ModifiesEntityAttribute>(false) is not { } attribute) continue;
                 var pattern = attribute.Pattern;
                 endpoints.MapMethods(pattern, new []{attribute.Method.ToString()}, async context => { await HandleCommand(handlerType, context); });
             }

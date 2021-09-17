@@ -14,6 +14,6 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
         public string GetRouteParameter(string name) => (string)HttpContext.GetRouteValue(name)!;
 
-        public EntityId GetEntityIdParameter() => new(GetRouteParameter(HandlesCommandAttribute.DefaultEntityId));
+        public EntityId GetEntityIdParameter() => new(GetRouteParameter(ModifiesEntityAttribute.DefaultEntityId));
     }
 }

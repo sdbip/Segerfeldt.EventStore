@@ -23,15 +23,15 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                     .GetExportedTypes()
                     .Where(type => type.IsClass)
                     .Where(type => !type.IsAbstract)
-                    .Where(type => type.GetCustomAttribute<HandlesCommandAttribute>() is not null))
-                .GroupBy(type => type.GetCustomAttribute<HandlesCommandAttribute>(false)!.Pattern);
+                    .Where(type => type.GetCustomAttribute<ModifiesEntityAttribute>() is not null))
+                .GroupBy(type => type.GetCustomAttribute<ModifiesEntityAttribute>(false)!.Pattern);
 
             foreach (var group in handlerTypes)
             {
                 var pathItem = new OpenApiPathItem();
                 foreach (var handlerType in group)
                 {
-                    var attribute = handlerType.GetCustomAttribute<HandlesCommandAttribute>(false)!;
+                    var attribute = handlerType.GetCustomAttribute<ModifiesEntityAttribute>(false)!;
                     var operation = CreateOpenApiOperation(handlerType, attribute, context);
                     if (operation is null) continue;
 
@@ -41,7 +41,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             }
         }
 
-        private static OpenApiOperation? CreateOpenApiOperation(Type handlerType, HandlesCommandAttribute attribute, DocumentFilterContext context)
+        private static OpenApiOperation? CreateOpenApiOperation(Type handlerType, ModifiesEntityAttribute attribute, DocumentFilterContext context)
         {
             var commandHandlerType = GetCommandHandlerType(handlerType);
             if (commandHandlerType is null) return null;

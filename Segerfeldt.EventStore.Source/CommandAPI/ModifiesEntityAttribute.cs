@@ -8,15 +8,15 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 {
     [AttributeUsage(AttributeTargets.Class)]
     [MeansImplicitUse]
-    public abstract class HandlesCommandAttribute : Attribute
+    public class ModifiesEntityAttribute : Attribute
     {
         public const string DefaultEntityId = "entityId";
 
         public string Entity { get; }
-        public string? EntityId { get; set; }
         public OperationType Method { get; }
+        public string? EntityId { get; init; }
         public string? Property { get; init; }
-        public string? PropertyId { get; set; }
+        public string? PropertyId { get; init; }
 
         internal string EntityIdOrDefault => EntityId ?? DefaultEntityId;
 
@@ -30,14 +30,14 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
         private string BaseEntityPattern => $"/{Entity.ToLowerInvariant()}";
 
-        protected HandlesCommandAttribute(string entity, OperationType method)
+        public ModifiesEntityAttribute(string entity, OperationType method)
         {
             Entity = entity;
             Method = method;
         }
     }
 
-    public class DeletesEntityAttribute : HandlesCommandAttribute
+    public class DeletesEntityAttribute : ModifiesEntityAttribute
     {
         public DeletesEntityAttribute(string entity) : base(entity, OperationType.Delete)
         {
@@ -45,7 +45,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         }
     }
 
-    public class AddsEntityAttribute : HandlesCommandAttribute
+    public class AddsEntityAttribute : ModifiesEntityAttribute
     {
         public AddsEntityAttribute(string entity) : base(entity, OperationType.Post) { }
     }
