@@ -80,7 +80,14 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 case OperationType.Get:
                 {
                     foreach (var property in commandType.GetProperties())
-                        operation.Parameters.Add(CreateOpenApiParameter(property.Name, commandSchema!));
+                    {
+                        var description = commandSchema!.Properties
+                            .FirstOrDefault(p =>
+                                string.Equals(p.Key, property.Name, StringComparison.InvariantCultureIgnoreCase))
+                            .Value.Description;
+                        operation.Parameters.Add(CreateOpenApiParameter(property.Name, ParameterLocation.Query, description));
+                    }
+
                     break;
                 }
                 case OperationType.Post or OperationType.Put or OperationType.Patch:
@@ -91,12 +98,33 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                     break;
             }
 
-            if (attribute.Method == OperationType.Delete)
-                operation.Parameters.Add(CreateEntityIdParameterItem(attribute, "remove"));
-            else if (attribute.Property is not null)
-                operation.Parameters.Add(CreateEntityIdParameterItem(attribute, "modify"));
+            if (attribute.HasEntityIdParameter)
+                AddEntityIdProperty(attribute, operation);
+
+            if (attribute.HasPropertyIdParameter)
+                AddPropertyParameter(attribute, operation);
 
             return operation;
+        }
+
+        private static void AddEntityIdProperty(ModifiesEntityAttribute attribute, OpenApiOperation operation)
+        {
+            var description = attribute.Method == OperationType.Delete
+                ? $"the entity id of the {attribute.Entity} to remove"
+                : $"the entity id of the {attribute.Entity} to modify";
+
+            operation.Parameters.Add(CreateOpenApiParameter(attribute.EntityIdOrDefault, ParameterLocation.Path, description));
+        }
+
+        private static void AddPropertyParameter(ModifiesEntityAttribute attribute, OpenApiOperation operation)
+        {
+            if (attribute.PropertyId is null) return;
+
+            var description = attribute.Method == OperationType.Delete
+                ? $"the associated {attribute.PropertyId} to remove from the {attribute.Entity}"
+                : $"the associated {attribute.PropertyId} to modify for the {attribute.Entity}";
+
+            operation.Parameters.Add(CreateOpenApiParameter(attribute.PropertyId, ParameterLocation.Path, description));
         }
 
         private static Type? GetCommandHandlerType(Type handlerType)
@@ -120,24 +148,13 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             return new OpenApiResponse { Content = { ["application/json"] = new OpenApiMediaType { Schema = schema } } };
         }
 
-        private static OpenApiParameter CreateOpenApiParameter(string propertyName, OpenApiSchema commandSchema) =>
+        private static OpenApiParameter CreateOpenApiParameter(string propertyId, ParameterLocation location, string description) =>
             new()
             {
-                Name = propertyName,
-                In = ParameterLocation.Query,
+                Name = propertyId,
+                In = location,
                 Schema = new OpenApiSchema { Type = "string" },
-                Description = commandSchema.Properties
-                    .FirstOrDefault(p => string.Equals(p.Key, propertyName, StringComparison.InvariantCultureIgnoreCase))
-                    .Value?.Description
-            };
-
-        private static OpenApiParameter CreateEntityIdParameterItem(ModifiesEntityAttribute attribute, string modificationString) =>
-            new()
-            {
-                Name = attribute.EntityIdOrDefault,
-                In = ParameterLocation.Path,
-                Schema = new OpenApiSchema { Type = "string" },
-                Description = $"the entity id of the {attribute.Entity} to {modificationString}"
+                Description = description
             };
 
         private static bool IsCommandHandlerInterface(Type t) =>

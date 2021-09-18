@@ -19,6 +19,8 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         public string? PropertyId { get; init; }
 
         internal string EntityIdOrDefault => EntityId ?? DefaultEntityId;
+        internal bool HasEntityIdParameter => Method == OperationType.Delete || PropertyId is not null;
+        public bool HasPropertyIdParameter => PropertyId is not null;
 
         internal string Pattern =>
             Property is not null ? SpecificPropertyPattern :
