@@ -92,8 +92,7 @@ namespace Segerfeldt.EventStore.Source
 
         private static TEntity Instantiate<TEntity>(this IEntityStore entityStore, EntityId id, EntityVersion version) where TEntity : IEntity
         {
-            var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) }) ??
-                              typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion), typeof(EntityStore) });
+            var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
             if (constructor is null) throw new InvalidEntityException(typeof(TEntity));
             return (TEntity)constructor.Invoke(constructor.GetParameters().Length == 2 ? new object[] { id, version } : new object[] { id, version, entityStore });
         }
