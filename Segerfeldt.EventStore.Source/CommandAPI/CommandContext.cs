@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
     public sealed class CommandContext
     {
         public HttpContext HttpContext { get; }
-        public EntityStore EntityStore => HttpContext.RequestServices.GetRequiredService<EntityStore>();
-        public EventPublisher EventPublisher => HttpContext.RequestServices.GetRequiredService<EventPublisher>();
+        public IEntityStore EntityStore { get; }
+        public IEventPublisher EventPublisher { get; }
 
-        public CommandContext(HttpContext httpContext) => HttpContext = httpContext;
+        public CommandContext(IEventPublisher eventPublisher, IEntityStore entityStore, HttpContext httpContext)
+        {
+            EventPublisher = eventPublisher;
+            EntityStore = entityStore;
+            HttpContext = httpContext;
+        }
 
         public string GetRouteParameter(string name) => (string)HttpContext.GetRouteValue(name)!;
 

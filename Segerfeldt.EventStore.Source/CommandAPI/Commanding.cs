@@ -73,7 +73,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             else
                 command = await DeserializeCommand(commandType, context);
 
-            var actionResult = await ExecuteHandlerAsync(handler, method, command, new CommandContext(context));
+            var commandContext = new CommandContext(
+                context.RequestServices.GetRequiredService<EventPublisher>(),
+                context.RequestServices.GetRequiredService<EntityStore>(),
+                context);
+            var actionResult = await ExecuteHandlerAsync(handler, method, command, commandContext);
             if (!actionResult.GetType().IsGenericType)
             {
                 await ApplyResult(actionResult, context);
