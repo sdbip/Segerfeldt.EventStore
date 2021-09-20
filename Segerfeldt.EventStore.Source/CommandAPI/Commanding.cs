@@ -10,6 +10,8 @@ using Segerfeldt.EventStore.Source.CommandAPI.DTOs;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -66,36 +68,43 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             var handler = ActivatorUtilities.CreateInstance(context.RequestServices, handlerType);
             var method = handler.GetType().GetMethod(nameof(ICommandHandler<int>.Handle))!;
 
+            var commandResult = await ParseCommand(method, context);
+            if (commandResult.Value is null)
+            {
+                await ApplyResult(commandResult.Result, context);
+                return;
+            }
+
+            var commandContext = new CommandContext(
+                context.RequestServices.GetRequiredService<EventPublisher>(),
+                context.RequestServices.GetRequiredService<EntityStore>(),
+                context);
+            var (actionResult, dto) = await ExecuteHandlerAsync(handler, method, commandResult.Value, commandContext);
+            if (dto is null)
+            {
+                await ApplyResult(actionResult, context);
+                return;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            await JSON.SerializeAsync(context.Response.Body, dto);
+        }
+
+        private static async Task<ActionResult<object>> ParseCommand(MethodBase method, HttpContext context)
+        {
             var commandType = method.GetParameters()[0].ParameterType;
             object? command;
             if (context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Delete)
                 command = DeserializeQueryCommand(commandType, context);
             else
                 command = await DeserializeCommand(commandType, context);
+            if (command is null) return new ActionResult<object>(new BadRequestObjectResult("Command is null"));
 
-            var commandContext = new CommandContext(
-                context.RequestServices.GetRequiredService<EventPublisher>(),
-                context.RequestServices.GetRequiredService<EntityStore>(),
-                context);
-            var actionResult = await ExecuteHandlerAsync(handler, method, command, commandContext);
-            if (!actionResult.GetType().IsGenericType)
-            {
-                await ApplyResult(actionResult, context);
-                return;
-            }
+            var missingProperties = GetMissingProperties(command).ToList();
+            if (missingProperties.Any())
+                return new BadRequestObjectResult(new { error = "Not all required properties are specified", missing = missingProperties });
 
-            var dto = !actionResult.GetType().IsGenericType
-                ? null
-                : actionResult.GetType().GetProperty(nameof(ActionResult<int>.Value))?.GetValue(actionResult);
-            if (dto is null)
-            {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                context.Response.Body.Close();
-                return;
-            }
-
-            context.Response.StatusCode = StatusCodes.Status200OK;
-            await JSON.SerializeAsync(context.Response.Body, dto);
+            return command;
         }
 
         private static object? DeserializeQueryCommand(Type commandType, HttpContext context)
@@ -109,19 +118,29 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         private static async Task<object?> DeserializeCommand(Type commandType, HttpContext context) =>
             await JSON.DeserializeAsync(context.Request.Body, commandType);
 
-        private static async Task<object> ExecuteHandlerAsync(object? handler, MethodBase method, object? command, CommandContext context)
+        private static IEnumerable<string> GetMissingProperties(object command) =>
+            command
+                .GetType()
+                .GetProperties()
+                .Where(p => p.GetCustomAttribute<RequiredAttribute>() is not null)
+                .Where(p => p.GetValue(command) is null)
+                .Select(p => p.Name);
+
+        private static async Task<(ActionResult actionResult, object? dto)> ExecuteHandlerAsync(object? handler, MethodBase method, object? command, CommandContext context)
         {
             var task = (Task)method.Invoke(handler, new[] { command, context })!;
             await task;
-            return task.GetType().GetProperty(nameof(Task<int>.Result))!.GetValue(task)!;
+            var handlerResult = task.GetType().GetProperty(nameof(Task<int>.Result))!.GetValue(task)!;
+            var actionResult = handlerResult as ActionResult ??
+                               (ActionResult?)handlerResult.GetType().GetProperty(nameof(ActionResult<int>.Result))?.GetValue(handlerResult) ??
+                               new NotFoundResult();
+            var value = handlerResult.GetType().GetProperty(nameof(ActionResult<int>.Value))?.GetValue(handlerResult);
+            return (actionResult, dto: value);
         }
 
-        private static async Task ApplyResult(object actionResult, HttpContext context)
+        private static async Task ApplyResult(IActionResult actionResult, HttpContext context)
         {
-            var result = actionResult.GetType().IsGenericType
-                ? (ActionResult)actionResult.GetType().GetProperty(nameof(ActionResult<int>.Result))!.GetValue(actionResult)!
-                : (ActionResult)actionResult;
-            await result.ExecuteResultAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()));
+            await actionResult.ExecuteResultAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()));
         }
     }
 }
