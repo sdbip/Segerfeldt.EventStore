@@ -13,7 +13,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         public const string DefaultEntityId = "entityId";
 
         public string Entity { get; }
-        public OperationType Method { get; }
+        public OperationType Method { get; set; }
         public string? EntityId { get; init; }
         public string? Property { get; init; }
         public string? PropertyId { get; init; }
@@ -32,7 +32,8 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
         private string BaseEntityPattern => $"/{Entity.ToLowerInvariant()}";
 
-        public ModifiesEntityAttribute(string entity, OperationType method)
+        public ModifiesEntityAttribute(string entity) : this(entity, OperationType.Post) { }
+        protected ModifiesEntityAttribute(string entity, OperationType method)
         {
             Entity = entity;
             Method = method;
