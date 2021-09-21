@@ -51,16 +51,9 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
             var history = await store.GetHistoryAsync(new EntityId(id!));
             if (history is null)
-            {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync($"There is no entity with the id '{id}'");
-            }
+                await ApplyResult(new NotFoundObjectResult($"There is no entity with the id '{id}'"), context);
             else
-            {
-                var dto = History.From(history);
-                context.Response.StatusCode = StatusCodes.Status200OK;
-                await JSON.SerializeAsync(context.Response.Body, dto);
-            }
+                await ApplyResult(new OkObjectResult(History.From(history)), context);
         }
 
         private static async Task HandleCommand(Type handlerType, HttpContext context)
@@ -80,14 +73,9 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 context.RequestServices.GetRequiredService<EntityStore>(),
                 context);
             var (actionResult, dto) = await ExecuteHandlerAsync(handler, method, commandResult.Value, commandContext);
-            if (dto is null)
-            {
-                await ApplyResult(actionResult, context);
-                return;
-            }
 
-            context.Response.StatusCode = StatusCodes.Status200OK;
-            await JSON.SerializeAsync(context.Response.Body, dto);
+            var result = dto is null ? actionResult : new OkObjectResult(dto);
+            await ApplyResult(result, context);
         }
 
         private static async Task<ActionResult<object>> ParseCommand(MethodBase method, HttpContext context)
