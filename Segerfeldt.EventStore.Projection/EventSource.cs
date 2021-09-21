@@ -51,12 +51,18 @@ namespace Segerfeldt.EventStore.Projection
         private void NotifyNewEvents()
         {
             var eventGroups = GroupByPosition(ReadEvents(lastReadPosition));
+            var batch = new List<(long position, List<Event> events)>();
             var count = 0;
             foreach (var (position, events) in eventGroups)
             {
-                lastReadPosition = position;
                 count += events.Count;
+                batch.Add((position, events.ToList()));
+                if (count > 100) break;
+            }
 
+            foreach (var (position, events) in batch)
+            {
+                lastReadPosition = position;
                 tracker?.OnProjectionStarting(position);
                 foreach (var @event in events) Notify(@event);
                 tracker?.OnProjectionFinished(position);
