@@ -5,18 +5,18 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
-    internal sealed class InsertEventsOperation
+    internal sealed class InsertMultipleEventsOperation
     {
         private readonly IEnumerable<IEntity> entities;
         private readonly string actor;
 
-        public InsertEventsOperation(IEnumerable<IEntity> entities, string actor)
+        public InsertMultipleEventsOperation(IEnumerable<IEntity> entities, string actor)
         {
             this.entities = entities.Where(e => e.UnpublishedEvents.Any());
             this.actor = actor;
         }
 
-        public async Task<StreamPositions> ExecuteAsync(DbConnection connection)
+        public async Task<UpdatedStorePosition> ExecuteAsync(DbConnection connection)
         {
             await connection.OpenAsync();
             var transaction = await connection.BeginTransactionAsync();
@@ -39,15 +39,12 @@ namespace Segerfeldt.EventStore.Source.Internals
 
         private sealed class MyActiveOperation : ActiveOperation
         {
-            private readonly InsertEventsOperation operation;
+            private readonly InsertMultipleEventsOperation operation;
 
-            public MyActiveOperation(DbTransaction transaction, InsertEventsOperation operation) :
-                base(transaction, operation.actor)
-            {
-                this.operation = operation;
-            }
+            public MyActiveOperation(DbTransaction transaction, InsertMultipleEventsOperation operation) :
+                base(transaction, operation.actor) => this.operation = operation;
 
-            public async Task<StreamPositions> RunAsync()
+            public async Task<UpdatedStorePosition> RunAsync()
             {
                 foreach (var entity in operation.entities)
                 {
@@ -67,7 +64,7 @@ namespace Segerfeldt.EventStore.Source.Internals
                     })
                 );
 
-                return new StreamPositions(await GetCurrentPositionAsync(), tuples);
+                return new UpdatedStorePosition(await GetCurrentPositionAsync(), tuples);
 
                 IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
                 {

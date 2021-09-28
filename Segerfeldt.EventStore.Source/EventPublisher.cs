@@ -11,14 +11,14 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>Publish all new changes since reconstituting an entity</summary>
         /// <param name="entities">the entities whose events to publish</param>
         /// <param name="actor">the actor/user who caused these changes</param>
-        Task<StreamPositions> PublishChangesAsync(IEnumerable<IEntity> entities, string actor);
+        Task<UpdatedStorePosition> PublishChangesAsync(IEnumerable<IEntity> entities, string actor);
 
         /// <summary>Publish a single event for an entity</summary>
         /// <param name="entityId">the unique identifier for this entity</param>
         /// <param name="type">the type of the entity if it has to be created</param>
         /// <param name="event">the event to publish</param>
         /// <param name="actor">the actor/user who caused this change</param>
-        Task<StreamPosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor);
+        Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor);
     }
 
     /// <inheritdoc />
@@ -31,16 +31,16 @@ namespace Segerfeldt.EventStore.Source
         public EventPublisher(IConnectionPool connectionPool) => this.connectionPool = connectionPool;
 
         /// <inhericdoc />
-        public async Task<StreamPosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
+        public async Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
         {
             var operation = new InsertSingleEventOperation(@event, entityId, type, actor);
             return await operation.ExecuteAsync(connectionPool.CreateConnection());
         }
 
         /// <inhericdoc />
-        public async Task<StreamPositions> PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
+        public async Task<UpdatedStorePosition> PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
         {
-            var operation = new InsertEventsOperation(entities, actor);
+            var operation = new InsertMultipleEventsOperation(entities, actor);
             return await operation.ExecuteAsync(connectionPool.CreateConnection());
         }
     }

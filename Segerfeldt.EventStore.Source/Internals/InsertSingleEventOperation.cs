@@ -18,7 +18,7 @@ namespace Segerfeldt.EventStore.Source.Internals
             this.actor = actor;
         }
 
-        public async Task<StreamPosition> ExecuteAsync(DbConnection connection)
+        public async Task<UpdatedStorePosition> ExecuteAsync(DbConnection connection)
         {
             await connection.OpenAsync();
             var transaction = await connection.BeginTransactionAsync();
@@ -50,13 +50,13 @@ namespace Segerfeldt.EventStore.Source.Internals
                 this.operation = operation;
             }
 
-            public async Task<StreamPosition> RunAsync()
+            public async Task<UpdatedStorePosition> RunAsync()
             {
                 var currentVersion = await GetCurrentVersionAsync();
                 if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Of(1));
 
                 var version = await InsertEventsAsync(operation.entityId, new[] { (operation.@event, currentVersion.Next()) });
-                return new StreamPosition(await GetCurrentPositionAsync(), version);
+                return new UpdatedStorePosition(await GetCurrentPositionAsync(), new[] { (operation.entityId, version) });
             }
 
             private async Task<EntityVersion> GetCurrentVersionAsync()
