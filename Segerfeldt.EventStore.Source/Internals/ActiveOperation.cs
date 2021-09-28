@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
@@ -62,18 +60,6 @@ namespace Segerfeldt.EventStore.Source.Internals
                 ("@id", id.ToString()),
                 ("@version", version.Value));
             await command.ExecuteNonQueryAsync();
-        }
-
-        protected async Task<EntityVersion> InsertEventsAsync(EntityId entityId, IEnumerable<(UnpublishedEvent @event, EntityVersion version)> eventsAndVersions)
-        {
-            var ev = eventsAndVersions.ToList();
-            var position = await GetCurrentPositionAsync() + 1;
-            foreach (var (@event, version) in ev)
-                await InsertEventAsync(entityId, @event, version, position);
-
-            var lastInsertedVersion = ev.Last().version;
-            await UpdateVersionAsync(entityId, lastInsertedVersion);
-            return lastInsertedVersion;
         }
     }
 }

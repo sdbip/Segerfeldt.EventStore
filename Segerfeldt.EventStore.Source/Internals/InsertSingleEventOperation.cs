@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
@@ -52,11 +54,17 @@ namespace Segerfeldt.EventStore.Source.Internals
 
             public async Task<UpdatedStorePosition> RunAsync()
             {
+                var position = await GetCurrentPositionAsync() + 1;
                 var currentVersion = await GetCurrentVersionAsync();
                 if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Of(1));
 
-                var version = await InsertEventsAsync(operation.entityId, new[] { (operation.@event, currentVersion.Next()) });
-                return new UpdatedStorePosition(await GetCurrentPositionAsync(), new[] { (operation.entityId, version) });
+                var ev = new[] { (operation.@event, currentVersion.Next()) }.ToList();
+                foreach (var (@event, version) in ev)
+                    await InsertEventAsync(operation.entityId, @event, version, position);
+
+                var (_, lastInsertedVersion) = ev.Last();
+                await UpdateVersionAsync(operation.entityId, lastInsertedVersion);
+                return new UpdatedStorePosition(position, new[] { (operation.entityId, version: lastInsertedVersion) });
             }
 
             private async Task<EntityVersion> GetCurrentVersionAsync()

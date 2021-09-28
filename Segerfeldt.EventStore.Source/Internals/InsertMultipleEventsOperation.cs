@@ -55,16 +55,22 @@ namespace Segerfeldt.EventStore.Source.Internals
                     if (currentVersion.IsNew) await InsertEntityAsync(entity.Id, entity.Type, entity.Version);
                 }
 
-                var tuples = await Task.WhenAll(
+                var position = await GetCurrentPositionAsync() + 1;
+                var entityVersions = await Task.WhenAll(
                     operation.entities.Select(async entity =>
                     {
-                        var version = await InsertEventsAsync(entity.Id,
-                            entity.UnpublishedEvents.Zip(InfiniteVersionsFrom(entity.Version.Next())));
-                        return (entity.Id, version);
+                        var incrementingVersions = InfiniteVersionsFrom(entity.Version.Next());
+                        var tuples = entity.UnpublishedEvents.Zip(incrementingVersions).ToList();
+                        foreach (var (@event, version) in tuples)
+                            await InsertEventAsync(entity.Id, @event, version, position);
+
+                        var (_, lastInsertedVersion) = tuples.Last();
+                        await UpdateVersionAsync(entity.Id, lastInsertedVersion);
+                        return (entity.Id, version: lastInsertedVersion);
                     })
                 );
 
-                return new UpdatedStorePosition(await GetCurrentPositionAsync(), tuples);
+                return new UpdatedStorePosition(position, entityVersions);
 
                 IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
                 {
