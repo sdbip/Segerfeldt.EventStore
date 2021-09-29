@@ -40,7 +40,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         }
     }
 
-    public class DeletesEntityAttribute : ModifiesEntityAttribute
+    public sealed class DeletesEntityAttribute : ModifiesEntityAttribute
     {
         public DeletesEntityAttribute(string entity) : base(entity, OperationType.Delete)
         {
@@ -48,7 +48,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         }
     }
 
-    public class AddsEntityAttribute : ModifiesEntityAttribute
+    public sealed class AddsEntityAttribute : ModifiesEntityAttribute
     {
         public AddsEntityAttribute(string entity) : base(entity, OperationType.Post) { }
     }

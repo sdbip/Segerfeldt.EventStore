@@ -99,7 +99,7 @@ namespace Segerfeldt.EventStore.Source
 
         /// <summary>An entity snapshot that was never made.</summary>
         /// All events will have to be replayed to reconstitute from this snapshot.
-        private class NeverSnapshot<TEntity> : ISnapshot<TEntity> where TEntity : class, IEntity
+        private sealed class NeverSnapshot<TEntity> : ISnapshot<TEntity> where TEntity : class, IEntity
         {
             public EntityId Id { get; }
             public EntityType EntityType { get; }

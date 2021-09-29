@@ -8,7 +8,7 @@ namespace Segerfeldt.EventStore.Projection
     public delegate void SynchronizerDelegate(Event @event);
 
     /// <summary><see cref="IReceptacle"/> implementation that uses a delegate</summary>
-    public class DelegateReceptacle : IReceptacle
+    public sealed class DelegateReceptacle : IReceptacle
     {
         private readonly Delegate @delegate;
 

@@ -7,7 +7,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI.DTOs
 {
     /// <summary>The history of an entity</summary>
     [PublicAPI]
-    public record History
+    public sealed record History
     {
         /// <summary>The type of the entity represented by this history</summary>
         public string Type { get; }

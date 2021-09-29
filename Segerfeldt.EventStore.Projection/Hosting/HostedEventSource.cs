@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Hosting
 {
-    internal class HostedEventSource : IHostedService
+    internal sealed class HostedEventSource : IHostedService
     {
         private readonly EventSource eventSource;
 

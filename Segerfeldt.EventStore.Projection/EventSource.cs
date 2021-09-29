@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Segerfeldt.EventStore.Projection
 {
     /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
-    public class EventSource
+    public sealed class EventSource
     {
         private readonly IDbConnection connection;
         private readonly IPositionTracker? tracker;
@@ -139,7 +139,7 @@ namespace Segerfeldt.EventStore.Projection
             record.GetString(record.GetOrdinal("details")),
             record.GetInt64(record.GetOrdinal("position")));
 
-        private class DefaultPollingStrategy : IPollingStrategy
+        private sealed class DefaultPollingStrategy : IPollingStrategy
         {
             public int NextDelay(int count) => count == 0 ? 60_000 : 1_000;
         }

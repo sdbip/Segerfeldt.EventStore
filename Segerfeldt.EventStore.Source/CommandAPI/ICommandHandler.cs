@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
-    public record EmptyCommand;
+    public sealed record EmptyCommand;
 
     public interface ICommandHandler { }
 

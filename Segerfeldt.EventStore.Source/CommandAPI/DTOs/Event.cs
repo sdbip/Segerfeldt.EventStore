@@ -7,7 +7,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI.DTOs
 {
     /// <summary>Data about an event</summary>
     [PublicAPI]
-    public record Event
+    public sealed record Event
     {
         /// <summary>Name to describe what changed</summary>
         public string Name { get; }

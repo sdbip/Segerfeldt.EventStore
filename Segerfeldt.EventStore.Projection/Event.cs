@@ -3,7 +3,7 @@ using System;
 namespace Segerfeldt.EventStore.Projection
 {
     /// <summary>An event notifying that the state of an entity has changed at the source</summary>
-    public class Event
+    public sealed class Event
     {
         /// <summary>The id of the entity that changed</summary>
         public string EntityId { get; }

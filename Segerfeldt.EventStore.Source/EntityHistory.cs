@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Segerfeldt.EventStore.Source
 {
     /// <summary>The history information of an entity</summary>
-    public class EntityHistory
+    public sealed class EntityHistory
     {
         /// <summary>The event-namespacing type of the entity</summary>
         public EntityType Type { get; }

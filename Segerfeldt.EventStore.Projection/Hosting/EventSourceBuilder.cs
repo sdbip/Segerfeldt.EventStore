@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Segerfeldt.EventStore.Projection.Hosting
 {
-    public class EventSourceBuilder
+    public sealed class EventSourceBuilder
     {
         private readonly List<Type> receptacleTypes = new();
         private Type? positionTrackerType;

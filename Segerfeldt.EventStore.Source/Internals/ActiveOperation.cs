@@ -97,6 +97,6 @@ namespace Segerfeldt.EventStore.Source.Internals
             }
         }
 
-        internal record EntityData(EntityId Id, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);
+        internal sealed record EntityData(EntityId Id, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);
     }
 }

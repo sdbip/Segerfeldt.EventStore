@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
-    internal class LookupEntityTypeOperation
+    internal sealed class LookupEntityTypeOperation
     {
         private readonly EntityId entityId;
 

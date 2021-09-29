@@ -10,7 +10,7 @@ using System.Reflection;
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class CommandsDocumentFilter : IDocumentFilter
+    public sealed class CommandsDocumentFilter : IDocumentFilter
     {
         private readonly IEnumerable<Assembly> assemblies;
 

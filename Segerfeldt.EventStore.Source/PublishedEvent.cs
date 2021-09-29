@@ -3,7 +3,7 @@ using System;
 namespace Segerfeldt.EventStore.Source
 {
     /// <summary>An event that has been published and is part of the official state of an entity</summary>
-    public class PublishedEvent
+    public sealed class PublishedEvent
     {
         /// <summary>A name identifying what aspect of the entity changed</summary>
         public string Name { get; }

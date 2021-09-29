@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals
 {
-    internal class GetHistoryOperation
+    internal sealed class GetHistoryOperation
     {
         private readonly EntityId entityId;
         private readonly EntityVersion entityVersion;

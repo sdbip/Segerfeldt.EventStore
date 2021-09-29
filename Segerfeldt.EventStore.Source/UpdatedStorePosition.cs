@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Source
 {
-    public class UpdatedStorePosition
+    public sealed class UpdatedStorePosition
     {
         public long Position { get; }
 

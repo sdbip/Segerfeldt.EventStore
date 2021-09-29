@@ -13,7 +13,7 @@ using System.Reflection;
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class HistoryDocumentFilter : IDocumentFilter
+    public sealed class HistoryDocumentFilter : IDocumentFilter
     {
         public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {
