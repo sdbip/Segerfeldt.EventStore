@@ -62,13 +62,13 @@ namespace Segerfeldt.EventStore.Source
             await entityStore.GetHistoryAsync(entityId, EntityVersion.Beginning, cancellationToken);
 
 
-        /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
+        /// <summary>Check if an entity id is taken.</summary>
         /// <param name="entityStore"></param>
         /// <param name="entityId">the id to verify</param>
         /// <returns>true if there is an entity with the given id, false otherwise</returns>
         public static bool ContainsEntity(this IEntityStore entityStore, EntityId entityId) => entityStore.ContainsEntityAsync(entityId).Result;
 
-        /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
+        /// <summary>Check if an entity id is taken.</summary>
         /// <param name="entityStore"></param>
         /// <param name="entityId">the id to verify</param>
         /// <param name="cancellationToken"></param>

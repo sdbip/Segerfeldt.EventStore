@@ -18,7 +18,7 @@ namespace Segerfeldt.EventStore.Source
         /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
         /// <param name="entityId">the id to verify</param>
         /// <param name="cancellationToken"></param>
-        /// <returns>true if there is an entity with the given id, false otherwise</returns>
+        /// <returns>the type of the entity, or null</returns>
         Task<EntityType?> GetEntityTypeAsync(EntityId entityId, CancellationToken cancellationToken = default);
     }
 
