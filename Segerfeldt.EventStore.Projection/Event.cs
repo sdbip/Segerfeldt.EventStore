@@ -11,7 +11,7 @@ namespace Segerfeldt.EventStore.Projection
         public string Name { get; }
         /// <summary>The type of entity publishing this event, used as a namespace for duplicated event names</summary>
         public string EntityType { get; }
-        /// <summary>Details regarding the change</summary>
+        /// <summary>A JSON object specifying the details of the change</summary>
         public string Details { get; }
         /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
         public long Position { get; }
