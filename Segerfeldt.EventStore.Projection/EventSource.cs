@@ -116,13 +116,14 @@ namespace Segerfeldt.EventStore.Projection
             connection.Open();
             try
             {
-                using var reader = connection
-                    .CreateCommand(
-                        "SELECT Events.*, Entities.type FROM Events JOIN Entities ON Events.entity = Entities.id " +
-                        "  WHERE position > @position ORDER BY position, version",
-                        ("@position", afterPosition))
-                    .ExecuteReader();
+                using var command = connection.CreateCommand(@"
+                    SELECT Events.*, Entities.type
+                        FROM Events JOIN Entities ON Events.entity = Entities.id
+                        WHERE position > @position
+                        ORDER BY position, version");
+                command.AddParameter("@position", afterPosition);
 
+                using var reader = command.ExecuteReader();
                 while (reader.Read())
                     yield return ReadEvent(reader);
             }
