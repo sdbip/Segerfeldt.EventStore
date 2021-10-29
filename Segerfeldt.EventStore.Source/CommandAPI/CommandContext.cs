@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
+    [PublicAPI]
     public sealed class CommandContext
     {
         public HttpContext HttpContext { get; }

@@ -7,7 +7,7 @@ using System;
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
     [AttributeUsage(AttributeTargets.Class)]
-    [MeansImplicitUse]
+    [PublicAPI, MeansImplicitUse]
     public class ModifiesEntityAttribute : Attribute
     {
         public const string DefaultEntityId = "entityId";

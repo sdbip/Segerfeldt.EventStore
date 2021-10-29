@@ -1,9 +1,12 @@
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Mvc;
 
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
+    [PublicAPI]
     public sealed record EmptyCommand;
 
     public interface ICommandHandler { }
