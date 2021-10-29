@@ -103,19 +103,15 @@ namespace Segerfeldt.EventStore.Projection.Tests
         [Test]
         public void ReportsNewPosition()
         {
-            long? startingPosition = null;
-            long? finishedPosition = null;
-            positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
-                .Callback<long>(l => startingPosition = l);
-            positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
-                .Callback<long>(l => finishedPosition = l);
+            var startingPosition = CaptureStartingPosition();
+            var finishedPosition = CaptureFinishedPosition();
 
             GivenEntity("an-entity");
             GivenEvent("an-entity", "an-event", position: 1);
             eventSource.StartReceiving();
 
-            Assert.That(startingPosition, Is.EqualTo(1));
-            Assert.That(finishedPosition, Is.EqualTo(1));
+            Assert.That(startingPosition.Value, Is.EqualTo(1));
+            Assert.That(finishedPosition.Value, Is.EqualTo(1));
         }
 
         private void GivenEntity(string entityId)
@@ -144,6 +140,22 @@ namespace Segerfeldt.EventStore.Projection.Tests
             foreach (var eventName in eventNames)
                 eventSource.Register(new DelegateReceptacle(events.Add, eventName));
             return events;
+        }
+
+        private Trap<long> CaptureFinishedPosition()
+        {
+            var finishedPosition = new Trap<long>();
+            positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
+                .Callback<long>(l => finishedPosition.Value = l);
+            return finishedPosition;
+        }
+
+        private Trap<long> CaptureStartingPosition()
+        {
+            var startingPosition = new Trap<long>();
+            positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
+                .Callback<long>(l => startingPosition.Value = l);
+            return startingPosition;
         }
     }
 }

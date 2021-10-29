@@ -135,12 +135,8 @@ namespace Segerfeldt.EventStore.Projection.Tests
         [Test]
         public void ReportsNewPosition()
         {
-            long? startingPosition = null;
-            long? finishedPosition = null;
-            positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
-                .Callback<long>(l => startingPosition = l);
-            positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
-                .Callback<long>(l => finishedPosition = l);
+            var startingPosition = CaptureStartingPosition();
+            var finishedPosition = CaptureFinishedPosition();
 
             GivenEntity("an-entity");
             GivenEvent("an-entity", "an-event", position: 1);
@@ -199,6 +195,22 @@ namespace Segerfeldt.EventStore.Projection.Tests
             }
 
             return events;
+        }
+
+        private Trap<long> CaptureStartingPosition()
+        {
+            var startingPosition = new Trap<long>();
+            positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
+                .Callback<long>(l => startingPosition.Value = l);
+            return startingPosition;
+        }
+
+        private Trap<long>? CaptureFinishedPosition()
+        {
+            var finishedPosition = new Trap<long>();
+            positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
+                .Callback<long>(l => finishedPosition.Value = l);
+            return finishedPosition;
         }
     }
 }
