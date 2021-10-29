@@ -153,26 +153,36 @@ namespace Segerfeldt.EventStore.Source.Tests
 
         private void GivenEntity(string entityId, string entityType, int version = 1)
         {
-            connection
-                .CreateCommand($"INSERT INTO Entities (id, type, version) VALUES ('{entityId}', '{entityType}', {version})")
-                .ExecuteNonQuery();
+            var command = connection.CreateCommand(
+                "INSERT INTO Entities (id, type, version) VALUES (@entityId, @entityType, @version)");
+            command.AddParameter("@entityId", entityId);
+            command.AddParameter("@entityType", entityType);
+            command.AddParameter("@version", version);
+            command.ExecuteNonQuery();
         }
 
         private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
         {
-            connection
-                .CreateCommand("INSERT INTO Events (entity, name, details, actor, timestamp, version, position) " +
-                               $"VALUES ('{entityId}', '{eventName}', '{{}}', '{actor}', @timestamp, 1, 1)",
-                    ("@timestamp", timestamp.DateTime))
-                .ExecuteNonQuery();
+            string commandText = @"INSERT INTO Events (entity, name, details, actor, timestamp, version, position)
+                                 VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
+            var command = connection.CreateCommand(commandText);
+            command.AddParameter("@entityId", entityId);
+            command.AddParameter("@eventName", eventName);
+            command.AddParameter("@actor", actor);
+            command.AddParameter("@timestamp", timestamp.DateTime);
+            command.ExecuteNonQuery();
         }
 
         private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
         {
-            connection
-                .CreateCommand("INSERT INTO Events (entity, name, details, actor, version, position) " +
-                               $"VALUES ('{entityId}', '{eventName}', '{details}', 'test', {version}, 1)")
-                .ExecuteNonQuery();
+            var command = connection.CreateCommand(
+                @"INSERT INTO Events (entity, name, details, actor, version, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
+            command.AddParameter("@entityId", entityId);
+            command.AddParameter("@eventName", eventName);
+            command.AddParameter("@details", details);
+            command.AddParameter("@version", version);
+            command.ExecuteNonQuery();
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local

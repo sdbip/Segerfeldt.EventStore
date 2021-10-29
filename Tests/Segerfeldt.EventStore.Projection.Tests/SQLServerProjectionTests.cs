@@ -158,7 +158,9 @@ namespace Segerfeldt.EventStore.Projection.Tests
             try
             {
                 using var command = connection
-                    .CreateCommand($"INSERT INTO Entities (id, type, version) VALUES ('{entityId}', 'a-type', {version})");
+                    .CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@entityId, 'a-type', @version)");
+                command.AddParameter("@entityId", entityId);
+                command.AddParameter("@version", version);
                 command.ExecuteNonQuery();
             }
             finally
@@ -173,8 +175,13 @@ namespace Segerfeldt.EventStore.Projection.Tests
             try
             {
                 using var command = connection.CreateCommand(
-                    "INSERT INTO Events (entity, name, details, actor, version, position) " +
-                    $"VALUES ('{entityId}', '{eventName}', '{details}', 'test', {version}, {position})");
+                    @"INSERT INTO Events (entity, name, details, actor, version, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @version, @position)");
+                command.AddParameter("@entityId", entityId);
+                command.AddParameter("@eventName", eventName);
+                command.AddParameter("@details", details);
+                command.AddParameter("@version", version);
+                command.AddParameter("@position", position);
                 command.ExecuteNonQuery();
             }
             finally
