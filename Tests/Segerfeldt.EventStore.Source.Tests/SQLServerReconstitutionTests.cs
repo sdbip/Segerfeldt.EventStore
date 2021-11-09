@@ -3,7 +3,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 

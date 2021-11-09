@@ -205,7 +205,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             return startingPosition;
         }
 
-        private Trap<long>? CaptureFinishedPosition()
+        private Trap<long> CaptureFinishedPosition()
         {
             var finishedPosition = new Trap<long>();
             positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
