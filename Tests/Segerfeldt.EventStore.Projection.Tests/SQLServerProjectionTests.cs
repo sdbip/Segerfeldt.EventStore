@@ -144,8 +144,8 @@ namespace Segerfeldt.EventStore.Projection.Tests
             eventSource.StartReceiving();
             Task.Yield();
 
-            Assert.That(startingPosition, Is.EqualTo(1));
-            Assert.That(finishedPosition, Is.EqualTo(1));
+            Assert.That(startingPosition.Value, Is.EqualTo(1));
+            Assert.That(finishedPosition.Value, Is.EqualTo(1));
         }
 
         private void GivenEntity(string entityId, int version = 1)
