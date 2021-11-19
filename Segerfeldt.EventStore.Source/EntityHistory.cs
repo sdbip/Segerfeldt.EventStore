@@ -4,7 +4,7 @@ using System.Linq;
 namespace Segerfeldt.EventStore.Source
 {
     /// <summary>The history information of an entity</summary>
-    public sealed class EntityHistory : ValueObject<EntityHistory>
+    public sealed class EntityHistory
     {
         /// <summary>The event-namespacing type of the entity</summary>
         public EntityType Type { get; }
@@ -18,15 +18,6 @@ namespace Segerfeldt.EventStore.Source
             Type = type;
             Version = version;
             Events = events;
-        }
-
-        protected override IEnumerable<object> GetEqualityComponents()
-        {
-            yield return Version;
-            yield return Type;
-            var orderedEvents = Events.OrderBy(e => e);
-            foreach (var @event in orderedEvents)
-                yield return @event;
         }
     }
 }
