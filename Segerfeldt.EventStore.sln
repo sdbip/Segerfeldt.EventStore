@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectionWebApplication", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceConsoleApp", "Apps\SourceConsoleApp\SourceConsoleApp.csproj", "{372637BF-B12C-4DE1-A24A-E49835893957}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.NUnit", "Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj", "{8E721FA2-BC35-437F-AB82-3AE89A72F151}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{372637BF-B12C-4DE1-A24A-E49835893957}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{372637BF-B12C-4DE1-A24A-E49835893957}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{372637BF-B12C-4DE1-A24A-E49835893957}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E721FA2-BC35-437F-AB82-3AE89A72F151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E721FA2-BC35-437F-AB82-3AE89A72F151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E721FA2-BC35-437F-AB82-3AE89A72F151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E721FA2-BC35-437F-AB82-3AE89A72F151}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
