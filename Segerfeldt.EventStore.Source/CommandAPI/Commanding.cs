@@ -131,8 +131,17 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
         private static async Task<(ActionResult actionResult, object? dto)> ExecuteHandlerAsync(object? handler, MethodBase method, object? command, CommandContext context)
         {
-            var task = (Task)method.Invoke(handler, new[] { command, context })!;
-            await task;
+            Task task;
+            try
+            {
+                task = (Task)method.Invoke(handler, new[] { command, context })!;
+                await task;
+            }
+            catch (Exception e)
+            {
+                var errorResult = new ObjectResult(new { error = e.Message }) { StatusCode = StatusCodes.Status500InternalServerError };
+                return (errorResult, dto: null);
+            }
             var handlerResult = task.GetType().GetProperty(nameof(Task<int>.Result))!.GetValue(task)!;
             var actionResult = handlerResult as ActionResult ??
                                (ActionResult?)handlerResult.GetType().GetProperty(nameof(ActionResult<int>.Result))?.GetValue(handlerResult) ??
