@@ -92,6 +92,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             if (missingProperties.Any())
                 return new BadRequestObjectResult(new { error = "Not all required properties are specified", missing = missingProperties });
 
+            var invalidProperties = GetInvalidProperties(command).ToList();
+            if (invalidProperties.Any())
+                return new BadRequestObjectResult(new { error = "Not all properties are valid", invalid =
+                    new Dictionary<string, string?>(invalidProperties) });
+
             return command;
         }
 
@@ -105,6 +110,16 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
         private static async Task<object?> DeserializeCommand(Type commandType, HttpContext context) =>
             await JSON.DeserializeAsync(context.Request.Body, commandType);
+
+        private static IEnumerable<KeyValuePair<string, string?>> GetInvalidProperties(object command) =>
+            command
+                .GetType()
+                .GetProperties()
+                .SelectMany(p => p.GetCustomAttributes<ValidationAttribute>()
+                    .Select(attribute =>
+                        attribute.GetValidationResult(p.GetValue(command), new ValidationContext(command) {DisplayName = p.Name}))
+                    .Where(r => r is not null).Select(r => r!)
+                    .Select(r => new KeyValuePair<string, string?>(p.Name, r.ErrorMessage)));
 
         private static IEnumerable<string> GetMissingProperties(object command) =>
             command
