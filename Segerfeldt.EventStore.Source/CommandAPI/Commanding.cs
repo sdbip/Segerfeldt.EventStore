@@ -69,8 +69,8 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
             }
 
             var commandContext = new CommandContext(
-                context.RequestServices.GetRequiredService<EventPublisher>(),
-                context.RequestServices.GetRequiredService<EntityStore>(),
+                ActivatorUtilities.GetServiceOrCreateInstance<EventPublisher>(context.RequestServices),
+                ActivatorUtilities.GetServiceOrCreateInstance<EntityStore>(context.RequestServices),
                 context);
             var (actionResult, dto) = await ExecuteHandlerAsync(handler, method, commandResult.Value, commandContext);
 
