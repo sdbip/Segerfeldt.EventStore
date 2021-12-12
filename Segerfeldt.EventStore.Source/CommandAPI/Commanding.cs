@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +20,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
 {
+    [PublicAPI]
     public static class Commanding
     {
         public static void DocumentCommands(this SwaggerGenOptions swaggerOptions, params Assembly[] assemblies)
@@ -47,7 +50,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
         private static async Task GetHistory(HttpContext context)
         {
             var id = (string?)context.GetRouteValue("entityId");
-            var store = context.RequestServices.GetRequiredService<EntityStore>();
+            var store = ActivatorUtilities.GetServiceOrCreateInstance<EntityStore>(context.RequestServices);
 
             var history = await store.GetHistoryAsync(new EntityId(id!));
             if (history is null)
