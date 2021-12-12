@@ -1,7 +1,5 @@
 using JetBrains.Annotations;
 
-using Microsoft.AspNetCore.Mvc;
-
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI
@@ -13,11 +11,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 
     public interface ICommandHandler<in TCommand> : ICommandHandler
     {
-        public Task<ActionResult> Handle(TCommand command, CommandContext context);
+        public Task<CommandResult> Handle(TCommand command, CommandContext context);
     }
 
     public interface ICommandHandler<in TCommand, TResponseDTO> : ICommandHandler
     {
-        public Task<ActionResult<TResponseDTO>> Handle(TCommand command, CommandContext context);
+        public Task<CommandResult<TResponseDTO>> Handle(TCommand command, CommandContext context);
     }
 }

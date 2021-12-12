@@ -142,10 +142,8 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 var errorResult = new ObjectResult(new { error = e.Message }) { StatusCode = StatusCodes.Status500InternalServerError };
                 return (errorResult, dto: null);
             }
-            var handlerResult = task.GetType().GetProperty(nameof(Task<int>.Result))!.GetValue(task)!;
-            var actionResult = handlerResult as ActionResult ??
-                               (ActionResult?)handlerResult.GetType().GetProperty(nameof(ActionResult<int>.Result))?.GetValue(handlerResult) ??
-                               new NotFoundResult();
+            var handlerResult = (ICommandResult)task.GetType().GetProperty(nameof(Task<int>.Result))!.GetValue(task)!;
+            var actionResult = handlerResult.ActionResult;
             var value = handlerResult.GetType().GetProperty(nameof(ActionResult<int>.Value))?.GetValue(handlerResult);
             return (actionResult, dto: value);
         }
