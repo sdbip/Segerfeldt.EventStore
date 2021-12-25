@@ -5,33 +5,63 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
 {
     public interface ICommandResult
     {
-        public ActionResult ActionResult { get; }
+        int StatusCode { get; }
+        object? Message { get; }
+    }
+
+    internal static class CommandResultStatus
+    {
+        public static ActionResult ActionResult(this ICommandResult handlerResult) =>
+            handlerResult.Message is null
+                ? new StatusCodeResult(handlerResult.StatusCode)
+                : new ObjectResult(handlerResult.Message) { StatusCode = handlerResult.StatusCode };
+    }
+
+    public struct ResultData
+    {
+        public int StatusCode { get; }
+        public object? Message { get; }
+
+        public ResultData(int statusCode, object? message)
+        {
+            Message = message;
+            StatusCode = statusCode;
+        }
     }
 
     public class CommandResult : ICommandResult
     {
-        public ActionResult ActionResult { get; }
+        private readonly ResultData data;
 
-        public CommandResult(ActionResult actionResult) => ActionResult = actionResult;
+        public int StatusCode => data.StatusCode;
+        public object? Message => data.Message;
 
-        public static CommandResult NoContent() => new(new NoContentResult());
-        public static CommandResult NotModified() => new(new StatusCodeResult(StatusCodes.Status304NotModified));
-        public static CommandResult<T> Ok<T>(T value) => value;
+        private CommandResult(ResultData data) => this.data = data;
 
-        public static CommandResult BadRequest(string error) => new(new BadRequestObjectResult(error));
-        public static CommandResult NotFound(string error) => new(new NotFoundObjectResult(error));
+        public static CommandResult Ok() => new(new ResultData(StatusCodes.Status204NoContent, null));
+        public static CommandResult<T> Ok<T>(T value) => new(new ResultData(StatusCodes.Status200OK, value));
 
-        public static CommandResult Forbidden() => new(new ForbidResult());
-        public static CommandResult Unauthorized() => new(new UnauthorizedResult());
+        public static ResultData BadRequest(object error) => Error(StatusCodes.Status400BadRequest, error);
+        public static ResultData NotFound(object error) => Error(StatusCodes.Status404NotFound, error);
+
+        public static ResultData Unauthorized() => Error(StatusCodes.Status401Unauthorized);
+        public static ResultData Unauthorized(object error) => Error(StatusCodes.Status401Unauthorized, error);
+        public static ResultData Forbidden() => Error(StatusCodes.Status403Forbidden);
+        public static ResultData Forbidden(object error) => Error(StatusCodes.Status403Forbidden, error);
+
+        public static ResultData Error(int statusCode, object? error = null) => new(statusCode, error);
+        public static implicit operator CommandResult(ResultData data) => new(data);
     }
 
     public class CommandResult<T> : ICommandResult
     {
-        public ActionResult ActionResult { get; }
+        private readonly ResultData data;
 
-        private CommandResult(ActionResult actionResult) => ActionResult = actionResult;
+        public int StatusCode => data.StatusCode;
+        public object? Message => data.Message;
 
-        public static implicit operator CommandResult<T>(T value) => new(new OkObjectResult(value));
-        public static implicit operator CommandResult<T>(CommandResult value) => new(value.ActionResult);
+        public CommandResult(ResultData data) => this.data = data;
+
+        public static implicit operator CommandResult<T>(ResultData data) => new(data);
     }
 }

@@ -146,7 +146,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI
                 return (errorResult, dto: null);
             }
             var handlerResult = (ICommandResult)task.GetType().GetProperty(nameof(Task<int>.Result))!.GetValue(task)!;
-            var actionResult = handlerResult.ActionResult;
+            var actionResult = handlerResult.ActionResult();
             var value = handlerResult.GetType().GetProperty(nameof(ActionResult<int>.Value))?.GetValue(handlerResult);
             return (actionResult, dto: value);
         }
