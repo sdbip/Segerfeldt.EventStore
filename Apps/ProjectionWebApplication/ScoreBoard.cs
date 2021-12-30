@@ -26,6 +26,7 @@ namespace ProjectionWebApplication
         }
     }
 
+    // ReSharper disable ClassNeverInstantiated.Global
     public record ScoreIncrement(int Points);
     public record PlayerRegistration(string Name);
 }

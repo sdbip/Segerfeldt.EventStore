@@ -176,7 +176,7 @@ namespace JetBrains.Annotations
         {
         }
 
-        public PublicAPIAttribute([NotNull] string comment)
+        public PublicAPIAttribute(string comment)
         {
             Comment = comment;
         }

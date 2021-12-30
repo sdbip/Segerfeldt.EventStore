@@ -15,6 +15,7 @@ namespace Segerfeldt.EventStore.Projection.Tests
             Assert.That(details, Is.EqualTo(new TestDetails(42)));
         }
 
+        // ReSharper disable once NotAccessedPositionalProperty.Local
         private record TestDetails(int Value);
     }
 }

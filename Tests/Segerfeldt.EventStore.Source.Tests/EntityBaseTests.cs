@@ -53,6 +53,7 @@ namespace Segerfeldt.EventStore.Source.Tests
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
+        // ReSharper disable NotAccessedPositionalProperty.Local
         private record TestData(string String, int Int);
     }
 }
