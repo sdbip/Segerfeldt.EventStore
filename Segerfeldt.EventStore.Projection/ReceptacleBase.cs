@@ -56,7 +56,7 @@ namespace Segerfeldt.EventStore.Projection
 
             public ReceivesEventAttribute(string @event) => Name = @event;
 
-            public bool Accepts(Event @event) => Name == @event.Name && EntityType is null || EntityType == @event.EntityType;
+            public bool Accepts(Event @event) => Name == @event.Name && (EntityType is null || EntityType == @event.EntityType);
         }
     }
 }
