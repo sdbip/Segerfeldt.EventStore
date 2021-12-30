@@ -7,10 +7,10 @@ namespace Segerfeldt.EventStore.Projection
     {
         /// <summary>The id of the entity that changed</summary>
         public string EntityId { get; }
-        /// <summary>The name of the event, indicating in how the state has changed</summary>
-        public string Name { get; }
         /// <summary>The type of entity publishing this event, used as a namespace for duplicated event names</summary>
         public string EntityType { get; }
+        /// <summary>The name of the event, indicating in what way the entity's state has changed</summary>
+        public string Name { get; }
         /// <summary>A JSON object specifying the details of the change</summary>
         public string Details { get; }
         /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
