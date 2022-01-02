@@ -9,7 +9,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 {
     public sealed class EventSourceBuilder
     {
-        private readonly List<Type> receptacleTypes = new();
+        private readonly List<Func<IServiceProvider, IReceptacle>> receptacles = new();
         private Type? positionTrackerType;
         private readonly Func<IServiceProvider, IConnectionPool> getConnectionPool;
 
@@ -20,7 +20,9 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 
         public EventSourceBuilder AddReceptacles(Assembly assembly)
         {
-            receptacleTypes.AddRange(assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IReceptacle))));
+            var types = assembly.ExportedTypes.Where(t => t.IsAssignableTo(typeof(IReceptacle)));
+            foreach (var type in types)
+                receptacles.Add(provider => (IReceptacle)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
             return this;
         }
 
@@ -33,8 +35,8 @@ namespace Segerfeldt.EventStore.Projection.Hosting
         internal EventSource Build(IServiceProvider provider)
         {
             var eventSource = new EventSource(getConnectionPool(provider), GetPositionTracker(provider));
-            foreach (var type in receptacleTypes)
-                eventSource.Register((IReceptacle)ActivatorUtilities.GetServiceOrCreateInstance(provider, type));
+            foreach (var receptacle in receptacles)
+                eventSource.Register(receptacle(provider));
 
             return eventSource;
         }
@@ -44,7 +46,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
 
         public EventSourceBuilder AddReceptacle<TReceptacle>() where TReceptacle : IReceptacle
         {
-            receptacleTypes.Add(typeof(TReceptacle));
+            receptacles.Add(provider => ActivatorUtilities.GetServiceOrCreateInstance<TReceptacle>(provider));
             return this;
         }
     }
