@@ -42,7 +42,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
         }
 
         private IPositionTracker? GetPositionTracker(IServiceProvider provider) =>
-            positionTrackerType is not null ? (IPositionTracker?)provider.GetService(positionTrackerType) : null;
+            positionTrackerType is not null ? (IPositionTracker?)ActivatorUtilities.GetServiceOrCreateInstance(provider, positionTrackerType) : null;
 
         public EventSourceBuilder AddReceptacle<TReceptacle>() where TReceptacle : IReceptacle
         {
