@@ -10,7 +10,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
     public sealed class EventSourceBuilder
     {
         private readonly List<Func<IServiceProvider, IReceptacle>> receptacles = new();
-        private Type? positionTrackerType;
+        private Func<IServiceProvider, IPositionTracker>? positionTracker;
         private readonly Func<IServiceProvider, IConnectionPool> getConnectionPool;
 
         public EventSourceBuilder(Func<IServiceProvider, IConnectionPool> getConnectionPool)
@@ -26,9 +26,27 @@ namespace Segerfeldt.EventStore.Projection.Hosting
             return this;
         }
 
-        public EventSourceBuilder SetPositionTracker<TPositionTracker>() where TPositionTracker : IPositionTracker
+        public EventSourceBuilder AddReceptacle<TReceptacle>() where TReceptacle : IReceptacle =>
+            AddReceptacle(provider => provider.GetRequiredService<TReceptacle>());
+
+        public EventSourceBuilder AddReceptacle(IReceptacle receptacle) =>
+            AddReceptacle(_ => receptacle);
+
+        public EventSourceBuilder AddReceptacle(Func<IServiceProvider, IReceptacle> receptacleFunc)
         {
-            positionTrackerType = typeof(TPositionTracker);
+            receptacles.Add(receptacleFunc);
+            return this;
+        }
+
+        public EventSourceBuilder SetPositionTracker<TPositionTracker>() where TPositionTracker : IPositionTracker =>
+            SetPositionTracker(provider => provider.GetRequiredService<TPositionTracker>());
+
+        public EventSourceBuilder SetPositionTracker(IPositionTracker positionTracker) =>
+            SetPositionTracker(_ => positionTracker);
+
+        public EventSourceBuilder SetPositionTracker(Func<IServiceProvider, IPositionTracker> positionTrackerFunc)
+        {
+            positionTracker = positionTrackerFunc;
             return this;
         }
 
@@ -41,13 +59,6 @@ namespace Segerfeldt.EventStore.Projection.Hosting
             return eventSource;
         }
 
-        private IPositionTracker? GetPositionTracker(IServiceProvider provider) =>
-            positionTrackerType is not null ? (IPositionTracker?)ActivatorUtilities.GetServiceOrCreateInstance(provider, positionTrackerType) : null;
-
-        public EventSourceBuilder AddReceptacle<TReceptacle>() where TReceptacle : IReceptacle
-        {
-            receptacles.Add(provider => ActivatorUtilities.GetServiceOrCreateInstance<TReceptacle>(provider));
-            return this;
-        }
+        private IPositionTracker? GetPositionTracker(IServiceProvider provider) => positionTracker?.Invoke(provider);
     }
 }
