@@ -13,7 +13,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
         public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services) where TConnectionPool : IConnectionPool =>
             services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>());
 
-        private static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool)
+        public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool)
         {
             // Note: AddHostedService<T>() will only add one service per unique type T. Even if called
             // multiple times. If the user needs to track more than one Source, we'd need a new
