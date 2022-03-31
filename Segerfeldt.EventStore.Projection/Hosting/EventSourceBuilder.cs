@@ -41,6 +41,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting
         public EventSourceBuilder SetPositionTracker<TPositionTracker>() where TPositionTracker : IPositionTracker =>
             SetPositionTracker(provider => provider.GetRequiredService<TPositionTracker>());
 
+        // ReSharper disable once ParameterHidesMember
         public EventSourceBuilder SetPositionTracker(IPositionTracker positionTracker) =>
             SetPositionTracker(_ => positionTracker);
 
