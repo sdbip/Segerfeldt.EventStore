@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace ProjectionWebApplication.Controllers
+namespace ProjectionWebApplication.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ProjectionController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class ProjectionController : ControllerBase
-    {
-        private readonly PositionTracker tracker;
+    private readonly PositionTracker tracker;
 
-        public ProjectionController(PositionTracker tracker) => this.tracker = tracker;
+    public ProjectionController(PositionTracker tracker) => this.tracker = tracker;
 
-        [HttpGet]
-        public ActionResult<long> GetPosition() => Ok(tracker.Position);
-    }
+    [HttpGet]
+    public ActionResult<long> GetPosition() => Ok(tracker.Position);
 }

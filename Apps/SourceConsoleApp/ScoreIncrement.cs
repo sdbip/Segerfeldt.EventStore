@@ -1,4 +1,3 @@
-namespace SourceConsoleApp
-{
-    internal record ScoreIncrement(int Points);
-}
+namespace SourceConsoleApp;
+
+internal record ScoreIncrement(int Points);

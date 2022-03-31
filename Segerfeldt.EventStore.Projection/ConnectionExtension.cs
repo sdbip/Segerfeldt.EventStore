@@ -1,22 +1,21 @@
 using System.Data;
 
-namespace Segerfeldt.EventStore.Projection
-{
-    internal static class ConnectionExtension
-    {
-        public static IDbCommand CreateCommand(this IDbConnection connection, string commandText)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = commandText;
-            return command;
-        }
+namespace Segerfeldt.EventStore.Projection;
 
-        public static void AddParameter(this IDbCommand command, string? name, object? value)
-        {
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = name;
-            parameter.Value = value;
-            command.Parameters.Add(parameter);
-        }
+internal static class ConnectionExtension
+{
+    public static IDbCommand CreateCommand(this IDbConnection connection, string commandText)
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = commandText;
+        return command;
+    }
+
+    public static void AddParameter(this IDbCommand command, string? name, object? value)
+    {
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = name;
+        parameter.Value = value;
+        command.Parameters.Add(parameter);
     }
 }

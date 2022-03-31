@@ -3,17 +3,16 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Segerfeldt.EventStore
+namespace Segerfeldt.EventStore;
+
+internal static class JSON
 {
-    internal static class JSON
-    {
-        private static JsonSerializerOptions Options => new() {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
+    private static JsonSerializerOptions Options => new() {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
 
-        public static string Serialize(object o) => JsonSerializer.Serialize(o, Options);
+    public static string Serialize(object o) => JsonSerializer.Serialize(o, Options);
 
-        public static T? Deserialize<T>(string jsonString) => JsonSerializer.Deserialize<T>(jsonString, Options);
-        internal static object? Deserialize(string jsonString, Type type) => JsonSerializer.Deserialize(jsonString, type, Options);
+    public static T? Deserialize<T>(string jsonString) => JsonSerializer.Deserialize<T>(jsonString, Options);
+    internal static object? Deserialize(string jsonString, Type type) => JsonSerializer.Deserialize(jsonString, type, Options);
 
-        internal  static async Task<object?> DeserializeAsync(Stream stream, Type type) => await JsonSerializer.DeserializeAsync(stream, type, Options);
-    }
+    internal  static async Task<object?> DeserializeAsync(Stream stream, Type type) => await JsonSerializer.DeserializeAsync(stream, type, Options);
 }

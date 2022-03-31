@@ -1,9 +1,8 @@
 using System.Data.Common;
 
-namespace Segerfeldt.EventStore.Source
+namespace Segerfeldt.EventStore.Source;
+
+public interface IConnectionPool
 {
-    public interface IConnectionPool
-    {
-        DbConnection CreateConnection();
-    }
+    DbConnection CreateConnection();
 }

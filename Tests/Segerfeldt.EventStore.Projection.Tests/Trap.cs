@@ -1,7 +1,6 @@
-namespace Segerfeldt.EventStore.Projection.Tests
+namespace Segerfeldt.EventStore.Projection.Tests;
+
+internal class Trap<T>
 {
-    internal class Trap<T>
-    {
-        public T? Value { get; set; }
-    }
+    public T? Value { get; set; }
 }

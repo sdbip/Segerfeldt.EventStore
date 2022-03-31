@@ -1,11 +1,10 @@
 using JetBrains.Annotations;
 
-namespace Segerfeldt.EventStore.Source.NUnit
+namespace Segerfeldt.EventStore.Source.NUnit;
+
+[PublicAPI]
+public static class Added
 {
-    [PublicAPI]
-    public static class Added
-    {
-        public static readonly AddedNoEventsConstraint NoEvents = new();
-        public static AddedEventConstraint Event(string name)  => new(name);
-    }
+    public static readonly AddedNoEventsConstraint NoEvents = new();
+    public static AddedEventConstraint Event(string name)  => new(name);
 }

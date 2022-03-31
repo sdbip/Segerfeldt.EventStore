@@ -4,115 +4,114 @@ using NUnit.Framework;
 
 using System;
 
-namespace Segerfeldt.EventStore.Source.Tests
+namespace Segerfeldt.EventStore.Source.Tests;
+
+// ReSharper disable once InconsistentNaming
+public class SQLitePublishingTests
 {
-    // ReSharper disable once InconsistentNaming
-    public class SQLitePublishingTests
+    private InMemoryConnection connection = null!;
+    private EventPublisher publisher = null!;
+
+    [SetUp]
+    public void Setup()
     {
-        private InMemoryConnection connection = null!;
-        private EventPublisher publisher = null!;
+        connection = new InMemoryConnection();
+        var connectionPool = new SingletonConnectionPool(connection);
+        publisher = new EventPublisher(connectionPool);
 
-        [SetUp]
-        public void Setup()
+        SQLite.Schema.CreateIfMissing(connection);
+    }
+
+    [Test]
+    public void DoesNotCrashIfSchemaExists()
+    {
+        SQLite.Schema.CreateIfMissing(connection);
+    }
+
+    [Test]
+    public void CanPublishSingleEvent()
+    {
+        publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+
+        using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+        reader.Read();
+
+        Assert.That(new
         {
-            connection = new InMemoryConnection();
-            var connectionPool = new SingletonConnectionPool(connection);
-            publisher = new EventPublisher(connectionPool);
-
-            SQLite.Schema.CreateIfMissing(connection);
-        }
-
-        [Test]
-        public void DoesNotCrashIfSchemaExists()
+            Entity = reader["entity"],
+            Name = reader["name"],
+            Details = reader["details"],
+            Version = reader["version"],
+            Position = reader["position"]
+        }, Is.EqualTo(new
         {
-            SQLite.Schema.CreateIfMissing(connection);
-        }
+            Entity = (object) "an-entity",
+            Name = (object) "an-event",
+            Details = (object) @"{""meaning"":42}",
+            Version = (object) 0,
+            Position = (object) 0L
+        }));
+    }
 
-        [Test]
-        public void CanPublishSingleEvent()
+    [Test]
+    public void CanPublishChanges()
+    {
+        var entity = new Mock<IEntity>();
+        entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+        entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.New);
+        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        publisher.PublishChanges(entity.Object, "johan");
+
+        using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+        reader.Read();
+
+        Assert.That(new
         {
-            publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
-
-            using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
-            reader.Read();
-
-            Assert.That(new
-            {
-                Entity = reader["entity"],
-                Name = reader["name"],
-                Details = reader["details"],
-                Version = reader["version"],
-                Position = reader["position"]
-            }, Is.EqualTo(new
-            {
-                Entity = (object) "an-entity",
-                Name = (object) "an-event",
-                Details = (object) @"{""meaning"":42}",
-                Version = (object) 0,
-                Position = (object) 0L
-            }));
-        }
-
-        [Test]
-        public void CanPublishChanges()
+            Entity = reader["entity"],
+            Name = reader["name"],
+            Details = reader["details"],
+            Version = reader["version"],
+            Position = reader["position"]
+        }, Is.EqualTo(new
         {
-            var entity = new Mock<IEntity>();
-            entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
-            entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
-            entity.Setup(e => e.Version).Returns(EntityVersion.New);
-            entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
-            publisher.PublishChanges(entity.Object, "johan");
+            Entity = (object) "an-entity",
+            Name = (object) "an-event",
+            Details = (object) @"{""meaning"":42}",
+            Version = (object) 0,
+            Position = (object) 0L
+        }));
+    }
 
-            using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
-            reader.Read();
+    [Test]
+    public void WillNotPublishChangesIfThereAreNoEvents()
+    {
+        var entity = new Mock<IEntity>();
+        entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+        entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.New);
+        entity.Setup(e => e.UnpublishedEvents).Returns(Array.Empty<UnpublishedEvent>());
+        publisher.PublishChanges(entity.Object, "johan");
 
-            Assert.That(new
-            {
-                Entity = reader["entity"],
-                Name = reader["name"],
-                Details = reader["details"],
-                Version = reader["version"],
-                Position = reader["position"]
-            }, Is.EqualTo(new
-            {
-                Entity = (object) "an-entity",
-                Name = (object) "an-event",
-                Details = (object) @"{""meaning"":42}",
-                Version = (object) 0,
-                Position = (object) 0L
-            }));
-        }
+        connection.Open();
+        var count = connection.CreateCommand("SELECT COUNT(*) FROM Events").ExecuteScalar();
+        connection.Close();
 
-        [Test]
-        public void WillNotPublishChangesIfThereAreNoEvents()
-        {
-            var entity = new Mock<IEntity>();
-            entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
-            entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
-            entity.Setup(e => e.Version).Returns(EntityVersion.New);
-            entity.Setup(e => e.UnpublishedEvents).Returns(Array.Empty<UnpublishedEvent>());
-            publisher.PublishChanges(entity.Object, "johan");
+        Assert.That(count, Is.Zero);
+    }
 
-            connection.Open();
-            var count = connection.CreateCommand("SELECT COUNT(*) FROM Events").ExecuteScalar();
-            connection.Close();
+    [Test]
+    public void CannotPublishChangesIfRemoteUpdated()
+    {
+        connection
+            .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
+            .ExecuteNonQuery();
 
-            Assert.That(count, Is.Zero);
-        }
+        var entity = new Mock<IEntity>();
+        entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
+        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
-        [Test]
-        public void CannotPublishChangesIfRemoteUpdated()
-        {
-            connection
-                .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
-                .ExecuteNonQuery();
-
-            var entity = new Mock<IEntity>();
-            entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
-            entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
-            entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
-
-            Assert.That(() => publisher.PublishChanges(entity.Object, "johan"), Throws.Exception);
-        }
+        Assert.That(() => publisher.PublishChanges(entity.Object, "johan"), Throws.Exception);
     }
 }

@@ -6,64 +6,63 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Segerfeldt.EventStore.Source.Internals
+namespace Segerfeldt.EventStore.Source.Internals;
+
+internal sealed class GetHistoryOperation
 {
-    internal sealed class GetHistoryOperation
+    private readonly EntityId entityId;
+    private readonly EntityVersion entityVersion;
+
+    public GetHistoryOperation(EntityId entityId, EntityVersion entityVersion)
     {
-        private readonly EntityId entityId;
-        private readonly EntityVersion entityVersion;
+        this.entityId = entityId;
+        this.entityVersion = entityVersion;
+    }
 
-        public GetHistoryOperation(EntityId entityId, EntityVersion entityVersion)
+    public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
+    {
+        var command = connection.CreateCommand(
+            "SELECT type, version FROM Entities WHERE id = @entityId;" +
+            "SELECT * FROM Events WHERE entity = @entityId AND version > @entityVersion ORDER BY version",
+            ("@entityId", entityId.ToString()),
+            ("@entityVersion", entityVersion.Value));
+
+        await connection.OpenAsync(cancellationToken);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var entityData = ReadEntityData(reader);
+        if (entityData is null)
         {
-            this.entityId = entityId;
-            this.entityVersion = entityVersion;
-        }
-
-        public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
-        {
-            var command = connection.CreateCommand(
-                "SELECT type, version FROM Entities WHERE id = @entityId;" +
-                "SELECT * FROM Events WHERE entity = @entityId AND version > @entityVersion ORDER BY version",
-                ("@entityId", entityId.ToString()),
-                ("@entityVersion", entityVersion.Value));
-
-            await connection.OpenAsync(cancellationToken);
-            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-            var entityData = ReadEntityData(reader);
-            if (entityData is null)
-            {
-                await connection.CloseAsync();
-                return null;
-            }
-
-            var events = await reader.NextResultAsync(cancellationToken)
-                ? ReadEvents(reader).ToImmutableList()
-                : ImmutableList<PublishedEvent>.Empty;
-
             await connection.CloseAsync();
-
-            var (type, version) = entityData.Value;
-            return new EntityHistory(type, version, events);
+            return null;
         }
 
-        private static (EntityType, EntityVersion)? ReadEntityData(IDataReader reader) =>
-            reader.Read() ? (new EntityType((string)reader[0]), EntityVersion.Of((int)reader[1])) : null;
+        var events = await reader.NextResultAsync(cancellationToken)
+            ? ReadEvents(reader).ToImmutableList()
+            : ImmutableList<PublishedEvent>.Empty;
 
-        private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
-        {
-            while (reader.Read())
-                yield return new PublishedEvent(
-                    (string)reader["name"],
-                    (string)reader["details"],
-                    (string)reader["actor"],
-                    ReadDateTimeUTC(reader)
-                );
-        }
+        await connection.CloseAsync();
 
-        private static DateTimeOffset ReadDateTimeUTC(IDataRecord reader)
-        {
-            var timestampUTC = reader["timestamp"] as DateTime? ?? DateTime.MinValue;
-            return new DateTimeOffset(timestampUTC.Ticks, TimeSpan.Zero);
-        }
+        var (type, version) = entityData.Value;
+        return new EntityHistory(type, version, events);
+    }
+
+    private static (EntityType, EntityVersion)? ReadEntityData(IDataReader reader) =>
+        reader.Read() ? (new EntityType((string)reader[0]), EntityVersion.Of((int)reader[1])) : null;
+
+    private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
+    {
+        while (reader.Read())
+            yield return new PublishedEvent(
+                (string)reader["name"],
+                (string)reader["details"],
+                (string)reader["actor"],
+                ReadDateTimeUTC(reader)
+            );
+    }
+
+    private static DateTimeOffset ReadDateTimeUTC(IDataRecord reader)
+    {
+        var timestampUTC = reader["timestamp"] as DateTime? ?? DateTime.MinValue;
+        return new DateTimeOffset(timestampUTC.Ticks, TimeSpan.Zero);
     }
 }

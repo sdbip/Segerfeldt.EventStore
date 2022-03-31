@@ -1,9 +1,8 @@
 using System.Data;
 
-namespace Segerfeldt.EventStore.Projection
+namespace Segerfeldt.EventStore.Projection;
+
+public interface IConnectionPool
 {
-    public interface IConnectionPool
-    {
-        IDbConnection CreateConnection();
-    }
+    IDbConnection CreateConnection();
 }
