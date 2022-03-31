@@ -50,7 +50,16 @@ public sealed class EventSource
 
     private void NotifyNewEvents()
     {
-        var eventGroups = GroupByPosition(ReadEvents(lastReadPosition));
+        var readEvents = ReadEvents(lastReadPosition);
+        var numNotified = Notify(readEvents);
+
+        var nextDelay = pollingStrategy.NextDelay(numNotified);
+        Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
+    }
+
+    public int Notify(IEnumerable<Event> readEvents)
+    {
+        var eventGroups = GroupByPosition(readEvents);
         var batch = new List<(long position, List<Event> events)>();
         var count = 0;
         foreach (var (position, events) in eventGroups)
@@ -68,8 +77,7 @@ public sealed class EventSource
             tracker?.OnProjectionFinished(position);
         }
 
-        var nextDelay = pollingStrategy.NextDelay(count);
-        Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
+        return count;
     }
 
     private static IEnumerable<(long position, IImmutableList<Event> events)> GroupByPosition(IEnumerable<Event> events)

@@ -7,13 +7,16 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 
 public static class ServiceCollectionExtension
 {
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IConnectionPool connectionPool) =>
-        services.AddHostedEventSource(_ => connectionPool);
+    public delegate void NamedBuilderDelegate(EventSourceBuilder builder, string name);
+    public static event NamedBuilderDelegate? BuilderCreated;
 
-    public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services) where TConnectionPool : IConnectionPool =>
-        services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>());
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IConnectionPool connectionPool, string? name = null) =>
+        services.AddHostedEventSource(_ => connectionPool, name);
 
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool)
+    public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services, string? name = null) where TConnectionPool : IConnectionPool =>
+        services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>(), name);
+
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool, string? name = null)
     {
         // Note: AddHostedService<T>() will only add one service per unique type T. Even if called
         // multiple times. If the user needs to track more than one Source, we'd need a new
@@ -22,6 +25,8 @@ public static class ServiceCollectionExtension
         // Web API system.
 
         var builder = new EventSourceBuilder(getConnectionPool);
+        if (name is not null) BuilderCreated?.Invoke(builder, name);
+
         services.AddSingleton<IHostedService>(p => new HostedEventSource(builder.Build(p)));
         return builder;
     }

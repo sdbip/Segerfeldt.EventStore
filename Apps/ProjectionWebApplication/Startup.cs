@@ -34,7 +34,7 @@ public class Startup
 
         services.AddSingleton<ScoreBoard>();
         services.AddSingleton<PositionTracker>();
-        services.AddHostedEventSource(new SqlConnectionPool(configuration.GetConnectionString("events")))
+        services.AddHostedEventSource(new SqlConnectionPool(configuration.GetConnectionString("events")), "events")
             .AddReceptacles(Assembly.GetExecutingAssembly())
             .SetPositionTracker<PositionTracker>();
     }
