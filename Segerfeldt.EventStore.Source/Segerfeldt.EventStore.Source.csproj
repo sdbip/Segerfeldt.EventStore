@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="PostgreSQL\schema.sql" />
       <EmbeddedResource Include="SQLServer\schema.sql" />
       <None Remove="SQLite\schema.sql" />
       <EmbeddedResource Include="SQLite\schema.sql" />
