@@ -5,6 +5,8 @@
     <file url="file://$PROJECT_DIR$/Segerfeldt.EventStore.Source/SQLServer/schema.sql" dialect="TSQL" />
     <file url="file://$PROJECT_DIR$/Segerfeldt.EventStore.Source/SQLite/schema.sql" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/Tests/Segerfeldt.EventStore.Projection.Tests/PostgreSQLProjectionTests.cs" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/Tests/Segerfeldt.EventStore.Source.Tests/PostgreSQLPublishingTests.cs" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/Tests/Segerfeldt.EventStore.Source.Tests/PostgreSQLReconstitutionTests.cs" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/Tests/Segerfeldt.EventStore.Source.Tests/SQLServerPublishingTests.cs" dialect="TSQL" />
     <file url="file://$PROJECT_DIR$/Tests/Segerfeldt.EventStore.Source.Tests/SQLServerReconstitutionTests.cs" dialect="TSQL" />
     <file url="file://$PROJECT_DIR$/Tests/Segerfeldt.EventStore.Source.Tests/SQLitePublishingTests.cs" dialect="SQLite" />
