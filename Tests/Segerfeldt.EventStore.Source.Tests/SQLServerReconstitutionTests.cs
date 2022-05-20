@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-// ReSharper disable once InconsistentNaming
 public class SQLServerReconstitutionTests
 {
     private SqlConnection connection = null!;
