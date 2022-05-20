@@ -1,50 +1,52 @@
 using NUnit.Framework;
 
+using System.Threading.Tasks;
+
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 public class ReceptacleBaseTests
 {
     [Test]
-    public void InvokesMethodWithMatchingEventNameAndType()
+    public async Task InvokesMethodWithMatchingEventNameAndType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.ReceiveAsync(new Event("an-entity", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, EntityTypeTestingReceptacle.MatchedType, "{}", 0));
+        await receptacle.ReceiveAsync(new Event("an-entity", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, EntityTypeTestingReceptacle.MatchedType, "{}", 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
 
     [Test]
-    public void DoesNotInvokeMethodWithMismatchingEventType()
+    public async Task DoesNotInvokeMethodWithMismatchingEventType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.ReceiveAsync(new Event("an-entity", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "mismatching-type", "{}", 0));
+        await receptacle.ReceiveAsync(new Event("an-entity", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "mismatching-type", "{}", 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Null);
     }
 
     [Test]
-    public void InvokesMethodIfEventTypeIgnored()
+    public async Task InvokesMethodIfEventTypeIgnored()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.ReceiveAsync(new Event("an-entity", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "an-entity-type", "{}", 0));
+        await receptacle.ReceiveAsync(new Event("an-entity", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "an-entity-type", "{}", 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
 
     [Test]
-    public void InvokesMethodWithOnlyEventParameter()
+    public async Task InvokesMethodWithOnlyEventParameter()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        receptacle.ReceiveAsync(new Event("an-entity", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "an-entity-type", "{}", 0));
+        await receptacle.ReceiveAsync(new Event("an-entity", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "an-entity-type", "{}", 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
 
     [Test]
-    public void InvokesMethodWithOnlyEntityIdAndSDataParameters()
+    public async Task InvokesMethodWithOnlyEntityIdAndSDataParameters()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        receptacle.ReceiveAsync(new Event("an-entity", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, "an-entity-type", @"{""property"":42}", 0));
+        await receptacle.ReceiveAsync(new Event("an-entity", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, "an-entity-type", @"{""property"":42}", 0));
 
         Assert.That(receptacle.ReceivedEntityId, Is.EqualTo("an-entity"));
         Assert.That(receptacle.ReceivedData, Is.EqualTo(new EventData(42)));
