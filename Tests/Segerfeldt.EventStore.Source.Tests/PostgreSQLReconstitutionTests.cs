@@ -2,6 +2,8 @@ using Npgsql;
 
 using NUnit.Framework;
 
+using Segerfeldt.EventStore.Source.Tests.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -205,7 +207,7 @@ public class PostgreSQLReconstitutionTests
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", timestamp);
+        command.AddParameter("@timestamp", timestamp.DateTime);
         command.ExecuteNonQuery();
     }
 
