@@ -37,6 +37,10 @@ public class SQLServerPublishingTests
     [Test]
     public void CanPublishSingleEvent()
     {
+        connection.Open();
+        connection.CreateCommand("UPDATE Properties SET value = 0 WHERE name = 'next_position'").ExecuteNonQuery();
+        connection.Close();
+
         publisher.Publish(new EntityId("an-entity-1"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
         connection.Open();
@@ -66,11 +70,16 @@ public class SQLServerPublishingTests
     [Test]
     public void CanPublishChanges()
     {
+        connection.Open();
+        connection.CreateCommand("UPDATE Properties SET value = 0 WHERE name = 'next_position'").ExecuteNonQuery();
+        connection.Close();
+
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity-2"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
         entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+
         publisher.PublishChanges(entity.Object, "johan");
 
         connection.Open();
@@ -100,6 +109,10 @@ public class SQLServerPublishingTests
     [Test]
     public void CannotPublishChangesIfRemoteUpdated()
     {
+        connection.Open();
+        connection.CreateCommand("UPDATE Properties SET value = 0 WHERE name = 'next_position'").ExecuteNonQuery();
+        connection.Close();
+
         GivenEntity();
 
         var entity = new Mock<IEntity>();

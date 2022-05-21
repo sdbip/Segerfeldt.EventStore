@@ -25,12 +25,6 @@ internal abstract class ActiveOperation
             : EntityVersion.New;
     }
 
-    protected async Task<long> GetCurrentPositionAsync()
-    {
-        var command = transaction.CreateCommand("SELECT MAX(position) FROM Events");
-        return await command.ExecuteScalarAsync() as long? ?? -1;
-    }
-
     protected async Task InsertEventAsync(EntityId entityId, EntityType entityType, UnpublishedEvent @event, EntityVersion version, long position)
     {
         var command = transaction.CreateCommand(
@@ -67,7 +61,8 @@ internal abstract class ActiveOperation
 
     internal async Task<UpdatedStorePosition> InsertEventsForEntities(IEnumerable<EntityData> entities)
     {
-        var position = await GetCurrentPositionAsync() + 1;
+        var position = await GetNextPositionAsync();
+        await IncrementNextPositionAsync();
 
         var entityVersions = await Task.WhenAll(
             entities.Select(async entity =>
@@ -96,6 +91,19 @@ internal abstract class ActiveOperation
                 next = next.Next();
             }
         }
+    }
+
+    protected async Task<long> GetNextPositionAsync()
+    {
+        var command = transaction.CreateCommand("SELECT value FROM Properties WHERE name = 'next_position'");
+        var result = await command.ExecuteScalarAsync();
+        return result as long? ?? -1;
+    }
+
+    private async Task IncrementNextPositionAsync()
+    {
+        var command = transaction.CreateCommand("UPDATE Properties SET value = value + 1 WHERE name = 'next_position'");
+        await command.ExecuteNonQueryAsync();
     }
 
     internal sealed record EntityData(EntityId Id, EntityType Type, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);

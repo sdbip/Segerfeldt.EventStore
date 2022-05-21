@@ -200,7 +200,7 @@ public class SQLServerReconstitutionTests
 
     private void GivenEvent(string entityId, string entityType, string eventName, string actor, DateTimeOffset timestamp)
     {
-        string commandText =
+        var commandText =
             @"INSERT INTO Events (entityId, entityType, name, details, actor, timestamp, version, position)
                     VALUES (@entityId, @entityType, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);
