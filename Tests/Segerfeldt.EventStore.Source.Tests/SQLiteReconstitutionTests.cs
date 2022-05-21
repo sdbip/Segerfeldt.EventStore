@@ -1,5 +1,7 @@
 using NUnit.Framework;
 
+using Segerfeldt.EventStore.Source.Internals;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -95,7 +97,7 @@ public class SQLiteReconstitutionTests
 
         var replayedEvents = history!.Events.ToList();
         Assert.That(replayedEvents[0].Actor, Is.EqualTo("johan"));
-        Assert.That(replayedEvents[0].Timestamp, Is.EqualTo(timestamp));
+        Assert.That(replayedEvents[0].Timestamp, Is.EqualTo(timestamp).Within(TimeSpan.FromMilliseconds(1)));
     }
 
     [Test]
@@ -169,7 +171,7 @@ public class SQLiteReconstitutionTests
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", timestamp.DateTime);
+        command.AddParameter("@timestamp", timestamp.UtcDateTime.ToJulianDay());
         command.ExecuteNonQuery();
     }
 

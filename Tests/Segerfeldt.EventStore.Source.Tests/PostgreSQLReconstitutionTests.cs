@@ -2,7 +2,7 @@ using Npgsql;
 
 using NUnit.Framework;
 
-using Segerfeldt.EventStore.Source.Tests.Extensions;
+using Segerfeldt.EventStore.Source.Internals;
 
 using System;
 using System.Collections.Generic;
@@ -40,14 +40,14 @@ public class PostgreSQLReconstitutionTests
         connection.Open();
         try
         {
-            GivenEntity("an-entity", "a-type", 3);
+            GivenEntity("an-entity-1", "a-type", 3);
         }
         finally
         {
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity-1"), new EntityType("a-type"));
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
@@ -56,7 +56,7 @@ public class PostgreSQLReconstitutionTests
     [Test]
     public void ReturnsNullIfNoEntity()
     {
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity-2"), new EntityType("a-type"));
 
         Assert.That(entity, Is.Null);
     }
@@ -67,15 +67,15 @@ public class PostgreSQLReconstitutionTests
         connection.Open();
         try
         {
-            GivenEntity("an-entity", "a-type");
-            GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
+            GivenEntity("an-entity-3", "a-type");
+            GivenEvent("an-entity-3", "an-event", @"{""meaning"":42}");
         }
         finally
         {
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity-3"), new EntityType("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -96,17 +96,17 @@ public class PostgreSQLReconstitutionTests
         connection.Open();
         try
         {
-            GivenEntity("an-entity", "a-type");
-            GivenEvent("an-entity", "first-event", version: 1);
-            GivenEvent("an-entity", "third-event", version: 3);
-            GivenEvent("an-entity", "second-event", version: 2);
+            GivenEntity("an-entity-4", "a-type");
+            GivenEvent("an-entity-4", "first-event", version: 1);
+            GivenEvent("an-entity-4", "third-event", version: 3);
+            GivenEvent("an-entity-4", "second-event", version: 2);
         }
         finally
         {
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity-4"), new EntityType("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -123,23 +123,21 @@ public class PostgreSQLReconstitutionTests
         connection.Open();
         try
         {
-            GivenEntity("an-entity", "a-type");
-            GivenEvent("an-entity", "first-event", "johan", timestamp);
+            GivenEntity("an-entity-5", "a-type");
+            GivenEvent("an-entity-5", "first-event", "johan", timestamp);
         }
         finally
         {
             connection.Close();
         }
 
-        Assume.That(timestamp.Ticks, Is.EqualTo(637643857550000000L));
-
-        var history = store.GetHistory(new EntityId("an-entity"));
+        var history = store.GetHistory(new EntityId("an-entity-5"));
 
         Assert.That(history, Is.Not.Null);
 
         var replayedEvents = history!.Events.ToList();
         Assert.That(replayedEvents[0].Actor, Is.EqualTo("johan"));
-        // Assert.That(replayedEvents[0].Timestamp, Is.EqualTo(timestamp));
+        Assert.That(replayedEvents[0].Timestamp, Is.EqualTo(timestamp).Within(TimeSpan.FromMilliseconds(1)));
     }
 
     [Test]
@@ -148,17 +146,17 @@ public class PostgreSQLReconstitutionTests
         connection.Open();
         try
         {
-            GivenEntity("an-entity", "a-type");
-            GivenEvent("an-entity", "first-event", version: 1);
-            GivenEvent("an-entity", "third-event", version: 3);
-            GivenEvent("an-entity", "second-event", version: 2);
+            GivenEntity("an-entity-6", "a-type");
+            GivenEvent("an-entity-6", "first-event", version: 1);
+            GivenEvent("an-entity-6", "third-event", version: 3);
+            GivenEvent("an-entity-6", "second-event", version: 2);
         }
         finally
         {
             connection.Close();
         }
 
-        var history = store.GetHistory(new EntityId("an-entity"));
+        var history = store.GetHistory(new EntityId("an-entity-6"));
 
         Assert.That(history, Is.Not.Null);
 
@@ -174,19 +172,19 @@ public class PostgreSQLReconstitutionTests
         connection.Open();
         try
         {
-            GivenEntity("an-entity", "a-type");
-            GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
+            GivenEntity("an-entity-7", "a-type");
+            GivenEvent("an-entity-7", "an-event", @"{""meaning"":42}");
         }
         finally
         {
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity-7"), new EntityType("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
-        Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTimeOffset.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
         Assert.That(entity?.ReplayedEvents?.First().Timestamp.Offset, Is.EqualTo(TimeSpan.Zero));
+        Assert.That(entity?.ReplayedEvents?.First().Timestamp, Is.EqualTo(DateTimeOffset.UtcNow).Within(TimeSpan.FromSeconds(1)));
     }
 
     private void GivenEntity(string entityId, string entityType, int version = 1)
@@ -207,7 +205,7 @@ public class PostgreSQLReconstitutionTests
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", timestamp.DateTime);
+        command.AddParameter("@timestamp", timestamp.UtcDateTime.ToJulianDay());
         command.ExecuteNonQuery();
     }
 

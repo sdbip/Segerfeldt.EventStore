@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Events (
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
-    "timestamp" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "timestamp" REAL DEFAULT (julianday(CURRENT_TIMESTAMP)),
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL,
 

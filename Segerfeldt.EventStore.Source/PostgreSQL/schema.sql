@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS Events (
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
-    "timestamp" TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'utc'),
---    "timestamp" REAL NOT NULL DEFAULT (extract(julian from current_timestamp at time zone 'UTC')),
+    -- PostgreSQL stores “Julian Day” offset by 12 hours
+    "timestamp" FLOAT8 NOT NULL DEFAULT (extract(julian from current_timestamp at time zone 'UTC')) - 0.5,
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL
 );

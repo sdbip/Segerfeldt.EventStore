@@ -52,17 +52,16 @@ internal sealed class GetHistoryOperation
     private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
     {
         while (reader.Read())
+        {
             yield return new PublishedEvent(
                 (string)reader["name"],
                 (string)reader["details"],
                 (string)reader["actor"],
-                ReadDateTimeUTC(reader)
+                DateTimeOffset(reader["timestamp"])
             );
+        }
     }
 
-    private static DateTimeOffset ReadDateTimeUTC(IDataRecord reader)
-    {
-        var timestampUTC = reader["timestamp"] as DateTime? ?? DateTime.MinValue;
-        return new DateTimeOffset(timestampUTC.Ticks, TimeSpan.Zero);
-    }
+    private static DateTimeOffset DateTimeOffset(object timestamp) =>
+        new(JulianDayConverter.FromJulianDay(Convert.ToDouble(timestamp)), TimeSpan.Zero);
 }
