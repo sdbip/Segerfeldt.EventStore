@@ -26,11 +26,7 @@ public class SQLiteProjectionTests
         positionTracker = new Mock<IPositionTracker>();
         eventSource = new EventSource(connectionPool.Object, positionTracker.Object, delayConfiguration.Object);
 
-        // TODO: Use SQLite.Schema here
-        connection
-            .CreateCommand("CREATE TABLE Entities (id TEXT, type TEXT, version INT);" +
-                           "CREATE TABLE Events (entityid TEXT, entityType TEXT, name TEXT, details TEXT, actor TEXT, timestamp INT DEFAULT CURRENT_TIMESTAMP, version INT, position INT)")
-            .ExecuteNonQuery();
+        Source.SQLite.Schema.CreateIfMissing(connection);
     }
 
     [Test]

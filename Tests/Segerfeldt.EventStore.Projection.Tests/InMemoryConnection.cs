@@ -27,7 +27,7 @@ internal class InMemoryConnection : IDbConnection
 
     public void Dispose() { implementor.Dispose(); }
 
-    public IDbTransaction BeginTransaction(IsolationLevel il) => throw new System.NotImplementedException();
+    public IDbTransaction BeginTransaction(IsolationLevel il) => implementor.BeginTransaction(il);
 
     public void ChangeDatabase(string databaseName) { implementor.ChangeDatabase(databaseName); }
 

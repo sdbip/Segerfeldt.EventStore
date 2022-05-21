@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
+      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
     </ItemGroup>
 
 </Project>

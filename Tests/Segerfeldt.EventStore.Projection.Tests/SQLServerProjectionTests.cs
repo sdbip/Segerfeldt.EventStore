@@ -33,32 +33,14 @@ public class SQLServerProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
-        // TODO: Use SQServer.Schema here
-        connection.Open();
-        try
-        {
-            using var command = connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;");
-            command.ExecuteNonQuery();
-        }
-        finally
-        {
-            connection.Close();
-        }
+        Source.SQLServer.Schema.CreateIfMissing(connection);
+        ClearTables();
     }
 
     [TearDown]
     public void TearDown()
     {
-        connection.Open();
-        try
-        {
-            using var command = connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;");
-            command.ExecuteNonQuery();
-        }
-        finally
-        {
-            connection.Close();
-        }
+        ClearTables();
     }
 
     [Test]
@@ -212,5 +194,19 @@ public class SQLServerProjectionTests
         positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
             .Callback<long>(l => finishedPosition.Value = l);
         return finishedPosition;
+    }
+
+    private void ClearTables()
+    {
+        connection.Open();
+        try
+        {
+            using var command = connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;");
+            command.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
     }
 }
