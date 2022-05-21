@@ -56,7 +56,7 @@ internal sealed class InsertSingleEventOperation
             var currentVersion = await GetCurrentVersionAsync();
             if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Of(1));
 
-            return await InsertEventsForEntities(new[] { new EntityData(operation.entityId, currentVersion, new[] { operation.@event }.AsEnumerable()) });
+            return await InsertEventsForEntities(new[] { new EntityData(operation.entityId, operation.type, currentVersion, new[] { operation.@event }.AsEnumerable()) });
         }
 
         private async Task<EntityVersion> GetCurrentVersionAsync()

@@ -125,8 +125,7 @@ public sealed class EventSource
         try
         {
             using var command = connection.CreateCommand(@"
-                    SELECT Events.*, Entities.type
-                        FROM Events JOIN Entities ON Events.entity = Entities.id
+                    SELECT * FROM Events
                         WHERE position > @position
                         ORDER BY position, version");
             command.AddParameter("@position", afterPosition);
@@ -142,9 +141,9 @@ public sealed class EventSource
     }
 
     private static Event ReadEvent(IDataRecord record) => new(
-        record.GetString(record.GetOrdinal("entity")),
+        record.GetString(record.GetOrdinal("entityId")),
         record.GetString(record.GetOrdinal("name")),
-        record.GetString(record.GetOrdinal("type")),
+        record.GetString(record.GetOrdinal("entityType")),
         record.GetString(record.GetOrdinal("details")),
         record.GetInt64(record.GetOrdinal("position")));
 

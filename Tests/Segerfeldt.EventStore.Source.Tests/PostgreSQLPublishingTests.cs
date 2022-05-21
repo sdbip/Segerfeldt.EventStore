@@ -45,7 +45,8 @@ public class PostgreSQLPublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entity"],
+            Entity = reader["entityId"],
+            Type = reader["entityType"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
@@ -53,6 +54,7 @@ public class PostgreSQLPublishingTests
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
+            Type = (object) "a-type",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
             Version = (object) 0,
@@ -77,7 +79,8 @@ public class PostgreSQLPublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entity"],
+            Entity = reader["entityId"],
+            Type = reader["entityType"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
@@ -85,6 +88,7 @@ public class PostgreSQLPublishingTests
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
+            Type = (object) "a-type",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
             Version = (object) 0,

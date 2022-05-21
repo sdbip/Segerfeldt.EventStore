@@ -27,23 +27,23 @@ public class SQLiteSnapshotTests
     [Test]
     public void CreatesEntityObject()
     {
-        GivenEntity("an-entity", "a-type", 42);
+        GivenEntity("an-entity-1", "a-type", 42);
 
-        var snapshot = new Snapshot(new EntityId("an-entity"), new EntityType("a-type"), EntityVersion.Of(13)) {Value = 19};
+        var snapshot = new Snapshot(new EntityId("an-entity-1"), new EntityType("a-type"), EntityVersion.Of(13)) {Value = 19};
         var entity = store.Reconstitute(snapshot);
 
         Assert.That(new {entity?.Id, entity?.Version, entity?.SnapshotValue},
-            Is.EqualTo(new {Id = new EntityId("an-entity"), Version = EntityVersion.Of(42), SnapshotValue = (int?)19}));
+            Is.EqualTo(new {Id = new EntityId("an-entity-1"), Version = EntityVersion.Of(42), SnapshotValue = (int?)19}));
     }
 
     [Test]
     public void ReplaysPublishedEvents()
     {
-        GivenEntity("an-entity", "a-type");
-        GivenEvent("an-entity", "at-snapshot-event", version: 42);
-        GivenEvent("an-entity", "after-snapshot-event", version: 43);
+        GivenEntity("an-entity-2", "a-type");
+        GivenEvent("an-entity-2", "a-type", "at-snapshot-event", version: 42);
+        GivenEvent("an-entity-2", "a-type", "after-snapshot-event", version: 43);
 
-        var snapshot = new Snapshot(new EntityId("an-entity"), new EntityType("a-type"), EntityVersion.Of(42));
+        var snapshot = new Snapshot(new EntityId("an-entity-2"), new EntityType("a-type"), EntityVersion.Of(42));
         var entity = store.Reconstitute(snapshot);
 
         Assert.That(entity?.ReplayedEvents?.Select(e => e.Name),
@@ -60,12 +60,13 @@ public class SQLiteSnapshotTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
+    private void GivenEvent(string entityId, string entityType, string eventName, string details = "{}", int version = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
+            @"INSERT INTO Events (entityId, entityType, name, details, actor, version, position)
+                    VALUES (@entityId, @entityType, @eventName, @details, 'test', @version, 1)");
         command.AddParameter("@entityId", entityId);
+        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
         command.AddParameter("@version", version);

@@ -31,12 +31,13 @@ internal abstract class ActiveOperation
         return await command.ExecuteScalarAsync() as long? ?? -1;
     }
 
-    protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EntityVersion version, long position)
+    protected async Task InsertEventAsync(EntityId entityId, EntityType entityType, UnpublishedEvent @event, EntityVersion version, long position)
     {
         var command = transaction.CreateCommand(
-            "INSERT INTO Events (entity, name, details, actor, version, position)" +
-            " VALUES (@entityId, @eventName, @details, @actor, @version, @position)",
+            "INSERT INTO Events (entityId, entityType, name, details, actor, version, position)" +
+            " VALUES (@entityId, @entityType, @eventName, @details, @actor, @version, @position)",
             ("@entityId", entityId.ToString()),
+            ("@entityType", entityType.ToString()),
             ("@eventName", @event.Name),
             ("@details", JSON.Serialize(@event.Details)),
             ("@actor", actor),
@@ -71,11 +72,11 @@ internal abstract class ActiveOperation
         var entityVersions = await Task.WhenAll(
             entities.Select(async entity =>
             {
-                var (id, currentVersion, events) = entity;
+                var (id, type, currentVersion, events) = entity;
                 var incrementingVersions = InfiniteVersionsFrom(currentVersion.Next());
                 var tuples = events.Zip(incrementingVersions).ToList();
                 foreach (var (@event, version) in tuples)
-                    await InsertEventAsync(id, @event, version, position);
+                    await InsertEventAsync(id, type, @event, version, position);
 
                 var (_, lastInsertedVersion) = tuples.Last();
                 await UpdateVersionAsync(id, lastInsertedVersion);
@@ -97,5 +98,5 @@ internal abstract class ActiveOperation
         }
     }
 
-    internal sealed record EntityData(EntityId Id, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);
+    internal sealed record EntityData(EntityId Id, EntityType Type, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);
 }

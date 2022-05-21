@@ -26,9 +26,10 @@ public class SQLiteProjectionTests
         positionTracker = new Mock<IPositionTracker>();
         eventSource = new EventSource(connectionPool.Object, positionTracker.Object, delayConfiguration.Object);
 
+        // TODO: Use SQLite.Schema here
         connection
             .CreateCommand("CREATE TABLE Entities (id TEXT, type TEXT, version INT);" +
-                           "CREATE TABLE Events (entity TEXT, name TEXT, details TEXT, actor TEXT, timestamp INT DEFAULT CURRENT_TIMESTAMP, version INT, position INT)")
+                           "CREATE TABLE Events (entityid TEXT, entityType TEXT, name TEXT, details TEXT, actor TEXT, timestamp INT DEFAULT CURRENT_TIMESTAMP, version INT, position INT)")
             .ExecuteNonQuery();
     }
 
@@ -124,8 +125,8 @@ public class SQLiteProjectionTests
     private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, @position)");
+            @"INSERT INTO Events (entityId, entityType, name, details, actor, version, position)
+                    VALUES (@entityId, 'a-type', @eventName, @details, 'test', @version, @position)");
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);

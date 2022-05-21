@@ -37,7 +37,7 @@ public class SQLServerPublishingTests
     [Test]
     public void CanPublishSingleEvent()
     {
-        publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+        publisher.Publish(new EntityId("an-entity-1"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
         connection.Open();
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -45,14 +45,16 @@ public class SQLServerPublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entity"],
+            Entity = reader["entityId"],
+            Type = reader["entityType"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
+            Entity = (object) "an-entity-1",
+            Type = (object) "a-type",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
             Version = (object) 0,
@@ -65,7 +67,7 @@ public class SQLServerPublishingTests
     public void CanPublishChanges()
     {
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+        entity.Setup(e => e.Id).Returns(new EntityId("an-entity-2"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
         entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
@@ -77,14 +79,16 @@ public class SQLServerPublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entity"],
+            Entity = reader["entityId"],
+            Type = reader["entityType"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
+            Entity = (object) "an-entity-2",
+            Type = (object) "a-type",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
             Version = (object) 0,
@@ -99,7 +103,7 @@ public class SQLServerPublishingTests
         GivenEntity();
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+        entity.Setup(e => e.Id).Returns(new EntityId("an-entity-3"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
         entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
 
@@ -112,7 +116,7 @@ public class SQLServerPublishingTests
         try
         {
             connection
-                .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
+                .CreateCommand("INSERT INTO Entities (id, type, version) VALUES ('an-entity-3', 'a-type', 3)")
                 .ExecuteNonQuery();
         }
         finally

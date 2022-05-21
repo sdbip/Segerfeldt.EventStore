@@ -7,13 +7,12 @@ CREATE TABLE IF NOT EXISTS Entities (
 );
 
 CREATE TABLE IF NOT EXISTS Events (
-    "entity" TEXT NOT NULL,
+    "entityId" TEXT NOT NULL REFERENCES Entities("id"),
+    "entityType" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
     "timestamp" REAL DEFAULT (julianday(CURRENT_TIMESTAMP)),
     "version" INT NOT NULL,
-    "position" BIGINT NOT NULL,
-
-    FOREIGN KEY ("entity") REFERENCES Entities ("id")
+    "position" BIGINT NOT NULL
 );

@@ -48,7 +48,7 @@ public class SQLiteReconstitutionTests
     public void ReplaysEvent()
     {
         GivenEntity("an-entity", "a-type");
-        GivenEvent("an-entity", "an-event", @"{""meaning"":42}");
+        GivenEvent("an-entity", "a-type", "an-event", @"{""meaning"":42}");
 
         var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
@@ -69,9 +69,9 @@ public class SQLiteReconstitutionTests
     public void ReplaysMultipleEventsInOrder()
     {
         GivenEntity("an-entity", "a-type");
-        GivenEvent("an-entity", "first-event", version: 1);
-        GivenEvent("an-entity", "third-event", version: 3);
-        GivenEvent("an-entity", "second-event", version: 2);
+        GivenEvent("an-entity", "a-type", "first-event", version: 1);
+        GivenEvent("an-entity", "a-type", "third-event", version: 3);
+        GivenEvent("an-entity", "a-type", "second-event", version: 2);
 
         var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
 
@@ -89,7 +89,7 @@ public class SQLiteReconstitutionTests
         var timestampUTC = new DateTime(2021, 08, 12, 17, 22, 35, DateTimeKind.Utc);
         var timestamp = new DateTimeOffset(timestampUTC, TimeSpan.Zero);
         GivenEntity("an-entity", "a-type");
-        GivenEvent("an-entity", "first-event", "johan", timestamp);
+        GivenEvent("an-entity", "a-type", "first-event", "johan", timestamp);
 
         var history = store.GetHistory(new EntityId("an-entity"));
 
@@ -104,9 +104,9 @@ public class SQLiteReconstitutionTests
     public void ReadsHistoryInOrder()
     {
         GivenEntity("an-entity", "a-type");
-        GivenEvent("an-entity", "first-event", version: 1);
-        GivenEvent("an-entity", "third-event", version: 3);
-        GivenEvent("an-entity", "second-event", version: 2);
+        GivenEvent("an-entity", "a-type", "first-event", version: 1);
+        GivenEvent("an-entity", "a-type", "third-event", version: 3);
+        GivenEvent("an-entity", "a-type", "second-event", version: 2);
 
         var history = store.GetHistory(new EntityId("an-entity"));
 
@@ -163,24 +163,26 @@ public class SQLiteReconstitutionTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
+    private void GivenEvent(string entityId, string entityType, string eventName, string actor, DateTimeOffset timestamp)
     {
-        string commandText = @"INSERT INTO Events (entity, name, details, actor, timestamp, version, position)
-                                 VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
+        string commandText = @"INSERT INTO Events (entityId, entityType, name, details, actor, timestamp, version, position)
+                                 VALUES (@entityId, @entityType, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);
         command.AddParameter("@entityId", entityId);
+        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
         command.AddParameter("@timestamp", timestamp.UtcDateTime.ToJulianDay());
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
+    private void GivenEvent(string entityId, string entityType, string eventName, string details = "{}", int version = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
+            @"INSERT INTO Events (entityId, entityType, name, details, actor, version, position)
+                    VALUES (@entityId, @entityType, @eventName, @details, 'test', @version, 1)");
         command.AddParameter("@entityId", entityId);
+        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
         command.AddParameter("@version", version);

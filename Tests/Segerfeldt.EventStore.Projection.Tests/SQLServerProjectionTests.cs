@@ -33,6 +33,7 @@ public class SQLServerProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
+        // TODO: Use SQServer.Schema here
         connection.Open();
         try
         {
@@ -171,8 +172,8 @@ public class SQLServerProjectionTests
         try
         {
             using var command = connection.CreateCommand(
-                @"INSERT INTO Events (entity, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, @position)");
+                @"INSERT INTO Events (entityId, entityType, name, details, actor, version, position)
+                    VALUES (@entityId, 'a-type', @eventName, @details, 'test', @version, @position)");
             command.AddParameter("@entityId", entityId);
             command.AddParameter("@eventName", eventName);
             command.AddParameter("@details", details);
