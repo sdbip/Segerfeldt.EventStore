@@ -154,7 +154,7 @@ public class PostgreSQLProjectionTests
         try
         {
             using var command = connection.CreateCommand(
-                $@"INSERT INTO Events (entityId, entityType, name, details, actor, version, position)
+                @"INSERT INTO Events (entityId, entityType, name, details, actor, version, position)
                     VALUES (@entityId, 'a-type', @eventName, @details, 'test', @version, @position)");
             command.AddParameter("@entityId", entityId);
             command.AddParameter("@eventName", eventName);
