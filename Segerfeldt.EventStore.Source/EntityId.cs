@@ -14,6 +14,6 @@ public sealed class EntityId : ValueObject<EntityId>
 
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(value);
 
-    public static implicit operator string?(EntityId? entityId) => entityId?.value;
+    public static implicit operator string(EntityId entityId) => entityId.value;
     public override string ToString() => value;
 }
