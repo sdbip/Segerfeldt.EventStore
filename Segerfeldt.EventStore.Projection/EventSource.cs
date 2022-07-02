@@ -141,9 +141,9 @@ public sealed class EventSource
     }
 
     private static Event ReadEvent(IDataRecord record) => new(
-        record.GetString(record.GetOrdinal("entityId")),
+        record.GetString(record.GetOrdinal("entity_id")),
         record.GetString(record.GetOrdinal("name")),
-        record.GetString(record.GetOrdinal("entityType")),
+        record.GetString(record.GetOrdinal("entity_type")),
         record.GetString(record.GetOrdinal("details")),
         record.GetInt64(record.GetOrdinal("position")));
 

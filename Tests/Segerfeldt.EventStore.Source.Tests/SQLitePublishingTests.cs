@@ -42,8 +42,8 @@ public class SQLitePublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entityId"],
-            Type = reader["entityType"],
+            Entity = reader["entity_id"],
+            Type = reader["entity_type"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
@@ -78,8 +78,8 @@ public class SQLitePublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entityId"],
-            Type = reader["entityType"],
+            Entity = reader["entity_id"],
+            Type = reader["entity_type"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
@@ -116,7 +116,7 @@ public class SQLitePublishingTests
     public void CannotPublishChangesIfRemoteUpdated()
     {
         connection
-            .CreateCommand("INSERT INTO Entities (id, version) VALUES ('an-entity', 3)")
+            .CreateCommand("INSERT INTO Entities (id, type, version) VALUES ('an-entity', 'a-type', 3)")
             .ExecuteNonQuery();
 
         var entity = new Mock<IEntity>();

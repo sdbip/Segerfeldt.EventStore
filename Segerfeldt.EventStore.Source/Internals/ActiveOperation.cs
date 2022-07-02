@@ -28,7 +28,7 @@ internal abstract class ActiveOperation
     protected async Task InsertEventAsync(EntityId entityId, EntityType entityType, UnpublishedEvent @event, EntityVersion version, long position)
     {
         var command = transaction.CreateCommand(
-            "INSERT INTO Events (entityId, entityType, name, details, actor, version, position)" +
+            "INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position)" +
             " VALUES (@entityId, @entityType, @eventName, @details, @actor, @version, @position)",
             ("@entityId", entityId.ToString()),
             ("@entityType", entityType.ToString()),

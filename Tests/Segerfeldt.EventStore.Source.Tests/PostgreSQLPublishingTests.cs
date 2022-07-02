@@ -48,8 +48,8 @@ public class PostgreSQLPublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entityId"],
-            Type = reader["entityType"],
+            Entity = reader["entity_id"],
+            Type = reader["entity_type"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
@@ -86,8 +86,8 @@ public class PostgreSQLPublishingTests
 
         Assert.That(new
         {
-            Entity = reader["entityId"],
-            Type = reader["entityType"],
+            Entity = reader["entity_id"],
+            Type = reader["entity_type"],
             Name = reader["name"],
             Details = reader["details"],
             Version = reader["version"],
