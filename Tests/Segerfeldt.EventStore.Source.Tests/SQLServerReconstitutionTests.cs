@@ -185,7 +185,7 @@ public class SQLServerReconstitutionTests
         var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity-7"), new EntityType("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
-        Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTimeOffset.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
+        Assert.That(entity?.ReplayedEvents?.First().Timestamp, Is.EqualTo(DateTimeOffset.UtcNow).Within(TimeSpan.FromSeconds(1)));
         Assert.That(entity?.ReplayedEvents?.First().Timestamp.Offset, Is.EqualTo(TimeSpan.Zero));
     }
 
@@ -208,7 +208,7 @@ public class SQLServerReconstitutionTests
         command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", timestamp.UtcDateTime.ToJulianDay());
+        command.AddParameter("@timestamp", timestamp.UtcDateTime.DaysSinceEpoch());
         command.ExecuteNonQuery();
     }
 

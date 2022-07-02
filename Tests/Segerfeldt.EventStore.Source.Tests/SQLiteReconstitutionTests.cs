@@ -172,7 +172,7 @@ public class SQLiteReconstitutionTests
         command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", timestamp.UtcDateTime.ToJulianDay());
+        command.AddParameter("@timestamp", timestamp.UtcDateTime.DaysSinceEpoch());
         command.ExecuteNonQuery();
     }
 

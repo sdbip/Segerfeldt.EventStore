@@ -12,9 +12,8 @@ CREATE TABLE Events (
     [name] NVARCHAR(MAX) NOT NULL,
     [details] NVARCHAR(MAX) NOT NULL,
     [actor] NVARCHAR(MAX) NOT NULL,
-    -- SQL Server does not have a built-in method for julian day, so it is hard-coded here.
-    -- SQL Server epoch is midnight Jan 1, 1900. That is Julian Day 2415020.5
-    [timestamp] FLOAT(53) NOT NULL DEFAULT (CAST(CURRENT_TIMESTAMP AS FLOAT(53)) + 2415020.5),
+    -- SQL Server epoch is midnight Jan 1, 1900, which is 25567 days before the Unix epoch
+    [timestamp] DECIMAL(12,7) NOT NULL DEFAULT (CAST(CURRENT_TIMESTAMP AS DECIMAL(14,7)) - 25567),
     [version] INT NOT NULL,
     [position] BIGINT NOT NULL
 );
@@ -26,4 +25,4 @@ CREATE TABLE Properties (
 );
 
 INSERT INTO Properties ("name", "value") SELECT 'next_position', 0
-WHERE NOT EXISTS (SELECT 1 FROM Properties WHERE "name" = 'next_position');
+    WHERE NOT EXISTS (SELECT 1 FROM Properties WHERE "name" = 'next_position');

@@ -63,5 +63,5 @@ internal sealed class GetHistoryOperation
     }
 
     private static DateTimeOffset DateTimeOffset(object timestamp) =>
-        new(JulianDayConverter.FromJulianDay(Convert.ToDouble(timestamp)), TimeSpan.Zero);
+        new(TimestampConverter.FromTimestamp(Convert.ToDouble(timestamp)), TimeSpan.Zero);
 }

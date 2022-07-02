@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS Events (
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
-    "timestamp" REAL DEFAULT (julianday(CURRENT_TIMESTAMP)),
+    "timestamp" DECIMAL(12,7) DEFAULT (strftime('%s', CURRENT_TIMESTAMP) / 86400.0),
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL
 );
