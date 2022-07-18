@@ -31,10 +31,6 @@ public class SQLitePublishingTests
     [Test]
     public void CanPublishSingleEvent()
     {
-        connection.Open();
-        connection.CreateCommand("UPDATE Properties SET value = 0 WHERE name = 'next_position'").ExecuteNonQuery();
-        connection.Close();
-
         publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
 
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -62,10 +58,6 @@ public class SQLitePublishingTests
     [Test]
     public void CanPublishChanges()
     {
-        connection.Open();
-        connection.CreateCommand("UPDATE Properties SET value = 0 WHERE name = 'next_position'").ExecuteNonQuery();
-        connection.Close();
-
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));

@@ -17,12 +17,3 @@ CREATE TABLE Events (
     version INT NOT NULL,
     position BIGINT NOT NULL
 );
-
-IF OBJECT_ID('Properties') IS NULL
-CREATE TABLE Properties (
-    name NVARCHAR(MAX) NOT NULL,
-    value BIGINT
-);
-
-INSERT INTO Properties (name, value) SELECT 'next_position', 0
-    WHERE NOT EXISTS (SELECT 1 FROM Properties WHERE name = 'next_position');
