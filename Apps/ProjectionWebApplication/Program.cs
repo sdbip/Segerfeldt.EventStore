@@ -1,15 +1,39 @@
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
-namespace ProjectionWebApplication;
+using ProjectionWebApplication;
 
-public static class Program
+using Segerfeldt.EventStore.Projection.Hosting;
+
+using System.Reflection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(c =>
 {
-    public static void Main(string[] args)
-    {
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-            .Build()
-            .Run();
-    }
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectionWebApplication", Version = "v1" });
+});
+
+builder.Services.AddSingleton<ScoreBoard>();
+builder.Services.AddSingleton<PositionTracker>();
+builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("events")!), "events")
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetPositionTracker<PositionTracker>();
+
+var app = builder.Build();
+if (builder.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProjectionWebApplication v1"));
 }
+
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();

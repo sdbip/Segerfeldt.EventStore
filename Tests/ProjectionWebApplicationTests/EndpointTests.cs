@@ -17,12 +17,12 @@ namespace ProjectionWebApplicationTests;
 public class EndpointTests
 {
     private HttpClient client = null!;
-    private WebApplicationFactory<Startup> webApplicationFactory = null!;
+    private WebApplicationFactory<ScoreBoard> webApplicationFactory = null!;
 
     [SetUp]
     public void Setup()
     {
-        webApplicationFactory = new WebApplicationFactory<Startup>();
+        webApplicationFactory = new WebApplicationFactory<ScoreBoard>();
         client = webApplicationFactory.CreateClient();
 
         var positionTracker = webApplicationFactory.Services.GetService<PositionTracker>();
