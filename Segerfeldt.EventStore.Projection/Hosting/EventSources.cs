@@ -9,16 +9,16 @@ public class EventSources
     private readonly Dictionary<string, EventSource> eventSources = new();
     private IServiceProvider? provider;
 
-    public void Add(EventSourceBuilder builder, string name)
+    public void Add(EventSourceBuilder builder, string eventSourceName)
     {
-        builders[name] = builder;
+        builders[eventSourceName] = builder;
     }
 
     public void Receive(IEnumerable<Event> events, string eventSourceName)
     {
-        if (provider is null) throw new Exception("The provider has not been set up");
         if (!eventSources.TryGetValue(eventSourceName, out var eventSource))
         {
+            if (provider is null) throw new Exception("The provider has not been set up");
             var builder = builders[eventSourceName];
             eventSource = builder.Build(provider);
             eventSources[eventSourceName] = eventSource;

@@ -13,9 +13,9 @@ public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup
     private readonly EventSources eventSources = new();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        ServiceCollectionExtension.BuilderCreated += (sourceBuilder, name) =>
+        ServiceCollectionExtension.BuilderCreated += (sourceBuilder, eventSourceName) =>
         {
-            eventSources.Add(sourceBuilder, name);
+            eventSources.Add(sourceBuilder, eventSourceName);
         };
 
         builder.ConfigureServices(services =>
