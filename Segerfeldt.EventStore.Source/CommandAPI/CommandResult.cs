@@ -33,8 +33,8 @@ public class CommandResult : ICommandResult
 {
     private readonly ResultData data;
 
-    public int StatusCode => data.StatusCode;
-    public object? Message => data.Message;
+    public int StatusCode { get => data.StatusCode; }
+    public object? Message { get => data.Message; }
 
     private CommandResult(ResultData data) => this.data = data;
 
@@ -57,8 +57,8 @@ public class CommandResult<T> : ICommandResult
 {
     private readonly ResultData data;
 
-    public int StatusCode => data.StatusCode;
-    public object? Message => data.Message;
+    public int StatusCode { get => data.StatusCode; }
+    public object? Message { get => data.Message; }
 
     public CommandResult(ResultData data) => this.data = data;
 

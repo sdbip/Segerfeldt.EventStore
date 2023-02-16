@@ -1,11 +1,12 @@
+using Microsoft.Data.Sqlite;
+
 using System.Data;
-using System.Data.SQLite;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 internal class InMemoryConnection : IDbConnection
 {
-    private readonly SQLiteConnection implementor;
+    private readonly SqliteConnection implementor;
 
     public string ConnectionString
     {
@@ -21,7 +22,11 @@ internal class InMemoryConnection : IDbConnection
     public string Database => implementor.Database;
     public ConnectionState State => implementor.State;
 
-    public InMemoryConnection() { implementor = new SQLiteConnection("Data Source = :memory:").OpenAndReturn(); }
+    public InMemoryConnection()
+    {
+        implementor = new SqliteConnection("Data Source = :memory:");
+        implementor.Open();
+    }
 
     public IDbTransaction BeginTransaction() => implementor.BeginTransaction();
 

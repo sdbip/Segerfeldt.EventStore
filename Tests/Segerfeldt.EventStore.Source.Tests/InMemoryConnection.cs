@@ -1,12 +1,13 @@
+using Microsoft.Data.Sqlite;
+
 using System.Data;
 using System.Data.Common;
-using System.Data.SQLite;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
 internal class InMemoryConnection : DbConnection
 {
-    private readonly SQLiteConnection implementor;
+    private readonly SqliteConnection implementor;
 
     public override string ConnectionString
     {
@@ -23,7 +24,11 @@ internal class InMemoryConnection : DbConnection
     public override string DataSource => implementor.DataSource!;
     public override string ServerVersion => implementor.ServerVersion!;
 
-    public InMemoryConnection() { implementor = new SQLiteConnection("Data Source = :memory:").OpenAndReturn(); }
+    public InMemoryConnection()
+    {
+        implementor = new SqliteConnection("Data Source = :memory:");
+        implementor.Open();
+    }
 
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => implementor.BeginTransaction();
 

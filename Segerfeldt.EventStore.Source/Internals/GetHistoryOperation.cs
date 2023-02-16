@@ -46,8 +46,13 @@ internal sealed class GetHistoryOperation
         return new EntityHistory(type, version, events);
     }
 
-    private static (EntityType, EntityVersion)? ReadEntityData(IDataReader reader) =>
-        reader.Read() ? (new EntityType((string)reader[0]), EntityVersion.Of((int)reader[1])) : null;
+    private static (EntityType, EntityVersion)? ReadEntityData(IDataReader reader)
+    {
+        if (reader.Read())
+            return (new EntityType(reader.GetString(0)), EntityVersion.Of(reader.GetInt32(1)));
+        else
+            return null;
+    }
 
     private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
     {
