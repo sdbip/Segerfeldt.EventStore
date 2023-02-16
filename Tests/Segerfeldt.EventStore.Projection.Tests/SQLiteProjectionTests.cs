@@ -9,6 +9,7 @@ using System.Threading;
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 // ReSharper disable once InconsistentNaming
+[Ignore("SQLite not supported on ARM64 at this time")]
 public class SQLiteProjectionTests
 {
     private InMemoryConnection connection = null!;

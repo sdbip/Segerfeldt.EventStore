@@ -7,6 +7,7 @@ using System;
 namespace Segerfeldt.EventStore.Source.Tests;
 
 // ReSharper disable once InconsistentNaming
+[Ignore("SQLite not supported on ARM64 at this time")]
 public class SQLitePublishingTests
 {
     private InMemoryConnection connection = null!;
