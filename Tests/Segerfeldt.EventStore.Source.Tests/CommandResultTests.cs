@@ -12,6 +12,22 @@ namespace Segerfeldt.EventStore.Source.Tests;
 
 public class CommandResultTests
 {
+    [TestCase(199)]
+    [TestCase(300)]
+    public void IsError(int statusCode)
+    {
+        Assert.That(Error(statusCode).IsError, Is.True);
+        Assert.That(CommandResult<string>.Error(statusCode).IsError, Is.True);
+    }
+
+    [TestCase(200)]
+    [TestCase(299)]
+    public void Error_ThrowsIfNotError(int statusCode)
+    {
+        Assert.That(() => Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
+        Assert.That(() => CommandResult<string>.Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
+    }
+
     [Test]
     public void NoValue_ConvertsToActionResultWithoutMessage()
     {
