@@ -19,10 +19,10 @@ internal class InMemoryConnection : DbConnection
         // What is the point of that!?
     }
 
-    public override string Database => implementor.Database;
-    public override ConnectionState State => implementor.State;
-    public override string DataSource => implementor.DataSource!;
-    public override string ServerVersion => implementor.ServerVersion!;
+    public override string Database { get => implementor.Database; }
+    public override ConnectionState State { get => implementor.State; }
+    public override string DataSource { get => implementor.DataSource; }
+    public override string ServerVersion { get => implementor.ServerVersion; }
 
     public InMemoryConnection()
     {
