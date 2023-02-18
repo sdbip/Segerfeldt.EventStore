@@ -54,6 +54,14 @@ public class CommandResult : ICommandResult
     public static CommandResult Forbidden() => new(StatusCodes.Status403Forbidden, null);
     public static CommandResult Forbidden(object error) => new(StatusCodes.Status403Forbidden, error);
 
+    public static CommandResult<T> BadRequest<T>(object error) => CommandResult<T>.BadRequest(error);
+    public static CommandResult<T> NotFound<T>(object error) => CommandResult<T>.NotFound(error);
+
+    public static CommandResult<T> Unauthorized<T>() => CommandResult<T>.Unauthorized();
+    public static CommandResult<T> Unauthorized<T>(object error) => CommandResult<T>.Unauthorized(error);
+    public static CommandResult<T> Forbidden<T>() => CommandResult<T>.Forbidden();
+    public static CommandResult<T> Forbidden<T>(object error) => CommandResult<T>.Forbidden(error);
+
     internal static CommandResult Error(ICommandResult other)
     {
         if (!other.IsError()) throw new Exception("Successful result used as error");
