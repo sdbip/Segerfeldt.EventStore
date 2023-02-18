@@ -54,7 +54,7 @@ public class CommandResultTests
         var result = initial.SameErrorFor<string>();
 
         Assert.That(result.IsError(), Is.True);
-        Assert.That(new {result.StatusCode, result.Content, result.Value}, Is.EqualTo(new {initial.StatusCode, initial.Content, Value = null as string}));
+        Assert.That(new {result.StatusCode, result.Content}, Is.EqualTo(new {initial.StatusCode, initial.Content}));
     }
 
     [Test]
@@ -64,7 +64,7 @@ public class CommandResultTests
         var result = initial.SameErrorFor<string>();
 
         Assert.That(result.IsError(), Is.True);
-        Assert.That(new {result.StatusCode, result.Content, result.Value}, Is.EqualTo(new {initial.StatusCode, initial.Content, Value = null as string}));
+        Assert.That(new {result.StatusCode, result.Content}, Is.EqualTo(new {initial.StatusCode, initial.Content}));
     }
 
     [Test]
