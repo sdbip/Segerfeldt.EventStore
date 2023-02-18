@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
@@ -9,14 +10,11 @@ internal class InMemoryConnection : DbConnection
 {
     private readonly SqliteConnection implementor;
 
+    [AllowNull]
     public override string ConnectionString
     {
         get => implementor.ConnectionString;
-#nullable disable // This is a fucked up situation!
         set => implementor.ConnectionString = value;
-#nullable enable // The interface is defined as
-        // string ConnectionString { get; [param: AllowNull] set;
-        // What is the point of that!?
     }
 
     public override string Database { get => implementor.Database; }
