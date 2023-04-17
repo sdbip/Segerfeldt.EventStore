@@ -1,11 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4753DDB6-1168-4785-9400-75A28AB654C8}"
-ProjectSection(SolutionItems) = preProject
-	Directory.Build.props = Directory.Build.props
-	.editorconfig = .editorconfig
-	README.md = README.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		.editorconfig = .editorconfig
+		README.md = README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}"
 EndProject
@@ -28,6 +29,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectionWebApplicationTests", "Tests\ProjectionWebApplicationTests\ProjectionWebApplicationTests.csproj", "{28ADC19F-26E1-4B9B-ACD1-0A5BDE09447D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.NUnit", "Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj", "{A7E664CB-DB3F-45D5-BB89-6FFF66D70641}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceWebApplication", "Apps\SourceWebApplication\SourceWebApplication.csproj", "{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +74,10 @@ Global
 		{A7E664CB-DB3F-45D5-BB89-6FFF66D70641}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7E664CB-DB3F-45D5-BB89-6FFF66D70641}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7E664CB-DB3F-45D5-BB89-6FFF66D70641}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
@@ -78,5 +85,6 @@ Global
 		{C2174C2A-B3B6-4B71-B204-93B6AF38FB13} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
 		{372637BF-B12C-4DE1-A24A-E49835893957} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
 		{28ADC19F-26E1-4B9B-ACD1-0A5BDE09447D} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
 	EndGlobalSection
 EndGlobal
