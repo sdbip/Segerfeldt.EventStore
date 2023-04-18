@@ -38,20 +38,28 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
                 })
                 .RemoveNulls());
 
-    private static OpenApiPathItem CreateOpenApiPathItem(IEnumerable<CommandHandlerType> handlerTypes, DocumentFilterContext context)
+    private static OpenApiPathItem CreateOpenApiPathItem(IEnumerable<CommandHandlerType> handlerTypes, DocumentFilterContext context) =>
+        new OpenApiPathItem
+        {
+            Operations = handlerTypes
+                .Select(handlerType =>
+                    (handlerType, interfaceType: GetAncestors(handlerType.Type)
+                        .Select(t => t.GetInterfaces().FirstOrDefault(IsCommandHandlerInterface))
+                        .FirstOrDefault(t => t is not null)))
+                .Where(t => t.interfaceType is not null)
+                .ToDictionary(
+                    t => t.handlerType.CommandAttribute.Method,
+                    t => CreateOpenApiOperation(t.handlerType.CommandAttribute, context, t.interfaceType!, "t.handlerType.Type.Name"))
+        };
+
+    private static IEnumerable<Type> GetAncestors(Type handlerType)
     {
-        var operations = handlerTypes.Select(handlerType =>
-            {
-                var commandHandlerType = GetCommandHandlerType(handlerType.Type);
-                if (commandHandlerType is null) return null;
-
-                var operation = CreateOpenApiOperation(handlerType.CommandAttribute, context, commandHandlerType, handlerType.Type.Name);
-                return ((OperationType method, OpenApiOperation operation)?)(handlerType.CommandAttribute.Method, operation);
-            })
-            .RemoveNulls()
-            .Select(tuple => new KeyValuePair<OperationType, OpenApiOperation>(tuple.method, tuple.operation));
-
-        return new OpenApiPathItem { Operations = new Dictionary<OperationType, OpenApiOperation>(operations) };
+        var type = handlerType;
+        while (type is not null)
+        {
+            yield return type;
+            type = type.BaseType;
+        }
     }
 
     private static OpenApiOperation CreateOpenApiOperation(ModifiesEntityAttribute attribute, DocumentFilterContext context,
@@ -124,19 +132,6 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
             : $"the associated {attribute.PropertyId} to modify for the {attribute.Entity}";
 
         operation.Parameters.Add(CreateOpenApiParameter(attribute.PropertyId, ParameterLocation.Path, description));
-    }
-
-    private static Type? GetCommandHandlerType(Type handlerType)
-    {
-        var type = handlerType;
-        while (type is not null && type != typeof(object))
-        {
-            var handleInterface = type.GetInterfaces().FirstOrDefault(IsCommandHandlerInterface);
-            if (handleInterface is not null) return handleInterface;
-            type = type.BaseType;
-        }
-
-        return null;
     }
 
     private static OpenApiResponse CreateResponseItem(Type? dtoType, DocumentFilterContext context)
