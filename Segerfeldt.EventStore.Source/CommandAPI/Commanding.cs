@@ -36,7 +36,7 @@ public static class Commanding
 
         var handlerTypes = assemblies
             .SelectMany(assembly => assembly
-                .GetExportedTypes()
+                .DefinedTypes
                 .Where(type => type.IsClass)
                 .Where(type => !type.IsAbstract));
 

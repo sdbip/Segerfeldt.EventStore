@@ -12,13 +12,9 @@ public class TestCommanding
     /// <summary>This summary is used to describe the `ResultValue` property</summary>
     public string? ResultValue { get; set; }
 
-    /// <inheritdoc />
-    /// This comment is not used in Swagger documentation, but Visual Studio will complain if it is not here.
     [AddsEntity("commanding")]
-    public class TestCommandingCommandHandler : ICommandHandler<TestCommanding, string?>
+    internal class TestCommandingCommandHandler : ICommandHandler<TestCommanding, string?>
     {
-        /// <inheritdoc />
-        /// This comment is not used in Swagger documentation, but Visual Studio will complain if it is not here.
         public async Task<CommandResult<string?>> Handle(TestCommanding command, CommandContext context)
         {
             await Task.CompletedTask;

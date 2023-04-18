@@ -28,7 +28,7 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
 
     private IEnumerable<(Type type, ModifiesEntityAttribute CommandAttribute)> FindCommandHandlerTypes() =>
         assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes()
+            .SelectMany(assembly => assembly.DefinedTypes
                 .Where(type => type.IsClass && !type.IsAbstract)
                 .Select(type =>
                 {
