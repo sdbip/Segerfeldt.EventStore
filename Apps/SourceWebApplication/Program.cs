@@ -13,10 +13,13 @@ builder.Services.AddMvcCore();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // EventStore: Add Commands to Swagger documentation
     options.DocumentCommands(Assembly.GetExecutingAssembly());
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "SourceWebApplication.xml"));
 });
 
-builder.Services.AddSingleton<IConnectionPool, NonsenseConnectionPool>(); // Needed to generate CommandContext
+// EventStore: A connection pool is needed to generate CommandContext for command handlers
+builder.Services.AddSingleton<IConnectionPool, NonsenseConnectionPool>();
 
 var app = builder.Build();
 
@@ -39,5 +42,5 @@ app.Run();
 
 internal class NonsenseConnectionPool : IConnectionPool
 {
-    public DbConnection CreateConnection() => null!;
+    public DbConnection CreateConnection() => throw new NotImplementedException("This connection pool is not meant to be used.");
 }

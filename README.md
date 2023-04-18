@@ -4,6 +4,33 @@ A package for using event-sourcing in applications. It is particularly useful wh
 
 State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL.
 
+## Commanding
+
+EventStore can auto-generate RESTful HTTP endpoints from your command handlers. Add the following code to your setup to trigger a search for command handler classes throughout your assembly:
+
+```csharp
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapCommands(Assembly.GetExecutingAssembly());
+});
+```
+
+An endpoint for retrieving the complete event history for an entity is also added as `GET /entity/{entityId}`.
+
+Each command-handler should be annotated with exactly one of the following attributes:
+- `AddsEntityAttribute` - generates an HTT1P endpoint on the form `POST /<entity>/`
+- `DeletesEntityAttribute` - generates an HTTP endpoint on the form `DELETE /<entity>/{entityId}`
+- `ModifiesEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/{entityId}/<property>`
+
+Add the following code to your setup to add Swagger documentation:
+
+```csharp
+services.AddSwaggerGen(options =>
+{
+    options.DocumentCommands(Assembly.GetExecutingAssembly());
+});
+```
+
 # The Concept Behind Event Sourcing
 
 The idea of event sourcing is to not simply store the current *state* of the application, but instead store each historical *change* to the state. We call such changes *events*.
@@ -95,17 +122,17 @@ There is currently support for three database providers.
 - PostgreSQL
 - SQLite
 
-# Deploying to NuGet
+# Deploying to NuGet (local)
 
 Set up a local NuGet store as described here:
 https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
 
-Build for Release then run one of the following:
+Update the `<PackageVersion>` value in the .csproj file(s) that you want to deploy and build for Release. Then run one or more of the following commands to deploy the output:
 
 ```
-nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.0.0.4.nupkg -source path/to/nuget-packages
+nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.0.0.4.nupkg -source path/to/nuget-packages
+nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.0.0.4.nupkg -source path/to/nuget-packages
+nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
 ```
