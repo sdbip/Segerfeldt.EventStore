@@ -26,28 +26,27 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
             swaggerDoc.Paths.Add(pattern, item);
     }
 
-    private IEnumerable<(Type type, ModifiesEntityAttribute CommandAttribute)> FindCommandHandlerTypes() =>
+    private IEnumerable<CommandHandlerType> FindCommandHandlerTypes() =>
         assemblies
             .SelectMany(assembly => assembly.DefinedTypes
                 .Where(type => type.IsClass && !type.IsAbstract)
                 .Select(type =>
                 {
                     var modifiesEntityAttribute = type.GetCustomAttribute<ModifiesEntityAttribute>(false);
-                    if (modifiesEntityAttribute is null) return ((Type, ModifiesEntityAttribute CommandAttribute)?)null;
-                    return (type, CommandAttribute: modifiesEntityAttribute);
+                    if (modifiesEntityAttribute is null) return (CommandHandlerType?)null;
+                    return new CommandHandlerType { Type = type, CommandAttribute = modifiesEntityAttribute };
                 })
                 .RemoveNulls());
 
-    private static OpenApiPathItem CreateOpenApiPathItem(IEnumerable<(Type, ModifiesEntityAttribute)> handlerTypes, DocumentFilterContext context)
+    private static OpenApiPathItem CreateOpenApiPathItem(IEnumerable<CommandHandlerType> handlerTypes, DocumentFilterContext context)
     {
         var operations = handlerTypes.Select(handlerType =>
             {
-                var (type, commandAttribute) = handlerType;
-                var commandHandlerType = GetCommandHandlerType(type);
+                var commandHandlerType = GetCommandHandlerType(handlerType.Type);
                 if (commandHandlerType is null) return null;
 
-                var operation = CreateOpenApiOperation(commandAttribute, context, commandHandlerType, type.Name);
-                return ((OperationType method, OpenApiOperation operation)?)(commandAttribute.Method, operation);
+                var operation = CreateOpenApiOperation(handlerType.CommandAttribute, context, commandHandlerType, handlerType.Type.Name);
+                return ((OperationType method, OpenApiOperation operation)?)(handlerType.CommandAttribute.Method, operation);
             })
             .RemoveNulls()
             .Select(tuple => new KeyValuePair<OperationType, OpenApiOperation>(tuple.method, tuple.operation));
@@ -161,4 +160,10 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
         t.IsGenericType &&
         (t.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
          t.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+
+    private struct CommandHandlerType
+    {
+        public Type Type { get; init; }
+        public ModifiesEntityAttribute CommandAttribute { get; init; }
+    }
 }
