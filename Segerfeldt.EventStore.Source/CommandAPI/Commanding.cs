@@ -28,27 +28,37 @@ public static class Commanding
 
     public static void MapCommands(this IEndpointRouteBuilder endpoints, params Assembly[] assemblies)
     {
-        endpoints.MapGet("history/{entityId}", async context =>
-        {
-            var result = await new QueryHandler(context).GetHistory();
-            await new ResponseBuilder(context).ApplyResult(result);
-        });
+        endpoints.MapHistory();
+        endpoints.MapCommandHandlers(assemblies);
+    }
 
-        var handlerTypes = assemblies
-            .SelectMany(assembly => assembly
-                .DefinedTypes
-                .Where(type => type.IsClass)
-                .Where(type => !type.IsAbstract));
+    private static void MapHistory(this IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("history/{entityId}", GetHistory);
+    }
 
-        foreach (var handlerType in handlerTypes)
-        {
-            if (handlerType.GetCustomAttribute<ModifiesEntityAttribute>(false) is not { } attribute) continue;
-            var pattern = attribute.Pattern;
-            endpoints.MapMethods(pattern, new []{attribute.Method.ToString()}, async context => {
-                var result = await new CommandHandler(context).HandleCommand(handlerType);
-                await new ResponseBuilder(context).ApplyResult(result);
-            });
-        }
+    private static async Task GetHistory(HttpContext context)
+    {
+        var result = await new QueryHandler(context).GetHistory();
+        await new ResponseBuilder(context).ApplyResult(result);
+    }
+
+    private static void MapCommandHandlers(this IEndpointRouteBuilder endpoints, Assembly[] assemblies)
+    {
+        var attributedClasses = assemblies
+            .SelectMany(assembly => assembly.DefinedTypes)
+            .Where(type => type.IsClass && !type.IsAbstract)
+            .Where(type => type.GetCustomAttribute<ModifiesEntityAttribute>(false) is not null)
+            .Select(type => (type, type.GetCustomAttribute<ModifiesEntityAttribute>(false)!));
+
+        foreach (var (handlerClass, attribute) in attributedClasses)
+            endpoints.MapMethods(attribute.Pattern, new[] { attribute.Method.ToString() }, context => HandleCommand(context, handlerClass));
+    }
+
+    private static async Task HandleCommand(HttpContext context, TypeInfo handlerClass)
+    {
+        var result = await new CommandHandler(context).HandleCommand(handlerClass);
+        await new ResponseBuilder(context).ApplyResult(result);
     }
 
     private class ResponseBuilder
