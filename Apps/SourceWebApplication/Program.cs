@@ -32,11 +32,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapCommands(Assembly.GetExecutingAssembly());
-});
+app.MapCommands(Assembly.GetExecutingAssembly());
 
 app.Run();
 
