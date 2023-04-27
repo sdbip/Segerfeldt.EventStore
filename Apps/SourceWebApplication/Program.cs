@@ -1,8 +1,12 @@
 using System.Data.Common;
 using System.Reflection;
 
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
+
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
+using Segerfeldt.EventStore.Source.SQLite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +23,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
-builder.Services.AddSingleton<IConnectionPool, NonsenseConnectionPool>();
+builder.Services.AddSingleton<IConnectionPool>(p =>
+{
+    var connection = new SqliteConnection(builder.Configuration.GetConnectionString("main"));
+    Schema.CreateIfMissing(connection);
+    return new MainConnectionPool(builder.Configuration);
+});
 
 var app = builder.Build();
 
@@ -36,7 +45,14 @@ app.MapCommands(Assembly.GetExecutingAssembly());
 
 app.Run();
 
-internal class NonsenseConnectionPool : IConnectionPool
+internal class MainConnectionPool : IConnectionPool
 {
-    public DbConnection CreateConnection() => throw new NotImplementedException("This connection pool is not meant to be used.");
+    private readonly IConfiguration configuration;
+
+    public MainConnectionPool(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    public DbConnection CreateConnection() => new SqliteConnection(configuration.GetConnectionString("main"));
 }

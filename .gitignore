@@ -7,3 +7,4 @@ riderModule.iml
 *.user
 Apps/ProjectionWebApplication/appsettings.Development.json
 .vs
+Apps/SourceWebApplication/source_web_application.db
