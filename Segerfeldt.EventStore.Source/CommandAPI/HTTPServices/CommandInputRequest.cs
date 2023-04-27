@@ -10,19 +10,20 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class CommandHandler
+internal class CommandInputRequest
 {
     private readonly HttpContext context;
-    private readonly ServiceLocator serviceLocator;
+    private readonly Type handlerType;
 
-    public CommandHandler(HttpContext context)
+    public CommandInputRequest(Type handlerType, HttpContext context)
     {
         this.context = context;
-        serviceLocator = new ServiceLocator(context.RequestServices);
+        this.handlerType = handlerType;
     }
 
-    public async Task<ActionResult> HandleCommand(Type handlerType)
+    public async Task<ActionResult> Execute()
     {
+        var serviceLocator = new ServiceLocator(context.RequestServices);
         var handler = serviceLocator.CreateInstance(handlerType);
         var method = handler.GetType().GetMethod(nameof(ICommandHandler<int>.Handle))!;
 

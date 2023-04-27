@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class QueryHandler
+internal class HistoryQueryRequest
 {
     private readonly HttpContext context;
     private readonly ServiceLocator serviceLocator;
 
-    public QueryHandler(HttpContext context)
+    public HistoryQueryRequest(HttpContext context)
     {
         this.context = context;
         serviceLocator = new ServiceLocator(context.RequestServices);
     }
 
-    public async Task<ActionResult> GetHistory()
+    public async Task<ActionResult> Get()
     {
         var id = (string?)context.GetRouteValue("entityId");
         var store = serviceLocator.GetServiceOrCreateInstance<EntityStore>();

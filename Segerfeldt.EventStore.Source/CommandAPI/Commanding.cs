@@ -26,10 +26,10 @@ public static class Commanding
         swaggerOptions.DocumentFilter<CommandsDocumentFilter>(assemblies.AsEnumerable());
     }
 
-    public static void MapCommands(this IEndpointRouteBuilder endpoints, params Assembly[] assemblies)
+    public static void MapCommands(this IEndpointRouteBuilder builder, params Assembly[] assemblies)
     {
-        endpoints.MapHistory();
-        endpoints.MapCommandHandlers(assemblies);
+        builder.MapHistory();
+        builder.MapCommandHandlers(assemblies);
     }
 
     private static void MapHistory(this IEndpointRouteBuilder endpoints)
@@ -39,8 +39,8 @@ public static class Commanding
 
     private static async Task GetHistory(HttpContext context)
     {
-        var result = await new QueryHandler(context).GetHistory();
-        await new ResponseBuilder(context).ApplyResult(result);
+        var result = await new HistoryQueryRequest(context).Get();
+        await context.SendResponse(result);
     }
 
     private static void MapCommandHandlers(this IEndpointRouteBuilder endpoints, Assembly[] assemblies)
@@ -57,22 +57,15 @@ public static class Commanding
 
     private static async Task HandleCommand(HttpContext context, TypeInfo handlerClass)
     {
-        var result = await new CommandHandler(context).HandleCommand(handlerClass);
-        await new ResponseBuilder(context).ApplyResult(result);
+        var result = await new CommandInputRequest(handlerClass, context).Execute();
+        await context.SendResponse(result);
     }
+}
 
-    private class ResponseBuilder
+internal static class HttpContextResponse
+{
+    public static async Task SendResponse(this HttpContext context, IActionResult actionResult)
     {
-        private readonly HttpContext context;
-
-        public ResponseBuilder(HttpContext context)
-        {
-            this.context = context;
-        }
-
-        public async Task ApplyResult(IActionResult actionResult)
-        {
-            await actionResult.ExecuteResultAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()));
-        }
+        await actionResult.ExecuteResultAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()));
     }
 }
