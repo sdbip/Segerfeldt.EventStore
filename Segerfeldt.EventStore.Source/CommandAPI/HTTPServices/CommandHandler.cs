@@ -29,10 +29,12 @@ internal class CommandHandler
         var commandResult = await ParseCommand(method);
         if (commandResult.Value is null) return commandResult.Result!;
 
-        var commandContext = new CommandContext(
-            serviceLocator.GetServiceOrCreateInstance<EventPublisher>(),
-            serviceLocator.GetServiceOrCreateInstance<EntityStore>(),
-            context);
+        var commandContext = new CommandContext
+        {
+            EventPublisher = serviceLocator.GetServiceOrCreateInstance<EventPublisher>(),
+            EntityStore = serviceLocator.GetServiceOrCreateInstance<EntityStore>(),
+            HttpContext = context
+        };
         var (actionResult, dto) = await ExecuteHandlerAsync(handler, method, commandResult.Value, commandContext);
 
         return dto is null ? actionResult : new OkObjectResult(dto);
