@@ -13,6 +13,4 @@ public sealed class CommandContext
     public required IEventPublisher EventPublisher { get; init; }
 
     public string GetRouteParameter(string name) => (string)HttpContext.GetRouteValue(name)!;
-
-    public EntityId GetEntityIdParameter() => new(GetRouteParameter(ModifiesEntityAttribute.DefaultEntityId));
 }
