@@ -1,6 +1,7 @@
 using Segerfeldt.EventStore.Source;
 
 using System;
+using System.Threading.Tasks;
 
 namespace SourceConsoleApp;
 
@@ -16,10 +17,13 @@ internal class Player : EntityBase
 
     public Player(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
 
+    public static async Task<Player?> ReconstituteAsync(EntityId entityId, EntityStore store) =>
+        await store.ReconstituteAsync<Player>(entityId, EntityType);
+
     public static Player RegisterNew(EntityId id, string name)
     {
         var player = new Player(id, EntityVersion.New) { Name = name };
-        player.Add(new UnpublishedEvent(PlayerRegistered, new {Name = name}));
+        player.Add(new UnpublishedEvent(PlayerRegistered, new Registration(name)));
         return player;
     }
 
@@ -43,3 +47,4 @@ internal class Player : EntityBase
 }
 
 internal record Registration(string Name);
+internal record ScoreIncrement(int Points);

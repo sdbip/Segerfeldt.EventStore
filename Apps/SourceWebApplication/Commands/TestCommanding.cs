@@ -1,8 +1,6 @@
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-using System;
-
 using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
 
 namespace SourceWebApplication.Commands;

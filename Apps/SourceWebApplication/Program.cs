@@ -2,7 +2,6 @@ using System.Data.Common;
 using System.Reflection;
 
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.Configuration;
 
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
@@ -41,6 +40,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+// EventStore: Map command-handlers
 app.MapCommands(Assembly.GetExecutingAssembly());
 
 app.Run();
