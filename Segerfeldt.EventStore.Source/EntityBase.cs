@@ -8,14 +8,29 @@ using System.Reflection;
 
 namespace Segerfeldt.EventStore.Source;
 
+/// <summary>
+/// Base class for creating entities without having to explicitly implement all
+/// of the <c cref="IEntity">IEntity</c> interface.
+/// Entities are the carriers of system state.
+/// <seealso cref="IEntity"/>
+/// </summary>
 public abstract class EntityBase : IEntity
 {
     private readonly List<UnpublishedEvent> unpublishedEvents = new();
+
+    /// <inheritdoc/>
     public EntityId Id { get; }
+    /// <inheritdoc/>
     public EntityType Type { get; }
+    /// <inheritdoc/>
     public EntityVersion Version { get; }
+    /// <inheritdoc/>
     public IEnumerable<UnpublishedEvent> UnpublishedEvents => unpublishedEvents.ToImmutableList();
 
+    /// <summary>Initializes a new entity</summary>
+    /// <param name="id">the unique identifier for this entity</param>
+    /// <param name="type">a type name that uniquely identifies the implementing class for compatibility checks</param>
+    /// <param name="version">the current version of a reconstituted entity, or <c cref="EntityVersion.New">New</c> for a not yet persisted entity</param>
     protected EntityBase(EntityId id, EntityType type, EntityVersion version)
     {
         Id = id;
@@ -23,12 +38,15 @@ public abstract class EntityBase : IEntity
         Version = version;
     }
 
+    /// <summary>Adds a new event to the state</summary>
+    /// <param name="event">the event to add</param>
     protected void Add(UnpublishedEvent @event)
     {
         unpublishedEvents.Add(@event);
     }
 
-    public void ReplayEvents(IEnumerable<PublishedEvent> events)
+    /// <inheritdoc/>
+    public virtual void ReplayEvents(IEnumerable<PublishedEvent> events)
     {
         foreach (var @event in events) ReplayEvent(@event);
     }
@@ -56,6 +74,21 @@ public abstract class EntityBase : IEntity
         method.Invoke(this, args);
     }
 
+    /// <summary>
+    /// Attribute for annotating a method that replays a specific event.<br />
+    /// Add a method for each event that updates the state in a way that needs to be tracked.
+    /// Add this attribute to the method to identify which event it handles.
+    /// Add a parameter to contain the event details.<br />
+    /// Methods with this attribute will be called once for each published event in order.<br />
+    /// Example:
+    /// <code>
+    ///     [ReplaysEvent("SomePropertyIncreased")]
+    ///     public void ReplaySomePropertyIncreased(Increment details)
+    ///     {
+    ///         this.SomeProperty += details.Amount;
+    ///     }
+    /// </code>
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     [MeansImplicitUse]
     protected class ReplaysEventAttribute : Attribute
