@@ -5,7 +5,12 @@ using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
 
-/// <summary>An entity type for namespacing events and verifying the type</summary>
+/// <summary>
+/// An entity type for namespacing events and verifying the type.
+/// 
+/// An EntityType is essentially a <c cref="string">String</c> with validation rules.
+/// You can use it wherever strings are accepted.
+/// </summary>
 public sealed class EntityType : ValueObject<EntityType>
 {
     private readonly string name;
@@ -20,6 +25,7 @@ public sealed class EntityType : ValueObject<EntityType>
 
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(name);
 
+    public static implicit operator string(EntityType type) => type.name;
     public override string ToString() => name;
 
     private static void GuardIsValid(string name)

@@ -24,4 +24,10 @@ public class EntityTypeTests
     {
         Assert.That(() => new EntityType(id), Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
+
+    [Test]
+    public void IsImplicitlyConvertedToString()
+    {
+        Assert.That(() => IsValidId(new EntityType("name")), Throws.Nothing);
+    }
 }

@@ -5,7 +5,12 @@ using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
 
-/// <summary>And entity identifier</summary>
+/// <summary>
+/// An entity identifier.
+/// 
+/// An Entityid is essentially a <c cref="string">String</c> with validation rules.
+/// You can use it wherever strings are accepted.
+/// </summary>
 public sealed class EntityId : ValueObject<EntityId>
 {
     private readonly string value;
@@ -20,6 +25,8 @@ public sealed class EntityId : ValueObject<EntityId>
 
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(value);
 
+    // Implicitly converts an EntityId to a string. An EntityId is essentially a string with validation rules.
+    // Tread
     public static implicit operator string(EntityId entityId) => entityId.value;
     public override string ToString() => value;
 
