@@ -6,28 +6,34 @@ namespace Segerfeldt.EventStore.Source.Tests;
 
 public class EntityTypeTests
 {
-    [TestCase("lowercase")]
-    [TestCase("UPPERCASE")]
-    [TestCase("hyphen-")]
-    [TestCase("underscore_")]
-    [TestCase("numbers123")]
-    public void IsValidId(string id)
+    [Test]
+    public void IsValidType(
+        [Values(
+            "lowercase",
+            "UPPERCASE",
+            "hyphen-",
+            "underscore_",
+            "numbers123",
+            "dots.are.allowed"
+        )] string name)
     {
-        Assert.That(() => new EntityType(id), Throws.Nothing);
+        Assert.That(() => new EntityType(name), Throws.Nothing);
     }
 
-    [TestCase("this contains spaces")]
-    [TestCase("{brace}")]
-    [TestCase("no.dots.allowed")]
-    [TestCase("")]
-    public void IsNotValidId(string id)
+    [Test]
+    public void IsNotValidName(
+        [Values(
+            "this contains spaces",
+            "{brace}",
+            ""
+        )] string name)
     {
-        Assert.That(() => new EntityType(id), Throws.InstanceOf<ArgumentOutOfRangeException>());
+        Assert.That(() => new EntityType(name), Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
     [Test]
     public void IsImplicitlyConvertedToString()
     {
-        Assert.That(() => IsValidId(new EntityType("name")), Throws.Nothing);
+        Assert.That(() => IsValidType(new EntityType("name")), Throws.Nothing);
     }
 }

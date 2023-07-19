@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
@@ -23,6 +24,22 @@ public sealed class EntityId : ValueObject<EntityId>
         this.value = value;
     }
 
+    /// <summary>Generates a new EntityId as a GUID string</summaryz>
+    /// <returns>a generated EntityId</returns>
+    public static EntityId NewGuid()
+    {
+        var guid = Guid.NewGuid();
+        return new EntityId(guid.ToString());
+    }
+
+    /// <summary>Generates a new EntityId as a Base64 (URL) encoded GUID</summaryz>
+    /// <returns>a generated EntityId</returns>
+    public static EntityId NewBase64Guid()
+    {
+        var guid = Guid.NewGuid();
+        return new EntityId(Convert.ToBase64String(guid.ToByteArray()).Replace('+', '-').Replace("/", "_"));
+    }
+
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(value);
 
     // Implicitly converts an EntityId to a string. An EntityId is essentially a string with validation rules.
@@ -30,9 +47,13 @@ public sealed class EntityId : ValueObject<EntityId>
     public static implicit operator string(EntityId entityId) => entityId.value;
     public override string ToString() => value;
 
-    private static void GuardIsValid(string entityId)
+
+    private static void GuardIsValid(string entityId, [CallerArgumentExpression(nameof(entityId))] string? parameterName = null)
     {
-        if (!Regex.IsMatch(entityId, "^[a-zA-Z0-9_-]+$"))
-            throw new ArgumentOutOfRangeException(nameof(entityId), $"'{entityId}' is not a valid entity-type name");
+        if (!IsValidId(entityId))
+            throw new ArgumentOutOfRangeException(parameterName, $"'{entityId}' is not a valid entity-type name");
     }
+
+    #pragma warning disable SYSLIB1045 // Don't want partial classes
+    private static bool IsValidId(string entityId) => Regex.IsMatch(entityId, "^[a-zA-Z0-9_-]+=*$");
 }

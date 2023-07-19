@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
@@ -28,9 +29,12 @@ public sealed class EntityType : ValueObject<EntityType>
     public static implicit operator string(EntityType type) => type.name;
     public override string ToString() => name;
 
-    private static void GuardIsValid(string name)
+    private static void GuardIsValid(string name, [CallerArgumentExpression(nameof(name))] string? parameterName = null)
     {
-        if (!Regex.IsMatch(name, "^[a-zA-Z0-9_-]+$"))
-            throw new ArgumentOutOfRangeException(nameof(name), $"'{name}' is not a valid entity-type name");
+        if (!IsValidTypeName(name))
+            throw new ArgumentOutOfRangeException(parameterName, $"'{name}' is not a valid entity-type name");
     }
+
+    #pragma warning disable SYSLIB1045 // Avoid partial classes
+    private static bool IsValidTypeName(string name) => Regex.IsMatch(name, "^[a-zA-Z0-9._-]+$");
 }
