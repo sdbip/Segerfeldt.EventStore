@@ -37,7 +37,7 @@ public static class CommandResultExtension
     public static CommandResult SameError(this ICommandResult commandResult) =>
         CommandResult.Error(commandResult.StatusCode, commandResult.Content);
     public static CommandResult<TOther> SameErrorFor<TOther>(this ICommandResult commandResult) =>
-        CommandResult<TOther>.Error(commandResult.StatusCode, commandResult.Content);
+        new(commandResult.StatusCode, default, commandResult.Content);
 }
 
 public class CommandResult : ICommandResult
@@ -52,7 +52,7 @@ public class CommandResult : ICommandResult
     }
 
     public static CommandResult Ok() => new(StatusCodes.Status204NoContent, null);
-    public static CommandResult<T> Ok<T>(T value) => CommandResult<T>.Ok(value);
+    public static CommandResult<T> Ok<T>(T value) => new(StatusCodes.Status200OK, value, value);
 
     public static CommandResult BadRequest(object error) => new(StatusCodes.Status400BadRequest, error);
     public static CommandResult NotFound(object error) => new(StatusCodes.Status404NotFound, error);
@@ -65,48 +65,31 @@ public class CommandResult : ICommandResult
     public static CommandResult Error(int statusCode, object? content = null) =>
         new(CommandResultExtension.GuardIsError(statusCode), content);
 
-    public static CommandResult<T> BadRequest<T>(object error) => CommandResult<T>.BadRequest(error);
-    public static CommandResult<T> NotFound<T>(object error) => CommandResult<T>.NotFound(error);
+    public static CommandResult<T> BadRequest<T>(object error) => Error(StatusCodes.Status400BadRequest, error);
+    public static CommandResult<T> NotFound<T>(object error) => Error(StatusCodes.Status404NotFound, error);
 
-    public static CommandResult<T> Unauthorized<T>() => CommandResult<T>.Unauthorized();
-    public static CommandResult<T> Unauthorized<T>(object error) => CommandResult<T>.Unauthorized(error);
-    public static CommandResult<T> Forbidden<T>() => CommandResult<T>.Forbidden();
-    public static CommandResult<T> Forbidden<T>(object error) => CommandResult<T>.Forbidden(error);
+    public static CommandResult<T> Unauthorized<T>() => Error(StatusCodes.Status401Unauthorized);
+    public static CommandResult<T> Unauthorized<T>(object error) => Error(StatusCodes.Status401Unauthorized, error);
+    public static CommandResult<T> Forbidden<T>() => Error(StatusCodes.Status403Forbidden);
+    public static CommandResult<T> Forbidden<T>(object error) => Error(StatusCodes.Status403Forbidden, error);
 
-    public static CommandResult<T> Error<T>(int statusCode, object? content = null) => CommandResult<T>.Error(statusCode, content);
+    public static CommandResult<T> Error<T>(int statusCode, object? content = null) =>
+      new(CommandResultExtension.GuardIsError(statusCode), default, content);
 }
 
 public class CommandResult<T> : ICommandResult
 {
-    private readonly T? value;
-
     public int StatusCode { get; }
     public object? Content { get; }
-    public T Value { get => GetValue(); }
+    public T? Value { get; }
 
-    private CommandResult(int statusCode, T? value, object? content)
+    internal CommandResult(int statusCode, T? value, object? content)
     {
-        this.value = value;
+        Value = value;
         StatusCode = statusCode;
         Content = content;
     }
 
-    public static CommandResult<T> Ok(T value) => new(StatusCodes.Status200OK, value, value);
-
-    public static CommandResult<T> BadRequest(object error) => Error(StatusCodes.Status400BadRequest, error);
-    public static CommandResult<T> NotFound(object error) => Error(StatusCodes.Status404NotFound, error);
-
-    public static CommandResult<T> Unauthorized() => Error(StatusCodes.Status401Unauthorized);
-    public static CommandResult<T> Unauthorized(object error) => Error(StatusCodes.Status401Unauthorized, error);
-    public static CommandResult<T> Forbidden() => Error(StatusCodes.Status403Forbidden);
-    public static CommandResult<T> Forbidden(object error) => Error(StatusCodes.Status403Forbidden, error);
-
-    public static CommandResult<T> Error(int statusCode, object? content = null) =>
-        new(CommandResultExtension.GuardIsError(statusCode), default, content);
-
-    private T GetValue()
-    {
-        if (value is null) throw new Exception("Attempt to get value from failed result.");
-        return value!;
-    }
+    public static implicit operator CommandResult<T>(CommandResult errorResult) =>
+      new(errorResult.StatusCode, default, errorResult.Content);
 }

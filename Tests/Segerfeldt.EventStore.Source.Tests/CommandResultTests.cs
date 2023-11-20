@@ -6,8 +6,6 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 
 using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
 
-using Require = NUnit.Framework.Assert;
-
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public class CommandResultTests
@@ -17,7 +15,6 @@ public class CommandResultTests
     public void IsError(int statusCode)
     {
         Assert.That(Error(statusCode).IsError, Is.True);
-        Assert.That(CommandResult<string>.Error(statusCode).IsError, Is.True);
     }
 
     [TestCase(200)]
@@ -25,7 +22,6 @@ public class CommandResultTests
     public void Error_ThrowsIfNotError(int statusCode)
     {
         Assert.That(() => Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
-        Assert.That(() => CommandResult<string>.Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
     }
 
     [Test]
