@@ -23,7 +23,20 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
             .Select(group => (group.Key, CreateOpenApiPathItem(group, context)));
 
         foreach (var (pattern, item) in pathItemsByPattern)
-            swaggerDoc.Paths.Add(pattern, item);
+          if (swaggerDoc.Paths.ContainsKey(pattern))
+          {
+            var existingDoc = swaggerDoc.Paths[pattern];
+            foreach (var operation in item.Operations)
+            {
+              if (existingDoc.Operations.ContainsKey(operation.Key))
+                throw new Exception($"The operation '{operation.Key}' has multiple definitions for pattern '{pattern}'");
+              existingDoc.Operations.Add(operation.Key, operation.Value);
+            }
+          }
+          else
+          {
+              swaggerDoc.Paths.Add(pattern, item);
+          }
     }
 
     private IEnumerable<CommandHandlerType> FindCommandHandlerTypes() =>
