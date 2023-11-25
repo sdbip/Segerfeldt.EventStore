@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -121,22 +123,23 @@ public sealed class EventSource
 
     private IEnumerable<Event> ReadEvents(long afterPosition)
     {
-        connection.Open();
         try
         {
-            using var command = connection.CreateCommand(@"
+            return connection.OpenAndExecute(_ =>
+            {
+                var command = connection.CreateCommand("""
                     SELECT * FROM Events
                         WHERE position > @position
-                        ORDER BY position, version");
-            command.AddParameter("@position", afterPosition);
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-                yield return ReadEvent(reader);
+                        ORDER BY position, version
+                    """);
+                command.AddParameter("@position", afterPosition);
+                return command.ExecuteReader().AllRowsAs(ReadEvent);
+            });
         }
-        finally
+        catch (DbException)
         {
-            connection.Close();
+            // No connection => no events.
+            return Array.Empty<Event>();
         }
     }
 
