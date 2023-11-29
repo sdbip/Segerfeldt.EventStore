@@ -18,7 +18,7 @@ app.UseEndpoints(endpoints =>
 An endpoint for retrieving the complete event history for an entity is also added as `GET /entity/{entityId}`.
 
 Each command-handler should be annotated with exactly one of the following attributes:
-- `AddsEntityAttribute` - generates an HTT1P endpoint on the form `POST /<entity>/`
+- `AddsEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/`
 - `DeletesEntityAttribute` - generates an HTTP endpoint on the form `DELETE /<entity>/{entityId}`
 - `ModifiesEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/{entityId}/<property>`
 
@@ -101,14 +101,14 @@ The `Events` table:
 "name" TEXT
 "details" TEXT
 "actor" TEXT
-"timestamp" DECIMAL(12,7) -- Julian Day (days since ) representation
+"timestamp" DECIMAL(12,7)
 "version" INT
 "position" BIGINT
 ```
 
 The events table is the main storage space for entity state. The `entity_id` and `entity_type` columns must match the corresponding columns for a row in the `Entities` table. This is the entity that changed with this event.
 
-The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity, and the last event stored for an entity must match its `version` column. The `position` column orders events globally and is motly used for projections.
+The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity, and the last event stored for an entity must match its `version` column. The `position` column orders events globally and is mostly used for projections.
 
 The `actor` and `timestamp` columns are metadata that can be used for auditing.
 
@@ -129,7 +129,7 @@ https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
 
 Update the `<PackageVersion>` value in the .csproj file(s) that you want to deploy and build for Release. Then run one or more of the following commands to deploy the output:
 
-```
+```shell
 nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
 
 nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
