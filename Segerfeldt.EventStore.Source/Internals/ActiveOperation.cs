@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -20,9 +21,10 @@ internal abstract class ActiveOperation
     {
         var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
             ("@entityId", entityId.ToString()));
-        return await command.ExecuteScalarAsync() is int versionValue
-            ? EntityVersion.Of(versionValue)
-            : EntityVersion.New;
+        var scalar = await command.ExecuteScalarAsync();
+        return scalar is null
+            ? EntityVersion.New
+            : EntityVersion.Of(Convert.ToInt32(scalar));
     }
 
     protected async Task InsertEventAsync(EntityId entityId, EntityType entityType, UnpublishedEvent @event, EntityVersion version, long position)

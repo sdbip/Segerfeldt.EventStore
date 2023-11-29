@@ -56,7 +56,7 @@ public class SQLitePublishingTests
     }
 
     [Test]
-    public void CanPublishChanges()
+    public void CanPublishNewEntity()
     {
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
@@ -83,6 +83,41 @@ public class SQLitePublishingTests
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
             Version = (object) 0L,
+            Position = (object) 0L
+        }));
+    }
+
+    [Test]
+    public void CanPublishChanges()
+    {
+        connection.CreateCommand("INSERT INTO Entities (id, type, version) VALUES ('an-entity', 'a-type', 0)").ExecuteNonQuery();
+
+        var entity = new Mock<IEntity>();
+        entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
+        entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(0));
+        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+
+        publisher.PublishChanges(entity.Object, "johan");
+
+        using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+        reader.Read();
+
+        Assert.That(new
+        {
+            Entity = reader["entity_id"],
+            Type = reader["entity_type"],
+            Name = reader["name"],
+            Details = reader["details"],
+            Version = reader["version"],
+            Position = reader["position"]
+        }, Is.EqualTo(new
+        {
+            Entity = (object) "an-entity",
+            Type = (object) "a-type",
+            Name = (object) "an-event",
+            Details = (object) @"{""meaning"":42}",
+            Version = (object) 1L,
             Position = (object) 0L
         }));
     }
