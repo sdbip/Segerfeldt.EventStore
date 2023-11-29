@@ -36,8 +36,7 @@ internal class Player : EntityBase
         }
 
         Score += points;
-        var increment = new ScoreIncrement(points);
-        Add(new UnpublishedEvent(ScoreIncreased, increment));
+        Add(new UnpublishedEvent(ScoreIncreased, new ScoreIncrement(points)));
     }
 
     [ReplaysEvent(PlayerRegistered)]
