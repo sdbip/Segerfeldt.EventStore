@@ -34,6 +34,7 @@ internal class CommandInputRequest
         {
             EventPublisher = serviceLocator.GetServiceOrCreateInstance<EventPublisher>(),
             EntityStore = serviceLocator.GetServiceOrCreateInstance<EntityStore>(),
+            Request = new WrappedHttpContext(context),
             HttpContext = context
         };
         var (actionResult, dto) = await ExecuteHandlerAsync(handler, method, commandResult.Value, commandContext);
