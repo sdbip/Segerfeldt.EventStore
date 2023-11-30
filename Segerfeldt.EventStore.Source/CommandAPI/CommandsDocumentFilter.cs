@@ -62,7 +62,7 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
                 .Where(t => t.interfaceType is not null)
                 .ToDictionary(
                     t => t.handlerType.CommandAttribute.Method,
-                    t => CreateOpenApiOperation(t.handlerType.CommandAttribute, context, t.interfaceType!, "t.handlerType.Type.Name"))
+                    t => CreateOpenApiOperation(t.handlerType, context, t.interfaceType!, "t.handlerType.Type.Name"))
         };
 
     private static IEnumerable<Type> GetAncestors(Type handlerType)
@@ -75,12 +75,27 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
         }
     }
 
-    private static OpenApiOperation CreateOpenApiOperation(ModifiesEntityAttribute attribute, DocumentFilterContext context,
-        Type commandHandlerType, string operationId)
+    private static OpenApiOperation CreateOpenApiOperation(CommandHandlerType commandHandlerType, DocumentFilterContext context,
+        Type interfaceType, string operationId)
     {
-        var genericArguments = commandHandlerType.GetGenericArguments();
-        var commandType = genericArguments[0];
-        var dtoType = genericArguments.Skip(1).FirstOrDefault();
+        var attribute = commandHandlerType.CommandAttribute;
+
+        Type commandType;
+        Type? dtoType;
+        IEnumerable<PropertyInfo> properties;
+
+        if (IsCommandlessHandlerInterface(interfaceType))
+        {
+            commandType = commandHandlerType.Type;
+            properties = Array.Empty<PropertyInfo>();
+            dtoType = interfaceType.GetGenericArguments().FirstOrDefault();
+        }
+        else
+        {
+            commandType = interfaceType.GetGenericArguments().First();
+            dtoType = interfaceType.GetGenericArguments().Skip(1).FirstOrDefault();
+            properties = commandType.GetProperties();
+        }
 
         var requestSchema = context.SchemaGenerator.GenerateSchema(commandType, context.SchemaRepository);
 
@@ -98,8 +113,7 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
         switch (attribute.Method)
         {
             case OperationType.Get:
-            {
-                foreach (var property in commandType.GetProperties())
+                foreach (var property in properties)
                 {
                     var description = commandSchema!.Properties
                         .FirstOrDefault(p =>
@@ -107,9 +121,8 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
                         .Value.Description;
                     operation.Parameters.Add(CreateOpenApiParameter(property.Name, ParameterLocation.Query, description));
                 }
-
                 break;
-            }
+
             case OperationType.Post or OperationType.Put or OperationType.Patch:
                 operation.RequestBody = new OpenApiRequestBody
                 {
@@ -164,12 +177,22 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
             Description = description
         };
 
-    private static bool IsCommandHandlerInterface(Type t) =>
-        t.IsGenericType &&
-        (t.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
-         t.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+     private static bool IsCommandHandlerInterface(Type type) => IsTraditionalCommandHandlerInterface(type) || IsCommandlessHandlerInterface(type);
 
-    private struct CommandHandlerType
+     private static bool IsCommandlessHandlerInterface(Type interfaceType) =>
+        interfaceType.IsGenericType
+            ? interfaceType.GetGenericTypeDefinition() == typeof(ICommandlessHandler<>)
+            : interfaceType == typeof(ICommandlessHandler);
+
+    private static bool IsTraditionalCommandHandlerInterface(Type interfaceType)
+    {
+        if (!interfaceType.IsGenericType) return false;
+        var genericBaseType = interfaceType.GetGenericTypeDefinition();
+        return genericBaseType == typeof(ICommandHandler<>) ||
+        genericBaseType == typeof(ICommandHandler<,>);
+    }
+
+    private readonly struct CommandHandlerType
     {
         public Type Type { get; init; }
         public ModifiesEntityAttribute CommandAttribute { get; init; }
