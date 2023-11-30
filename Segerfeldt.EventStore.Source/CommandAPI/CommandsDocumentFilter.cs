@@ -80,22 +80,20 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
     {
         var attribute = commandHandlerType.CommandAttribute;
 
-        Type commandType;
-        Type? dtoType;
-        IEnumerable<PropertyInfo> properties;
+        var isCommandless = IsCommandlessHandlerInterface(interfaceType);
+        var isEmptyCommand = !isCommandless && interfaceType.GetGenericArguments().First() == typeof(EmptyCommand);
 
-        if (IsCommandlessHandlerInterface(interfaceType))
-        {
-            commandType = commandHandlerType.Type;
-            properties = Array.Empty<PropertyInfo>();
-            dtoType = interfaceType.GetGenericArguments().FirstOrDefault();
-        }
-        else
-        {
-            commandType = interfaceType.GetGenericArguments().First();
-            dtoType = interfaceType.GetGenericArguments().Skip(1).FirstOrDefault();
-            properties = commandType.GetProperties();
-        }
+        var commandType = isCommandless || isEmptyCommand
+            ? commandHandlerType.Type
+            : interfaceType.GetGenericArguments().First();
+
+        var dtoType = isCommandless
+            ? interfaceType.GetGenericArguments().FirstOrDefault()
+            : interfaceType.GetGenericArguments().Skip(1).FirstOrDefault();
+
+        var properties = isCommandless || isEmptyCommand
+            ? Array.Empty<PropertyInfo>()
+            : commandType.GetProperties();
 
         var requestSchema = context.SchemaGenerator.GenerateSchema(commandType, context.SchemaRepository);
 
