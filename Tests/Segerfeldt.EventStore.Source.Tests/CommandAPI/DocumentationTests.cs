@@ -216,6 +216,21 @@ public sealed class DocumentationTests
         Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Tags.Select(t => t.Name), Is.EquivalentTo(new [] { "Entity" }));
     }
 
+    [Test]
+    public void AllowsOverloadingPatternWithDifferentMethod()
+    {
+        var generator = new DocumentationGenerator(context);
+
+        generator.AddCommandHandler(typeof(CommandHandler));
+        generator.AddCommandHandler(typeof(OverloadingCommandHandler));
+
+        generator.Generate(document);
+
+        Assert.That(document.Paths, Does.ContainKey("/entity"));
+        Assert.That(document.Paths["/entity"].Operations, Does.ContainKey(OperationType.Post));
+        Assert.That(document.Paths["/entity"].Operations, Does.ContainKey(OperationType.Delete));
+    }
+
     [DeletesEntity("Entity", EntityId = "id1", Property = "property", PropertyId = "id2")]
     private class CommandlessHandler : ICommandlessHandler
     {
@@ -243,6 +258,15 @@ public sealed class DocumentationTests
         }
     }
 
+    [ModifiesEntity("Entity", Method = OperationType.Delete)]
+    private class OverloadingCommandHandler : ICommandHandler<OverloadingCommand>
+    {
+        public Task<CommandResult> Handle(OverloadingCommand command, CommandContext context)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     [AddsEntity("Entity")]
     private class CommandHandlerWithDTO : ICommandHandler<Command, Result>
     {
@@ -253,6 +277,7 @@ public sealed class DocumentationTests
     }
 
     private record Command(string Parameter);
+    private record OverloadingCommand(string Parameter);
     private record Result(string Value);
 }
 

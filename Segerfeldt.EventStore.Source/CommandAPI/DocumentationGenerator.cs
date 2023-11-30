@@ -41,24 +41,23 @@ public sealed class DocumentationGenerator
                 : context.SchemaRepository.Schemas[requestBodySchema.Reference.Id];
 
             var attribute = handler.GetCustomAttribute<ModifiesEntityAttribute>(false)!;
-            document.Paths[attribute.Pattern] = new OpenApiPathItem
-            {
-                Operations = new Dictionary<OperationType, OpenApiOperation>
+
+            if (!document.Paths.ContainsKey(attribute.Pattern))
+                document.Paths[attribute.Pattern] = new OpenApiPathItem
                 {
-                    {
-                        attribute.Method,
-                        new OpenApiOperation
-                        {
-                            Parameters = Parameters(attribute),
-                            OperationId = $"{attribute.Method.ToString().ToUpper()} {attribute.Pattern}",
-                            Summary = commandSchema.Description,
-                            Responses = Responses(handler, context),
-                            RequestBody = RequestBody(commandParameter?.ParameterType, requestBodySchema),
-                            Tags = { new OpenApiTag { Name = attribute.Entity } }
-                        }
-                    },
-                }
-            };
+                    Operations = new Dictionary<OperationType, OpenApiOperation>(),
+                };
+
+            document.Paths[attribute.Pattern].Operations[attribute.Method] =
+                new OpenApiOperation
+                {
+                    Parameters = Parameters(attribute),
+                    OperationId = $"{attribute.Method.ToString().ToUpper()} {attribute.Pattern}",
+                    Summary = commandSchema.Description,
+                    Responses = Responses(handler, context),
+                    RequestBody = RequestBody(commandParameter?.ParameterType, requestBodySchema),
+                    Tags = { new OpenApiTag { Name = attribute.Entity } }
+                };
         }
     }
 
