@@ -153,9 +153,8 @@ internal sealed class CommandsDocumentFilter : IDocumentFilter
     {
         if (attribute.PropertyId is null) return;
 
-        var description = attribute.Method == OperationType.Delete
-            ? $"the associated {attribute.PropertyId} to remove from the {attribute.Entity}"
-            : $"the associated {attribute.PropertyId} to modify for the {attribute.Entity}";
+        var modify = attribute.Method == OperationType.Delete ? "remove" : "modify";
+        var description = $"the associated {attribute.PropertyId} to {modify} for the {attribute.Entity}";
 
         operation.Parameters.Add(CreateOpenApiParameter(attribute.PropertyId, ParameterLocation.Path, description));
     }
