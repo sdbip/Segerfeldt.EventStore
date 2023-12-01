@@ -1,11 +1,6 @@
-using JetBrains.Annotations;
-
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
-
-[PublicAPI]
-public sealed record EmptyCommand;
 
 public interface ICommandHandler { }
 
