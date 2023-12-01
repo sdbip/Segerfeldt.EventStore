@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ internal class CommandInputRequest
         var method = handler.GetType().GetMethod(nameof(ICommandHandler<int>.Handle))!;
 
         var commandResult = await ParseCommand(method);
-        if (commandResult.Value is null) return commandResult.Result!;
+        if (IsErrorResult(commandResult)) return commandResult.Result!;
 
         var commandContext = new CommandContext
         {
@@ -42,15 +44,25 @@ internal class CommandInputRequest
         return dto is null ? actionResult : new OkObjectResult(dto);
     }
 
-    private async Task<ActionResult<object>> ParseCommand(MethodBase method)
+    private static bool IsErrorResult(ActionResult<object?> commandResult)
     {
+        var convertible = commandResult.Result as IConvertToActionResult;
+        var statusCodeResult = convertible?.Convert() as IStatusCodeActionResult;
+        return statusCodeResult?.StatusCode is not null or (>= 200 and < 300);
+    }
+
+    private async Task<ActionResult<object?>> ParseCommand(MethodBase method)
+    {
+        if (method.GetParameters().Length < 2) return new BadRequestObjectResult("");
+        if (method.GetParameters().Length < 2) return (object?)null;
+
         var commandType = method.GetParameters()[0].ParameterType;
         object? command;
         if (context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Delete)
             command = DeserializeQueryCommand(commandType);
         else
             command = await DeserializeCommand(commandType);
-        if (command is null) return new ActionResult<object>(new BadRequestObjectResult("Command is null"));
+        if (command is null) return new ActionResult<object?>(new BadRequestObjectResult("Command is null"));
 
         var missingProperties = GetMissingProperties(command).ToList();
         if (missingProperties.Any())
@@ -98,7 +110,10 @@ internal class CommandInputRequest
         Task task;
         try
         {
-            task = (Task)method.Invoke(handler, new[] { command, context })!;
+            if (command is null)
+                task = (Task)method.Invoke(handler, new[] { context })!;
+            else
+                task = (Task)method.Invoke(handler, new[] { command, context })!;
             await task;
         }
         catch (Exception e)
