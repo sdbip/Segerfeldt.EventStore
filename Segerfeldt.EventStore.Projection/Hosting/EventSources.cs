@@ -9,25 +9,44 @@ public class EventSources
     private readonly Dictionary<string, EventSource> eventSources = new();
     private IServiceProvider? provider;
 
-    public void Add(EventSourceBuilder builder, string eventSourceName)
+    public EventSource this[string eventSourceName]
+    {
+        get
+        {
+            if (!eventSources.TryGetValue(eventSourceName, out var eventSource))
+            {
+                if (!builders.TryGetValue(eventSourceName, out var builder))
+                    throw new Exception($"There is no source named {eventSourceName}");
+                if (provider is null)
+                    throw new Exception($"The IServiceProvider has not been set up");
+
+                eventSource = eventSources[eventSourceName] = builder.Build(provider);
+            }
+
+            return eventSource;
+        }
+    }
+
+    internal void Add(EventSourceBuilder builder, string eventSourceName)
     {
         builders[eventSourceName] = builder;
     }
 
-    public void Receive(IEnumerable<Event> events, string eventSourceName)
+    internal void Add(EventSource eventSource, string eventSourceName)
     {
-        if (!eventSources.TryGetValue(eventSourceName, out var eventSource))
-        {
-            if (provider is null) throw new Exception("The provider has not been set up");
-            var builder = builders[eventSourceName];
-            eventSource = builder.Build(provider);
-            eventSources[eventSourceName] = eventSource;
-        }
-
-        eventSource.Notify(events);
+        eventSources[eventSourceName] = eventSource;
     }
 
-    // ReSharper disable once ParameterHidesMember
+    public void NotifyNewEvents(string eventSourceName)
+    {
+        this[eventSourceName].NotifyNewEvents();
+    }
+
+    public void Receive(IEnumerable<Event> events, string eventSourceName)
+    {
+        this[eventSourceName].Notify(events);
+    }
+
     public void SetProvider(IServiceProvider provider)
     {
         this.provider = provider;

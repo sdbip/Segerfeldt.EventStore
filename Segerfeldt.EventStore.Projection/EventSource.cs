@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection;
@@ -16,6 +17,7 @@ public sealed class EventSource
     private readonly IPollingStrategy pollingStrategy;
     private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = new();
     private long lastReadPosition;
+    private CancellationTokenSource? currentDelay;
 
     /// <summary>Initializes a new <see cref="EventSource"/></summary>
     /// <param name="connectionPool">opens connections to the database that stores your entities and events</param>
@@ -50,13 +52,17 @@ public sealed class EventSource
         NotifyNewEvents();
     }
 
-    private void NotifyNewEvents()
+    public void NotifyNewEvents()
     {
+        currentDelay?.Cancel();
         var readEvents = ReadEvents(lastReadPosition);
         var numNotified = Notify(readEvents);
 
         var nextDelay = pollingStrategy.NextDelay(numNotified);
-        Task.Delay(nextDelay).ContinueWith(_ => NotifyNewEvents());
+        currentDelay = new CancellationTokenSource();
+        Task.Delay(nextDelay, currentDelay.Token).ContinueWith(t => {
+            if (!t.IsCanceled) NotifyNewEvents();
+        });
     }
 
     public int Notify(IEnumerable<Event> readEvents)

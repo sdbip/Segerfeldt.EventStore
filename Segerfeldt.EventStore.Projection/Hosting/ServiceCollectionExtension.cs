@@ -1,9 +1,11 @@
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using System;
+using System.Linq;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
@@ -11,15 +13,14 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 public static class ServiceCollectionExtension
 {
     public delegate void NamedBuilderDelegate(EventSourceBuilder builder, string name);
-    public static event NamedBuilderDelegate? BuilderCreated;
 
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IConnectionPool connectionPool, string? eventSourceName = null) =>
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IConnectionPool connectionPool, string eventSourceName) =>
         services.AddHostedEventSource(_ => connectionPool, eventSourceName);
 
-    public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services, string? name = null) where TConnectionPool : IConnectionPool =>
-        services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>(), name);
+    public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services, string eventSourceName) where TConnectionPool : IConnectionPool =>
+        services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>(), eventSourceName);
 
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool, string? eventSourceName = null)
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool, string eventSourceName)
     {
         // Note: AddHostedService<T>() will only add one service per unique type T. Even if called
         // multiple times. If the user needs to track more than one Source, we'd need a new
@@ -29,10 +30,17 @@ public static class ServiceCollectionExtension
 
         var builder = new EventSourceBuilder(getConnectionPool);
 
-        // To enable testing: Allow NUnit to know when a builder is created (WebApplicationFactory)
-        if (eventSourceName is not null) BuilderCreated?.Invoke(builder, eventSourceName);
+        services.TryAddSingleton(new EventSources());
+        var sources = (EventSources?) services.First(s => s.ServiceType == typeof(EventSources)).ImplementationInstance;
+        sources?.Add(builder, eventSourceName);
 
-        services.AddSingleton<IHostedService>(p => new HostedEventSource(builder.Build(p)));
+        services.AddSingleton<IHostedService>(p =>
+        {
+            var sources = p.GetRequiredService<EventSources>();
+            sources.Add(builder.Build(p), eventSourceName);
+
+            return new HostedEventSource(sources[eventSourceName]);
+        });
         return builder;
     }
 }
