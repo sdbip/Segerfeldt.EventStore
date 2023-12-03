@@ -12,7 +12,7 @@ namespace Segerfeldt.EventStore.Projection;
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 public sealed class EventSource
 {
-    private readonly IDbConnection connection;
+    private readonly IEventSourceRepository repository;
     private readonly IPositionTracker? tracker;
     private readonly IPollingStrategy pollingStrategy;
     private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = new();
@@ -23,9 +23,9 @@ public sealed class EventSource
     /// <param name="connectionPool">opens connections to the database that stores your entities and events</param>
     /// <param name="tracker"></param>
     /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-    public EventSource(IConnectionPool connectionPool, IPositionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+    public EventSource(IEventSourceRepository repository, IPositionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
     {
-        connection = connectionPool.CreateConnection();
+        this.repository = repository;
         this.tracker = tracker;
         this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
     }
@@ -55,7 +55,7 @@ public sealed class EventSource
     public void NotifyNewEvents()
     {
         currentDelay?.Cancel();
-        var readEvents = ReadEvents(lastReadPosition);
+        var readEvents = repository.GetEvents(lastReadPosition);
         var numNotified = Notify(readEvents);
 
         var nextDelay = pollingStrategy.NextDelay(numNotified);
@@ -126,35 +126,6 @@ public sealed class EventSource
         receptacles.ContainsKey(@event.Name)
             ? receptacles[@event.Name]
             : ImmutableList<IReceptacle>.Empty;
-
-    private IEnumerable<Event> ReadEvents(long afterPosition)
-    {
-        try
-        {
-            return connection.OpenAndExecute(_ =>
-            {
-                var command = connection.CreateCommand("""
-                    SELECT * FROM Events
-                        WHERE position > @position
-                        ORDER BY position, version
-                    """);
-                command.AddParameter("@position", afterPosition);
-                return command.ExecuteReader().AllRowsAs(ReadEvent);
-            });
-        }
-        catch (DbException)
-        {
-            // No connection => no events.
-            return Array.Empty<Event>();
-        }
-    }
-
-    private static Event ReadEvent(IDataRecord record) => new(
-        record.GetString(record.GetOrdinal("entity_id")),
-        record.GetString(record.GetOrdinal("name")),
-        record.GetString(record.GetOrdinal("entity_type")),
-        record.GetString(record.GetOrdinal("details")),
-        record.GetInt64(record.GetOrdinal("position")));
 
     private sealed class DefaultPollingStrategy : IPollingStrategy
     {

@@ -28,7 +28,7 @@ public static class ServiceCollectionExtension
         // not have such restrictions. And all IHostedServices added *will* be started by the .Net
         // Web API system.
 
-        var builder = new EventSourceBuilder(getConnectionPool);
+        var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(getConnectionPool(p)));
 
         services.TryAddSingleton(new EventSources());
         var sources = (EventSources?) services.First(s => s.ServiceType == typeof(EventSources)).ImplementationInstance;

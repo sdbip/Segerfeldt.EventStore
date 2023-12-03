@@ -32,7 +32,7 @@ public class EventSources
         builders[eventSourceName] = builder;
     }
 
-    internal void Add(EventSource eventSource, string eventSourceName)
+    public void Add(EventSource eventSource, string eventSourceName)
     {
         eventSources[eventSourceName] = eventSource;
     }

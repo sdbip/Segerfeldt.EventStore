@@ -27,7 +27,7 @@ public class SQLServerProjectionTests
 
         var connectionPool = new Mock<IConnectionPool>();
         connectionPool.Setup(pool => pool.CreateConnection()).Returns(new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;"));
-        eventSource = new EventSource(connectionPool.Object, positionTracker.Object, delayConfiguration.Object);
+        eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), positionTracker.Object, delayConfiguration.Object);
 
         delayConfiguration
             .Setup(c => c.NextDelay(It.IsAny<int>()))

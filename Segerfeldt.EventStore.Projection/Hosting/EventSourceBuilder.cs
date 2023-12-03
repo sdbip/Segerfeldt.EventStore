@@ -11,11 +11,11 @@ public sealed class EventSourceBuilder
 {
     private readonly List<Func<IServiceProvider, IReceptacle>> receptacles = new();
     private Func<IServiceProvider, IPositionTracker>? positionTracker;
-    private readonly Func<IServiceProvider, IConnectionPool> getConnectionPool;
+    private readonly Func<IServiceProvider, IEventSourceRepository> getRepository;
 
-    public EventSourceBuilder(Func<IServiceProvider, IConnectionPool> getConnectionPool)
+    public EventSourceBuilder(Func<IServiceProvider, IEventSourceRepository> getRepository)
     {
-        this.getConnectionPool = getConnectionPool;
+        this.getRepository = getRepository;
     }
 
     public EventSourceBuilder AddReceptacles(Assembly assembly)
@@ -53,7 +53,7 @@ public sealed class EventSourceBuilder
 
     internal EventSource Build(IServiceProvider provider)
     {
-        var eventSource = new EventSource(getConnectionPool(provider), GetPositionTracker(provider));
+        var eventSource = new EventSource(getRepository(provider), GetPositionTracker(provider));
         foreach (var receptacle in receptacles)
             eventSource.Register(receptacle(provider));
 

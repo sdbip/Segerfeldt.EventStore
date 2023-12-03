@@ -3,6 +3,7 @@ using Moq;
 using NUnit.Framework;
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 
@@ -24,7 +25,7 @@ public class SQLiteProjectionTests
         connectionPool.Setup(pool => pool.CreateConnection()).Returns(connection);
         delayConfiguration = new Mock<IPollingStrategy>();
         positionTracker = new Mock<IPositionTracker>();
-        eventSource = new EventSource(connectionPool.Object, positionTracker.Object, delayConfiguration.Object);
+        eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), positionTracker.Object, delayConfiguration.Object);
 
         Source.SQLite.Schema.CreateIfMissing(connection);
     }
