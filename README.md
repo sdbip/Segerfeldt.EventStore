@@ -28,7 +28,18 @@ Add the following code to your setup to add Swagger documentation:
 services.AddSwaggerGen(options =>
 {
     options.DocumentCommands(Assembly.GetExecutingAssembly());
+    options.IncludeXmlComments(Path.Combine(
+        AppContext.BaseDirectory,
+        "<application name>.xml"));
 });
+```
+
+The `IncludeXmlComments` call is optional. If you use it, you need to also turn on XML documentation in your .csproj file:
+
+```xml
+<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DocumentationFile>bin\Release\net7.0\[application name].xml</DocumentationFile>
+</PropertyGroup>
 ```
 
 # The Concept Behind Event Sourcing
@@ -43,17 +54,35 @@ Event Sourcing is a product of Domain-Driven Design (DDD). In DDD, we have two c
 
 ## Value Objects
 
-Value objects in general are not modeled here, but it is still important to understand them. A value object is (as the term implies) an object that represents a specific value. Values cannot be modified, only replaced. Value objects are therefore always immutable (except maybe in Swift).
+A value object (as the term implies) is an object that represents a specific value. Values cannot be modified, only replaced. For example, the value $3 is always $3; it will never become $4, which is *a different value*. A *variable* that contains the value $3 might be reassigned the value $4, but *the value* $3 can never become $4.
 
-In Swift, value objects can be defined through value-semantics (`struct`). Thanks to copy-on-write, Swift has much less need for immutability. In rare cases, you might decide that it is okay to make value objects mutable. You should still be very restricted with *how* the objects may be changed, though.
+Because of parallel execution, mutable objects might change in the middle of a calculation, but immutable objects can *never* change. Value objects are therefore always immutable. Immutability is an idea that comes from Functional Programming. It means that objects may be passed around to different parts of your code without risk of them disrupting each other.
 
 Value objects are also encapsulated. They have an internal representation of data and an external interface. Users of the value object may only couple to the interface, not to the data representation.
 
+Coupling to the data structure makes your code brittle. And consequently rigid. It is brittle because even the smallest structural change can disrupt the functionality of your application. It is rigid because you will not want to cause such disruption. By decoupling from the structure your code becomes more supple. This form of encapsulation is called Object Orientation.
+
+Encapsulation is not just about coupling; it's also about usage. Objects have *invariants*. An invariant is a property that must always be true. “The email address must always contain an at sign (@),” “a password must always be strong enough,” etc. Data structures have to be validated before they are persisted, but value objects do not. You validate the input data in the constructor of a value object. Make sure cannot be constructed with invalid data and you will never have to validate it again. If you possess an instance you can simply use it.
+
+> Note: This tool cannot ensure encapsulation. You will have to do that yourself. This is typically done by throwing appropriate exceptions in the constructor if the input data is invalid.
+
+There are three main use-cases for value objects:
+
+- Validation: the value object is invalid if its invariants are not met. Enforce correctness in the constructor.
+- Calculations: value objects can be combined with each other (or with other values) to generate new value objects (or values).
+- Equality and comparisons (and hash-lookup): value objects can be compared with each other (`$3 < $4`) and tested for equality (`$3 == $3 && $3 != $4`). Two instances of $3 are always equal; it does not matter how you created them.
+
+   And (being immutable themselves) they will each have an immutable hash-code and can be used in sets and as keys in dictionaries.
+
 ## Entities
 
-Not everything can be made immutable. If it were, we would have little (if any) use of software. We need to gather new data, and update existing data. We need to support business processes and user tasks, both of which heavily rely on *changing* the data stored in the system. Domain-driven design (DDD) was formulated in part to focus on these processes, rather than the data they manipulate.
+Not everything can be made immutable. If it were, we would have little (if any) use of software. We need to gather new data, and update existing data. We need to support business processes and user tasks, both of which heavily rely on *changing* the data stored in the system. Domain-driven design (DDD) was formulated in part to focus on these processes, rather than the data they manipulate. In DDD we do not focus on the data as such, but on what the data *represents*.
 
-In DDD we do not focus on the data as such, but on what the data *represents*. An *entity* is an object that has state. State is information (data) about the current reality of a particular thing. That “thing” is the entity. It might be a physical “thing” (eg. a person, a vehicle, a device, etc) or it might be non-physical (like a project, a document, a department of our company...).
+An *entity* is an object that has state. State is information (data) about the current reality of a particular thing. That “thing” is the entity. It might be a physical “thing” (eg. a person, a vehicle, a device, etc) or it might be non-physical (like a project, a document, a department of our company...).
+
+Like value objects, entities are encapsulated. Users of the entity should focus on *operating* the entity, not what state each operation generates. The state is maintained by the entity itself.
+
+> Note: This tool cannot ensure encapsulation. You will have to do that yourself. That is part of designing your model. The typical approach is to throw appropriate exceptions if an operation is not supported given the current state. To avoid operations that would lead to an invalid state, exceptions is actually *not* the best approach. Rather the typical approach is to expose a different interface, such as replacing two setters with a single method that accepts two parameters.
 
 ## Events
 
@@ -61,11 +90,13 @@ By focusing on how the state *changes*, we can better understand how our domain 
 
 This library employs event sourcing, which means that we define the state of an entity by listing the changes that has happened to it since it was first added to the system/application. These changes are commonly referred to as *events*. The state of the entity hasn't officially changed until the events are published. When they have been published, they are forever a part of the entity's history. They are never changed or removed. The history up to that point will never change. Any new events will always be appended to the end of the history.
 
-An action that changes the state of an entity (typically) needs to first reconstitute the entity from its already published events. This is done by calling the `IEntity.ReplayEvents(IEnumerable<PublishedEvent> events)` method where the events will appear in the order they were added. When this method is called, your entity should remember the information it needs in order to determine how its current state affects the result of the action (and any other supported action).
+# Examples
 
-Alternatively, you can extend `EntityBase` and label methods with the `[ReplaysEvent(string eventName)]` attribute.
+See the Apps/ directory for example applications.
 
-When the action performs the actual change, the entity should add events to its `UnpublishedEvents` property. (`EntityBase` defines `Add(UnpublishedEvent @event)` to simplify that.) These events (appended to the sequence of already published events) define its new state. This state is not official until the new events have been published.
+- ProjectionWebApplication: an example of subscribing to published events in order to track aggregate state for multiple entities
+- SourceConsoleApp: an example of direct (simpler) generation and publishing of events
+- SourceWebApplication: a complete (more complex) example of publishing of events through command handlers in a web application
 
 # Technical Notes
 
@@ -77,7 +108,7 @@ Concurrent modification of shared state can be a big problem. If two users happe
 
 If the stored state is the same, it is assumed that no other process has changed the state in the intervening time. If no one has yet published new changes, there is no possibility of a conflict, and publishing the current changes will be allowed. At that time, the version is also incremented to indicate to any other active process that the state has now changed.
 
-If the stored version number is different from what was read at reconstitution, the state has changed during the execution of this action. Since a different state can potentially affect the outcome of this action, all the current changes are to be considered invalid and publishing them is not allowed. Our only choices are to either abort the operation entirely or perform the action again. If we choose to repeat the action, we must discard the current, invalid state information, and reconstitute the entity from its new state. Then we can perform the action on this state, and try to publish those changes.
+If the stored version number is different from what was read at reconstitution, the state has changed during the execution of this action. Since a different state can potentially affect the outcome of the action, all the current changes are to be considered invalid and publishing them is not allowed. Our only choice is whether to abort the operation entirely or perform the action again. If we choose to repeat the action, we must discard the invalid state information and reconstitute the entity from its new state. Then we can repeat the action from the updated state, and try to publish those changes.
 
 ## Tables
 
