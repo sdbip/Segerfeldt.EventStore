@@ -3,10 +3,8 @@ using System.Collections.Generic;
 namespace Segerfeldt.EventStore.Source;
 
 /// <summary>An entity in the system. Entities are the carriers of system state</summary>
-public interface IEntity
+public interface IEntity : IIdentifiable
 {
-    /// <summary>A unique identifier for this entity</summary>
-    EntityId Id { get; }
     /// <summary>The type of the entity</summary>
     EntityType Type { get; }
     /// <summary>The version of this entity when reconstituted from storage.</summary>
