@@ -24,7 +24,7 @@ public sealed class EntityId : ValueObject<EntityId>
         this.value = value;
     }
 
-    /// <summary>Generates a new EntityId as a GUID string</summaryz>
+    /// <summary>Generates a new EntityId as a 36 characters long GUID string</summaryz>
     /// <returns>a generated EntityId</returns>
     public static EntityId NewGuid()
     {
@@ -32,7 +32,7 @@ public sealed class EntityId : ValueObject<EntityId>
         return new EntityId(guid.ToString());
     }
 
-    /// <summary>Generates a new EntityId as a Base64 (URL) encoded GUID</summaryz>
+    /// <summary>Generates a new EntityId as a 24 characters long Base64 (URL) encoded GUID</summaryz>
     /// <returns>a generated EntityId</returns>
     public static EntityId NewBase64Guid()
     {
@@ -55,5 +55,6 @@ public sealed class EntityId : ValueObject<EntityId>
     }
 
     #pragma warning disable SYSLIB1045 // Don't want partial classes
+
     private static bool IsValidId(string entityId) => Regex.IsMatch(entityId, "^[a-zA-Z0-9_-]+=*$");
 }
