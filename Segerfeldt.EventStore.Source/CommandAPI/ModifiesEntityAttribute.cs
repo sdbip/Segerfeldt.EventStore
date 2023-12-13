@@ -42,17 +42,23 @@ public class ModifiesEntityAttribute : Attribute
     /// Example path: /entity/{entityId}/property/{propertyId}
     /// </summary>
     public string? PropertyId { get; init; }
+    /// <summary>
+    /// An optional property name to be used on the path of the generated endpoint.
+    /// Example path: /entity/{entityId}/property/{propertyId}/subproperty
+    /// </summary>
+    public string? Subproperty { get; init; }
 
     internal string EntityIdOrDefault => EntityId ?? DefaultEntityId;
     internal bool HasEntityIdParameter => Method == OperationType.Delete || Property is not null;
     public bool HasPropertyIdParameter => PropertyId is not null;
+    public bool HasSubpropertyParameter => Subproperty is not null;
 
     internal string Pattern =>
         Property is not null ? SpecificPropertyPattern :
         EntityId is not null ? SpecificEntityPattern :
         BaseEntityPattern;
 
-    private string SpecificPropertyPattern => $"{SpecificEntityPattern}/{Property}{(PropertyId is null ? "" : $"/{{{PropertyId}}}")}";
+    private string SpecificPropertyPattern => $"{SpecificEntityPattern}/{Property}{(PropertyId is null ? "" : $"/{{{PropertyId}}}")}{(Subproperty is null ? "" : $"/{Subproperty}")}";
     private string SpecificEntityPattern => $"{BaseEntityPattern}/{{{EntityIdOrDefault}}}";
     private string BaseEntityPattern => $"/{Entity.ToLowerInvariant()}";
 
