@@ -11,7 +11,7 @@ namespace Segerfeldt.EventStore.Source.NUnit.Tests;
 public sealed class EntityExtensionTests
 {
     [Test]
-    public void Error_ConvertsToActionResultWithMessage()
+    public void ReplaysMockedEvent()
     {
         var entity = new TestEntity(new EntityId("test"), EntityVersion.Of(1));
         entity.MockPublishedEvent("EventName", new { A = "B" });

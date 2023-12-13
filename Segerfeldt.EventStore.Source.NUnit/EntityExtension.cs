@@ -1,5 +1,7 @@
 using System;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public static class EntityExtension

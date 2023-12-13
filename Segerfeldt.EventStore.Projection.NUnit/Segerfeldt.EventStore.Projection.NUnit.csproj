@@ -16,4 +16,10 @@
       <ProjectReference Include="..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="..\Segerfeldt.EventStore.Shared\JSON.cs">
+        <Link>JSON.cs</Link>
+      </Compile>
+    </ItemGroup>
+
 </Project>
