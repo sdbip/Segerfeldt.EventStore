@@ -9,6 +9,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
 internal class CommandInputRequest

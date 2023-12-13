@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Include="..\JSON.cs">
+      <Compile Include="..\Segerfeldt.EventStore.Shared\JSON.cs">
         <Link>JSON.cs</Link>
       </Compile>
     </ItemGroup>

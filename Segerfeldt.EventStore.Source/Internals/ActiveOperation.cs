@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 

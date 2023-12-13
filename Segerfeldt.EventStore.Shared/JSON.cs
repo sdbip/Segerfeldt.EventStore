@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Segerfeldt.EventStore;
+namespace Segerfeldt.EventStore.Shared;
 
 internal static class JSON
 {

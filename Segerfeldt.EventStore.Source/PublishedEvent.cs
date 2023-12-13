@@ -1,5 +1,7 @@
 using System;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source;
 
 /// <summary>An event that has been published and is part of the official state of an entity</summary>

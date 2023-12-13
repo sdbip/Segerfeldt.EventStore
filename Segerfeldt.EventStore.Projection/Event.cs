@@ -1,5 +1,7 @@
 using System;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Projection;
 
 /// <summary>An event notifying that the state of an entity has changed at the source</summary>
