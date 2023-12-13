@@ -19,4 +19,10 @@
       <PackageReference Include="NUnit" Version="3.13.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="..\JSON.cs">
+        <Link>JSON.cs</Link>
+      </Compile>
+    </ItemGroup>
+
 </Project>

@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Proje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceWebApplication", "Apps\SourceWebApplication\SourceWebApplication.csproj", "{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.NUnit.Tests", "Tests\Segerfeldt.EventStore.Source.NUnit.Tests\Segerfeldt.EventStore.Source.NUnit.Tests.csproj", "{0FC836B7-3695-4D41-870B-B2610AFA2C6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FC836B7-3695-4D41-870B-B2610AFA2C6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FC836B7-3695-4D41-870B-B2610AFA2C6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FC836B7-3695-4D41-870B-B2610AFA2C6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FC836B7-3695-4D41-870B-B2610AFA2C6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
@@ -86,5 +92,6 @@ Global
 		{372637BF-B12C-4DE1-A24A-E49835893957} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
 		{28ADC19F-26E1-4B9B-ACD1-0A5BDE09447D} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
+		{0FC836B7-3695-4D41-870B-B2610AFA2C6B} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 	EndGlobalSection
 EndGlobal
