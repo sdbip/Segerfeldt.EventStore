@@ -2,15 +2,14 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 using System;
-using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -21,11 +20,13 @@ public sealed class DocumentationTests
     [Test]
     public void TestGeneratorWorksLikeTheRealOne()
     {
-        var context = new DocumentFilterContext(Array.Empty<ApiDescription>(), new TestGenerator(), new SchemaRepository("This is the one"));
+        var context = TestableDocumentFilterContext();
+        Assert.That(context.SchemaGenerator, Is.InstanceOf<TestGenerator>()); ;
 
         var referenceSchema = context.SchemaGenerator.GenerateSchema(typeof(CommandlessHandler), context.SchemaRepository);
         Assert.That(referenceSchema, Is.Not.Null);
         Assert.That(referenceSchema.Reference.Id, Is.EqualTo(nameof(CommandlessHandler)));
+        Assert.That(referenceSchema.Reference.Type, Is.EqualTo(ReferenceType.Schema));
         Assert.That(referenceSchema.Description, Is.Null);
 
         Assert.That(context.SchemaRepository.Schemas.TryGetValue(nameof(CommandlessHandler), out var fullSchema), Is.True);
@@ -34,201 +35,208 @@ public sealed class DocumentationTests
         Assert.That(fullSchema?.Description, Is.EqualTo("Summary for [CommandlessHandler]"));
     }
 
-    private DocumentFilterContext context = null!;
     private OpenApiDocument document = null!;
+    private DocumentationGenerator generator = null!;
 
     [SetUp]
     public void SetUp()
     {
-        context = new DocumentFilterContext(Array.Empty<ApiDescription>(), new TestGenerator(), new SchemaRepository());
+        var context = TestableDocumentFilterContext();
         document = new OpenApiDocument
         {
             Components = new OpenApiComponents { Schemas = context.SchemaRepository.Schemas },
             Paths = new(),
         };
+        generator = new DocumentationGenerator(context);
     }
 
-    [Test]
-    public void DocumentsCommandHandler()
+    private static DocumentFilterContext TestableDocumentFilterContext() =>
+        new(Array.Empty<ApiDescription>(), new TestGenerator(), new SchemaRepository());
+
+    [TestCase(typeof(CommandHandler), nameof(Command))]
+    [TestCase(typeof(CommandHandlerWithDTO), nameof(Command))]
+    [TestCase(typeof(CommandlessHandler), nameof(CommandlessHandler))]
+    [TestCase(typeof(CommandlessHandlerWithDTO), nameof(CommandlessHandlerWithDTO))]
+    public void DocumentsCommandHandler(Type commandHandlerType, string schemaName)
     {
-        var generator = new DocumentationGenerator(context);
-
-        generator.AddCommandHandler(typeof(CommandHandler));
-
-        generator.Generate(document);
-
-        Assert.That(document.Components.Schemas, Does.ContainKey(nameof(Command)));
-        Assert.That(document.Components.Schemas[nameof(Command)].Description, Is.EqualTo("Summary for [Command]"));
-        Assert.That(document.Components.Schemas[nameof(Command)].Properties, Is.Not.Null);
-        Assert.That(document.Components.Schemas[nameof(Command)].Properties, Does.ContainKey("parameter"));
-        Assert.That(document.Components.Schemas[nameof(Command)].Properties["parameter"].Description, Is.EqualTo("Summary for [Command.Parameter]"));
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
+        Assert.That(GetCommandSchema(schemaName).Description, Is.EqualTo($"Summary for [{schemaName}]"));
     }
 
-    [Test]
-    public void DocumentsOperationsWithoutDTO_0()
+    [TestCase(typeof(CommandHandler))]
+    [TestCase(typeof(CommandHandlerWithDTO))]
+    public void DocumentsRequestBodyParameters(Type commandHandlerType)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        generator.AddCommandHandler(typeof(CommandHandler));
-
-        generator.Generate(document);
-
-        Assert.That(document.Paths, Does.ContainKey("/entity"));
-        Assert.That(document.Paths["/entity"].Operations, Does.ContainKey(OperationType.Post));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].OperationId, Is.EqualTo("POST /entity"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses, Does.ContainKey("204"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses["204"].Content, Is.Null.Or.Empty);
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Tags.Select(t => t.Name), Is.EquivalentTo(new [] { "Entity" }));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Summary, Is.EqualTo("Summary for [Command]"));
+        var property = GetPropertySchema(nameof(Command), "parameter");
+        Assert.That(property.Description, Is.EqualTo("Summary for [Command.Parameter]"));
     }
 
-    [Test]
-    public void DocumentsResponseDTO_0()
+    [TestCase(typeof(CommandHandler))]
+    [TestCase(typeof(CommandHandlerWithDTO))]
+    public void DocumentsRequestBody(Type commandHandlerType)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        var handler = typeof(CommandHandlerWithDTO);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Components.Schemas[nameof(Result)].Description, Is.EqualTo("Summary for [Result]"));
-        Assert.That(document.Components.Schemas[nameof(Result)].Properties, Does.ContainKey("value"));
-        Assert.That(document.Components.Schemas[nameof(Result)].Properties["value"].Description, Is.EqualTo("Summary for [Result.Value]"));
+        var requestBody = GetOperation(OperationType.Post, "/entity").RequestBody;
+        Assert.That(requestBody.Content, Does.ContainKey("application/json"));
+        var schema = requestBody.Content["application/json"].Schema;
+        Assert.Multiple(() =>
+        {
+            Assert.That(schema.Reference.Id, Is.EqualTo("Command"));
+            Assert.That(schema.Reference.Type, Is.EqualTo(ReferenceType.Schema));
+        });
     }
 
-    [Test]
-    public void DocumentsOperationsWithRequestBody()
+    [TestCase(typeof(CommandHandlerWithDTO))]
+    [TestCase(typeof(CommandlessHandlerWithDTO))]
+    public void DocumentsResponse(Type commandHandlerType)
     {
-        var generator = new DocumentationGenerator(context);
-
-        var handler = typeof(CommandHandlerWithDTO);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Components.Schemas[nameof(Command)].Description, Is.EqualTo("Summary for [Command]"));
-        Assert.That(document.Components.Schemas[nameof(Command)].Properties, Does.ContainKey("parameter"));
-        Assert.That(document.Components.Schemas[nameof(Command)].Properties["parameter"].Description, Is.EqualTo("Summary for [Command.Parameter]"));
-
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].RequestBody, Is.Not.Null);
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].RequestBody.Content, Does.ContainKey("application/json"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].RequestBody.Content["application/json"].Schema, Is.Not.Null);
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].RequestBody.Content["application/json"].Schema.Reference, Is.Not.Null);
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].RequestBody.Content["application/json"].Schema.Reference.Id, Is.EqualTo("Command"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].RequestBody.Content["application/json"].Schema.Reference.Type, Is.EqualTo(ReferenceType.Schema));
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
+        Assert.That(GetCommandSchema(nameof(Result)).Description, Is.EqualTo("Summary for [Result]"));
     }
 
-    [Test]
-    public void DocumentsOperationsWithResponseDTO_0()
+    [TestCase(typeof(CommandHandlerWithDTO))]
+    [TestCase(typeof(CommandlessHandlerWithDTO))]
+    public void DocumentsResponseProperties(Type commandHandlerType)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        var handler = typeof(CommandHandlerWithDTO);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Paths, Does.ContainKey("/entity"));
-        Assert.That(document.Paths["/entity"].Operations, Does.ContainKey(OperationType.Post));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].OperationId, Is.EqualTo("POST /entity"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses, Does.ContainKey("200"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses["200"].Content, Does.ContainKey("application/json"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses["200"].Content["application/json"].Schema, Is.Not.Null);
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses["200"].Content["application/json"].Schema.Type, Is.EqualTo("Result"));
-        Assert.That(document.Paths["/entity"].Operations[OperationType.Post].Responses["200"].Content["application/json"].Schema.Reference.Id, Is.EqualTo("Result"));
+        var schema = GetPropertySchema(nameof(Result), "value");
+        Assert.That(schema.Description, Is.EqualTo("Summary for [Result.Value]"));
     }
 
-    [Test]
-    public void DocumentsCommandlessHandler()
+    [TestCase(typeof(CommandHandlerWithDTO), OperationType.Post, "/entity")]
+    [TestCase(typeof(CommandlessHandlerWithDTO), OperationType.Delete, "/entity/{id1}/property/{id2}")]
+    public void DocumentsResponseBody(Type commandHandlerType, OperationType method, string pattern)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        var handler = typeof(CommandlessHandler);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Components.Schemas[nameof(CommandlessHandler)].Description, Is.EqualTo("Summary for [CommandlessHandler]"));
+        var schema = GetResponseContent(method, pattern, HttpStatusCode.OK, "application/json");
+        Assert.Multiple(() =>
+        {
+            Assert.That(schema.Type, Is.EqualTo("Result"));
+            // TODO: This is generated by the mock. Meaningless to test?
+            Assert.That(schema.Reference.Id, Is.EqualTo("Result"));
+            Assert.That(schema.Reference.Type, Is.EqualTo(ReferenceType.Schema));
+        });
     }
 
-    [Test]
-    public void DocumentsOperationsWithoutDTO()
+    [TestCase(typeof(CommandHandler), OperationType.Post, "/entity")]
+    [TestCase(typeof(CommandlessHandler), OperationType.Delete, "/entity/{id1}/property/{id2}")]
+    public void DocumentsResponseForHandlerWithoutDTO(Type commandHandlerType, OperationType method, string pattern)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        var handler = typeof(CommandlessHandler);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Paths, Does.ContainKey("/entity/{id1}/property/{id2}"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations, Does.ContainKey(OperationType.Delete));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].OperationId, Is.EqualTo("DELETE /entity/{id1}/property/{id2}"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters, Has.Count.EqualTo(2));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[0].Name, Is.EqualTo("id1"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[0].Description, Is.EqualTo("the entity id of the Entity to modify"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[0].Schema.Type, Is.EqualTo("string"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[0].In, Is.EqualTo(ParameterLocation.Path));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[1].Name, Is.EqualTo("id2"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[1].Description, Is.EqualTo("the entity id of the property to remove"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[1].Schema.Type, Is.EqualTo("string"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Parameters[1].In, Is.EqualTo(ParameterLocation.Path));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses, Does.ContainKey("204"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses["204"].Content, Is.Null.Or.Empty);
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Tags.Select(t => t.Name), Is.EquivalentTo(new [] { "Entity" }));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Summary, Is.EqualTo("Summary for [CommandlessHandler]"));
+        var response = GetResponse(method, pattern, HttpStatusCode.NoContent);
+        Assert.That(response.Content, Is.Null.Or.Empty);
     }
 
-    [Test]
-    public void DocumentsResponseDTO()
+    [TestCase(typeof(CommandHandler), "Command", OperationType.Post, "/entity", "POST /entity")]
+    [TestCase(typeof(CommandHandlerWithDTO), "Command", OperationType.Post, "/entity", "POST /entity")]
+    [TestCase(typeof(CommandlessHandler), "CommandlessHandler", OperationType.Delete, "/entity/{id1}/property/{id2}", "DELETE /entity/{id1}/property/{id2}")]
+    [TestCase(typeof(CommandlessHandlerWithDTO), "CommandlessHandlerWithDTO", OperationType.Delete, "/entity/{id1}/property/{id2}", "DELETE /entity/{id1}/property/{id2}")]
+    public void DocumentsOperations(Type commandHandlerType, string name, OperationType method, string pattern, string operationId)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        var handler = typeof(CommandlessHandlerWithDTO);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Components.Schemas[nameof(Result)].Description, Is.EqualTo("Summary for [Result]"));
-        Assert.That(document.Components.Schemas[nameof(Result)].Properties, Does.ContainKey("value"));
-        Assert.That(document.Components.Schemas[nameof(Result)].Properties["value"].Description, Is.EqualTo("Summary for [Result.Value]"));
+        var operation = GetOperation(method, pattern);
+        Assert.Multiple(() =>
+        {
+            Assert.That(operation.OperationId, Is.EqualTo(operationId));
+            Assert.That(operation.Tags.Select(t => t.Name), Is.EquivalentTo(new[] { "Entity" }));
+            Assert.That(operation.Summary, Is.EqualTo($"Summary for [{name}]"));
+        });
     }
 
-    [Test]
-    public void DocumentsOperationsWithResponseDTO()
+    [TestCase(typeof(CommandlessHandler))]
+    [TestCase(typeof(CommandlessHandlerWithDTO))]
+    public void DocumentsParameters(Type commandHandlerType)
     {
-        var generator = new DocumentationGenerator(context);
+        GivenCommandHandler(commandHandlerType);
+        WhenGeneratingDocs();
 
-        var handler = typeof(CommandlessHandlerWithDTO);
-        generator.AddCommandHandler(handler);
-
-        generator.Generate(document);
-
-        Assert.That(document.Paths, Does.ContainKey("/entity/{id1}/property/{id2}"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations, Does.ContainKey(OperationType.Delete));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].OperationId, Is.EqualTo("DELETE /entity/{id1}/property/{id2}"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses, Does.ContainKey("200"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses["200"].Content, Does.ContainKey("application/json"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses["200"].Content["application/json"].Schema, Is.Not.Null);
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses["200"].Content["application/json"].Schema.Type, Is.EqualTo("Result"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Responses["200"].Content["application/json"].Schema.Reference.Id, Is.EqualTo("Result"));
-        Assert.That(document.Paths["/entity/{id1}/property/{id2}"].Operations[OperationType.Delete].Tags.Select(t => t.Name), Is.EquivalentTo(new [] { "Entity" }));
+        var parameters = GetOperation(OperationType.Delete, "/entity/{id1}/property/{id2}").Parameters;
+        Assert.Multiple(() =>
+        {
+            Assert.That(parameters, Has.Count.EqualTo(2));
+            Assert.That(parameters[0].Name, Is.EqualTo("id1"));
+            Assert.That(parameters[0].Description, Is.EqualTo("the entity id of the Entity to modify"));
+            Assert.That(parameters[0].Schema.Type, Is.EqualTo("string"));
+            Assert.That(parameters[0].In, Is.EqualTo(ParameterLocation.Path));
+            Assert.That(parameters[1].Name, Is.EqualTo("id2"));
+            Assert.That(parameters[1].Description, Is.EqualTo("the entity id of the property to remove"));
+            Assert.That(parameters[1].Schema.Type, Is.EqualTo("string"));
+            Assert.That(parameters[1].In, Is.EqualTo(ParameterLocation.Path));
+        });
     }
 
     [Test]
     public void AllowsOverloadingPatternWithDifferentMethod()
     {
-        var generator = new DocumentationGenerator(context);
-
-        generator.AddCommandHandler(typeof(CommandHandler));
-        generator.AddCommandHandler(typeof(OverloadingCommandHandler));
-
-        generator.Generate(document);
+        GivenCommandHandler(typeof(CommandHandler));
+        GivenCommandHandler(typeof(OverloadingCommandHandler));
+        WhenGeneratingDocs();
 
         Assert.That(document.Paths, Does.ContainKey("/entity"));
         Assert.That(document.Paths["/entity"].Operations, Does.ContainKey(OperationType.Post));
         Assert.That(document.Paths["/entity"].Operations, Does.ContainKey(OperationType.Delete));
+    }
+
+    private OpenApiSchema GetResponseContent(OperationType method, string pattern, HttpStatusCode statusCode, string mimeType)
+    {
+        var response = GetResponse(method, pattern, statusCode);
+        Assert.That(response.Content, Does.ContainKey(mimeType));
+        return response.Content[mimeType].Schema;
+    }
+
+    private OpenApiResponse GetResponse(OperationType post, string pattern, HttpStatusCode statusCode)
+    {
+        var statusCodeString = $"{(int)statusCode}";
+        var responses = GetOperation(post, pattern).Responses;
+        Assert.That(responses, Does.ContainKey(statusCodeString));
+        return responses[statusCodeString];
+    }
+
+    private OpenApiOperation GetOperation(OperationType method, string pattern)
+    {
+        Assert.That(document.Paths, Does.ContainKey(pattern));
+        var pathItem = document.Paths[pattern];
+        Assert.That(pathItem.Operations, Does.ContainKey(method));
+        return pathItem.Operations[method];
+    }
+
+    private OpenApiSchema GetPropertySchema(string commandName, string propertyName)
+    {
+        var properties = GetCommandSchema(commandName).Properties;
+        Assert.That(properties, Does.ContainKey(propertyName));
+        return properties[propertyName];
+    }
+
+    private void GivenCommandHandler(Type type)
+    {
+        generator.AddCommandHandler(type);
+    }
+
+    private void WhenGeneratingDocs()
+    {
+        generator.Generate(document);
+    }
+
+    private OpenApiSchema GetCommandSchema(string name)
+    {
+        var schemas = document.Components.Schemas;
+        Assert.That(schemas, Does.ContainKey(name));
+        return schemas[name];
     }
 
     [DeletesEntity("Entity", EntityId = "id1", Property = "property", PropertyId = "id2")]
@@ -282,23 +290,30 @@ public sealed class DocumentationTests
 }
 
 
-internal class TestGenerator : ISchemaGenerator
+// TODO: This simulation makes too many assumptions.
+internal abstract class SimulatedGenerator : ISchemaGenerator
 {
-    public Func<Type, string?> TypeDescriptionFunc { get; set; } = type => $"Summary for [{type.Name}]";
-    public Func<Type, PropertyInfo, string?> PropertyDescriptionFunc { get; set; } = (type, parameter) => $"Summary for [{type.Name}.{parameter.Name}]";
-
     public OpenApiSchema GenerateSchema(Type modelType, SchemaRepository schemaRepository, MemberInfo? memberInfo = null, ParameterInfo? parameterInfo = null, ApiParameterRouteInfo? routeInfo = null)
     {
         schemaRepository.RegisterType(modelType, modelType.Name);
         schemaRepository.AddDefinition(modelType.Name, new OpenApiSchema
         {
-            Description = TypeDescriptionFunc.Invoke(modelType),
-            Properties = modelType.GetProperties().ToDictionary(p => p.Name.ToLower(), p => new OpenApiSchema { Description = PropertyDescriptionFunc.Invoke(modelType, p) })
+            Description = TypeDescription(modelType),
+            Properties = modelType.GetProperties().ToDictionary(p => p.Name.ToLower(), p => new OpenApiSchema { Description = PropertyDescription(modelType, p) })
         });
         return new OpenApiSchema
         {
             Type = modelType.Name,
-            Reference = new OpenApiReference { Id = modelType.Name },
+            Reference = new OpenApiReference { Id = modelType.Name, Type = ReferenceType.Schema },
         };
     }
+
+    protected abstract string PropertyDescription(Type modelType, PropertyInfo p);
+    protected abstract string TypeDescription(Type modelType);
+}
+
+internal class TestGenerator : SimulatedGenerator
+{
+    protected override string PropertyDescription(Type modelType, PropertyInfo p) => $"Summary for [{modelType.Name}.{p.Name}]";
+    protected override string TypeDescription(Type modelType) => $"Summary for [{modelType.Name}]";
 }
