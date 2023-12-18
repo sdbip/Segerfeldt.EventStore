@@ -26,19 +26,22 @@ public sealed class DocumentationGenerator
 
     public void Generate(OpenApiDocument document)
     {
+        var schemaGenerator = context.SchemaGenerator;
+        var schemaRepository = context.SchemaRepository;
+
         foreach (var handler in commandHandlers)
         {
-            context.SchemaGenerator.GenerateSchema(handler, context.SchemaRepository);
+            schemaGenerator.GenerateSchema(handler, schemaRepository);
 
             var commandParameter = handler.GetMethod("Handle")?.GetParameters().First();
             if (commandParameter?.ParameterType == typeof(CommandContext))
                 commandParameter = null;
             var requestBodySchema = commandParameter is null ? null :
-                context.SchemaGenerator.GenerateSchema(commandParameter.ParameterType, context.SchemaRepository);
+                schemaGenerator.GenerateSchema(commandParameter.ParameterType, schemaRepository);
 
-            var commandSchema = requestBodySchema is null
-                ? context.SchemaRepository.Schemas[handler.Name]
-                : context.SchemaRepository.Schemas[requestBodySchema.Reference.Id];
+            var commandSchema = requestBodySchema is not null
+                ? schemaRepository.Schemas[requestBodySchema.Reference.Id]
+                : schemaRepository.GetSchema(handler);
 
             var attribute = handler.GetCustomAttribute<ModifiesEntityAttribute>(false)!;
 
@@ -53,7 +56,7 @@ public sealed class DocumentationGenerator
                 {
                     Parameters = Parameters(attribute),
                     OperationId = $"{attribute.Method.ToString().ToUpper()} {attribute.Pattern}",
-                    Summary = commandSchema.Description,
+                    Summary = commandSchema?.Description ?? "",
                     Responses = Responses(handler, context),
                     RequestBody = RequestBody(commandParameter?.ParameterType, requestBodySchema),
                     Tags = { new OpenApiTag { Name = attribute.Entity } }
@@ -122,5 +125,14 @@ public sealed class DocumentationGenerator
             .GetGenericArguments().First()                         // CommandResult<T>
             .GetGenericArguments().FirstOrDefault();               // T
         return responseType;
+    }
+}
+
+internal static class SchemaRepositoryExtension
+{
+    public static OpenApiSchema? GetSchema(this SchemaRepository schemaRepository, Type type)
+    {
+        if (!schemaRepository.TryLookupByType(type, out var referenceSchema)) return null;
+        return schemaRepository.Schemas[referenceSchema.Reference.Id];
     }
 }
