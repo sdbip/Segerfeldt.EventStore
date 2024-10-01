@@ -44,9 +44,11 @@ The `IncludeXmlComments` call is optional. If you use it, you need to also turn 
 
 # The Concept Behind Event Sourcing
 
-The idea of event sourcing is to not simply store the current *state* of the application, but instead store each historical *change* to the state. We call such changes *events*.
+By focusing on how the state *changes*, we can better understand how our domain works.
 
-There are some benefits to using this idea; the most obvious ones are perhaps immutability and auditing. When an event has been recorded, that information will itself never change. It makes referring to the data much simpler, and you need never worry about concurrent updates. Every event also records a timestamp and a username. This can be very useful metadata for auditing and where to invest in more education.
+The idea of event sourcing is to not simply store the current *state* of the application, but instead store each historical *change* to the state. We call such changes ‘events.’
+
+There are some benefits to using this idea; the most obvious ones are perhaps immutability and auditing. When an event has been recorded, that historical information will itself never change. It makes referring to the data much simpler, and you need never worry about concurrent updates. Every event also records a timestamp and a username which can be very useful metadata for auditing.
 
 Event sourcing also allows creating independent *projections* of the state. You can replay all the changes at any time, and maintain a different storage location with an alternate view into the data. For example you can gather all the current state for easy indexing and quick access. You can ignore a lot of the information, and focus on generating the data structure that makes your particular use case simple and performant.
 
@@ -54,41 +56,51 @@ Event Sourcing is a product of Domain-Driven Design (DDD). In DDD, we have two c
 
 ## Value Objects
 
-A value object (as the term implies) is an object that represents a specific value. Values cannot be modified, only replaced. For example, the value $3 is always $3; it will never become $4, which is *a different value*. A *variable* that contains the value $3 might be reassigned the value $4, but *the value* $3 can never become $4.
+Value objects are not modeled by this library, but it is still important to understand them.
 
-Because of parallel execution, mutable objects might change in the middle of a calculation, but immutable objects can *never* change. Value objects are therefore always immutable. Immutability is an idea that comes from Functional Programming. It means that objects may be passed around to different parts of your code without risk of them disrupting each other.
+A value object is (as the term implies) an object that represents a specific value. Values never change; you can only replace a value with a new one. Value objects are therefore always immutable.
 
-Value objects are also encapsulated. They have an internal representation of data and an external interface. Users of the value object may only couple to the interface, not to the data representation.
+Value objects typically have two functions: they can be compared for structural equality, and they can be validated for correct user input.
 
-Coupling to the data structure makes your code brittle. And consequently rigid. It is brittle because even the smallest structural change can disrupt the functionality of your application. It is rigid because you will not want to cause such disruption. By decoupling from the structure your code becomes more supple. This form of encapsulation is called Object Orientation.
+It should not be possible to instantiate an invalid value object. The initializer should prevent such, typically by throwing an exception or returning `nil` when invalid data is encountered. If the programmer can rely on this working, they will not need to validate the data in their code; it is enough to declare that a variable must be of the correct type (and not `nil`).
 
-Encapsulation is not just about coupling; it's also about usage. Objects have *invariants*. An invariant is a property that must always be true. “The email address must always contain an at sign (@),” “a password must always be strong enough,” etc. Data structures have to be validated before they are persisted, but value objects do not. You validate the input data in the constructor of a value object. Make sure cannot be constructed with invalid data and you will never have to validate it again. If you possess an instance you can simply use it.
+Most value objects conform to `Equatable` and `Hashable`. They can thus be used in sets and as dictionary keys. A mutable object used as a dictionary key can be changed after it's added making it impossible to find again. Immutability is necessary to guarantee correct behaviour.
 
-> Note: This tool cannot ensure encapsulation. You will have to do that yourself. This is typically done by throwing appropriate exceptions in the constructor if the input data is invalid.
+`Equatable` value objects can also be `Comparable` and they can be used in calculations. You might for example add (`+`) two value objects of same type to get their sum. Or you might multiply a value object with a scalar (e.g. an interest rate). The result of a calculation is typically an object of the same type as the input, but it could be otherwise. E.g. `Ingredient1` plus `Ingredient2` might return a `Cake`.
 
-There are three main use-cases for value objects:
+Value objects should also be encapsulated. They should have an internal representation of data and an external interface. Users of the value object should only ever couple to the interface, never to the concrete data representation. That allows the storage strategy to change without breaking references to the value object. And it also helps the programmer stay focussed on the *meaning* of the value rather than its *composition*.
 
-- Validation: the value object is invalid if its invariants are not met. Enforce correctness in the constructor.
-- Calculations: value objects can be combined with each other (or with other values) to generate new value objects (or values).
-- Equality and comparisons (and hash-lookup): value objects can be compared with each other (`$3 < $4`) and tested for equality (`$3 == $3 && $3 != $4`). Two instances of $3 are always equal; it does not matter how you created them.
-
-   And (being immutable themselves) they will each have an immutable hash-code and can be used in sets and as keys in dictionaries.
+Should, for example, the data representation of an amount of `Money` be composed of an `Int` counting the cents (100 meaning one dollar), a `Double` value of dollars (0.5 to represent 50 cents) or two separate `Int` values (one for dollars and one for cents, where cents < 100)? If you ever need to change the data format to support new use cases or a need for higher precision, encapsulation is a guard against errors in all code outside the `Money` type itself.
 
 ## Entities
 
-Not everything can be made immutable. If it were, we would have little (if any) use of software. We need to gather new data, and update existing data. We need to support business processes and user tasks, both of which heavily rely on *changing* the data stored in the system. Domain-driven design (DDD) was formulated in part to focus on these processes, rather than the data they manipulate. In DDD we do not focus on the data as such, but on what the data *represents*.
+Not everything can be made immutable. If it were, we would have little (if any) use of software. We need to gather new data, and update existing data. We need to support business processes and user tasks, both of which rely heavily on *changing* the data stored in the system. Without data changes, the usefulness of the system would be very limited.
 
-An *entity* is an object that has state. State is information (data) about the current reality of a particular thing. That “thing” is the entity. It might be a physical “thing” (eg. a person, a vehicle, a device, etc) or it might be non-physical (like a project, a document, a department of our company...).
+But rather than manipulating *data*, in its specific format and structure, Domain-Driven Design (DDD) teaches us to focus on what that data *means* conceptually and/or metaphorically. And why and how it changes. The formatting and structure of the data can be altered in many ways and still represent the same meaning; the same state.
 
-Like value objects, entities are encapsulated. Users of the entity should focus on *operating* the entity, not what state each operation generates. The state is maintained by the entity itself.
+DDD separates the state of the system into parts called entities; the state of the system is the aggregated state of all entities. Each `Entity` defines invariants that must be maintained. Like value objects, entities should be encapsulated. The interface of an `Entity` should only expose meaningful operations, not direct state/data manipulation. If an action executes an operation that is invalid/unsupported for its current state, the `Entity` should throw an exception.
 
-> Note: This tool cannot ensure encapsulation. You will have to do that yourself. That is part of designing your model. The typical approach is to throw appropriate exceptions if an operation is not supported given the current state. To avoid operations that would lead to an invalid state, exceptions is actually *not* the best approach. Rather the typical approach is to expose a different interface, such as replacing two setters with a single method that accepts two parameters.
+Unlike value objects, entities possess an identifier. Since the `Entity` is stateful, there must be a way to identify which entity to modify. To summarise there are three main differences between value objects and entities:
+
+1. Value objects are immutable, while entities are stateful.
+2. A value object has meaning, while an entity has an identity.
+    - Comparisons between value objects look at their entire structure,
+      while comparisons between entities only concern their ids.
+3. Value objects are often and easily discarded and recreated, while entities live on for a long time.
 
 ## Events
 
-By focusing on how the state *changes*, we can better understand how our domain works.
+DDD teaches us to focus on how the business processes *change* the state rather than just what the state is at any given time. By focusing on how the changes, and the reason for the changes, we can better understand how our domain works.
 
-This library employs event sourcing, which means that we define the state of an entity by listing the changes that has happened to it since it was first added to the system/application. These changes are commonly referred to as *events*. The state of the entity hasn't officially changed until the events are published. When they have been published, they are forever a part of the entity's history. They are never changed or removed. The history up to that point will never change. Any new events will always be appended to the end of the history.
+This library employs event sourcing, which means that we define the state of an entity by listing the changes that has happened to it since it was first added to the system/application. These changes are commonly referred to as `Event`s. Events specify the details of how the state changed, which user caused it and at what time the change occurred.
+
+By storing all events in a way that persists their chronology, the current state of the entire system is well defined. In functional programming terms the state of each `Entity` can be implemented as a simple `fold()` operation. The state of the complete system being the aggregated state of all entities is then the `fold()` operation mapped over the list of lists that is the events of all entities.
+
+A CQRS solution can then synchronise (project) the events into a searchable query database. When the projection/query database is first set up, all the existing events should be processed in order. As new events are then published, the projection server should pick up those events and update the projection/query database accordingly.
+
+And it is also well defined what the state was at any point of time in the past. This fact can be used to debug the system. The events up to a given point in time can be copied to a new database and then used to recreate the system state at that time. Then experimentation can find the bug allowing it to be fixed.
+
+Projection can be used for other purposes than the Query side of CQRS. It can for example be used to communicate between bounded contexts. Or it can be used to generate one-off reports. Or myriad other things.
 
 # Examples
 
@@ -104,15 +116,17 @@ The point of DDD is to *not* focus on the technology or other implementation det
 
 ## Optimistic locking
 
-Concurrent modification of shared state can be a big problem. If two users happen to change the same entity at the same time, there's a risk that they both read the same initial state, and then make conflicting changes that cannot be reconciled. This library employs “optimistic locking” to avoid such a scenario. Every entity has a `Version` that is read when it is reconstituted, and again before publishing changes. Only if the version is the same at both instants is publishing allowed.
+Concurrent modification of shared state can be a big problem. If two users happen to change the same entity at the same time, there's a risk that they both read the same initial state, and then make conflicting changes that cannot be reconciled. This library employs “optimistic locking” to avoid such a scenario. Every entity has a `version` that is read when it is reconstituted, and again before publishing changes. Only if the version is the same at both instants is publishing allowed.
 
 If the stored state is the same, it is assumed that no other process has changed the state in the intervening time. If no one has yet published new changes, there is no possibility of a conflict, and publishing the current changes will be allowed. At that time, the version is also incremented to indicate to any other active process that the state has now changed.
 
-If the stored version number is different from what was read at reconstitution, the state has changed during the execution of this action. Since a different state can potentially affect the outcome of the action, all the current changes are to be considered invalid and publishing them is not allowed. Our only choice is whether to abort the operation entirely or perform the action again. If we choose to repeat the action, we must discard the invalid state information and reconstitute the entity from its new state. Then we can repeat the action from the updated state, and try to publish those changes.
+If the stored version number is different from what was read at reconstitution, the state has changed during the execution of this action. Since a different state can potentially affect the outcome of this action, all the current changes are to be considered invalid and publishing them is not allowed. Our only choices are to either abort the operation entirely or perform the action again. If we choose to repeat the action, we must discard the current, invalid state information, and reconstitute the entity from its new state. Then we can perform the action on this state, and try to publish those changes.
 
 ## Tables
 
 State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL. Note that table names are never quoted in the SQL scripts, and, because reasons, PostgreSQL converts unquoted names to lowercase. That is however the only difference you will see.
+
+The table layout is the exact same as used by the C# NuGet package Segerfeldt.EventSourcing. A write model generated by a C# web application should be 100% compatible with the Swift Projection target defined here. And vice versa too.
 
 The `Entities` table:
 
@@ -139,7 +153,7 @@ The `Events` table:
 
 The events table is the main storage space for entity state. The `entity_id` and `entity_type` columns must match the corresponding columns for a row in the `Entities` table. This is the entity that changed with this event.
 
-The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity, and the last event stored for an entity must match its `version` column. The `position` column orders events globally and is mostly used for projections.
+The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
 
 The `actor` and `timestamp` columns are metadata that can be used for auditing.
 
