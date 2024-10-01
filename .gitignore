@@ -1,3 +1,5 @@
+.vs
+.vscode/
 bin/
 obj/
 /packages/
@@ -6,5 +8,4 @@ riderModule.iml
 .DS_Store
 *.user
 Apps/ProjectionWebApplication/appsettings.Development.json
-.vs
 Apps/SourceWebApplication/source_web_application.db
