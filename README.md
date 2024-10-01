@@ -9,15 +9,13 @@ State is stored in a relational database with built-in support for MS SQL Server
 EventStore can auto-generate RESTful HTTP endpoints from your command handlers. Add the following code to your setup to trigger a search for command handler classes throughout your assembly:
 
 ```csharp
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapCommands(Assembly.GetExecutingAssembly());
-});
+app.MapCommands(Assembly.GetExecutingAssembly());
 ```
 
 An endpoint for retrieving the complete event history for an entity is also added as `GET /entity/{entityId}`.
 
 Each command-handler should be annotated with exactly one of the following attributes:
+
 - `AddsEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/`
 - `DeletesEntityAttribute` - generates an HTTP endpoint on the form `DELETE /<entity>/{entityId}`
 - `ModifiesEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/{entityId}/<property>`
@@ -169,10 +167,12 @@ There is currently support for three database providers.
 
 # Deploying to NuGet (local)
 
-Set up a local NuGet store as described here:
+You can test the NuGet package without publishing it.
+
+First set up a local NuGet store as described here:
 https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
 
-Update the `<PackageVersion>` value in the .csproj file(s) that you want to deploy and build for Release. Then run one or more of the following commands to deploy the output:
+Update the `<PackageVersion>` value in the .csproj file(s) and build for Release. Then run one or more of the following commands to deploy the output:
 
 ```shell
 nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
@@ -181,3 +181,29 @@ nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.
 
 nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
 ```
+
+To reference the NuGet package in another solution, you will first need to configure NuGet to find your local repo.
+
+If you have the option, you should probably use your Visual Studio IDE to set it up. But you might not have that option, or you might prefer to set it up as a config file in your Git repository so that all developers have the same configuration automatically. The configuration file looks like this:
+
+```xml
+<packageSources>
+    <add key="local" value="file:///path/to/nuget/packages/" /> <!-- Not tested -->
+</packageSources>
+```
+
+You can place this configuration in any of the files described in this S/O answer: https://stackoverflow.com/a/51381519.
+
+Alternatively, you can use the `nuget sources` command described here: https://learn.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources.
+
+Once you have set up the repository link correctly, you can reference it in your project using the Visual Studio IDE or by adding the following `<ItemGroup/>` to your .csproj file.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="Segerfeldt.EventStore.Source.NUnit" Version="0.0.1" />
+    </ItemGroup>
+</Project>
+```
+
+More information about NuGet hosting and configurtion can be found here: https://learn.microsoft.com/en-us/nuget/hosting-packages/overview
