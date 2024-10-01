@@ -4,21 +4,133 @@ A package for using event-sourcing in applications. It is particularly useful wh
 
 State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL.
 
-## Commanding
+# Usage
 
-EventStore can auto-generate RESTful HTTP endpoints from your command handlers. Add the following code to your setup to trigger a search for command handler classes throughout your assembly:
+## Source
+
+The Source target is meant to implement the Command side (a.k.a. the write model) of a CQRS system. Import this in your web service code to start manipulating entities and publishing events.
+
+Add the following line to your Program.cs to automatically find and map endpoints for the command handlers you have defined in your main assembly.
 
 ```csharp
 app.MapCommands(Assembly.GetExecutingAssembly());
 ```
 
-An endpoint for retrieving the complete event history for an entity is also added as `GET /entity/{entityId}`.
+You can optionally define your endpoints in a different assembly (or in several). Just make sure to pass them as agruments to the `MapCommands` call:
+
+```csharp
+app.MapCommands(assembly1, assembly2);
+```
+
+Define a command-handler by adding a class like this:
+
+```c#
+using Segerfeldt.EventStore.Source;
+using Segerfeldt.EventStore.Source.CommandAPI;
+
+using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
+
+// If is recommended to separate commands and entities in different namespaces
+// (or even different assemblies).
+using Domain;
+namespace Commands;
+
+public record IncrementCounter(int amount);
+
+// Implement the ICommandHandler<> interface to declare a command handler. The
+// `ModifiesEntityAttribute` (or one of its companions) defines the signature
+// for a RESTful endpoint that executes the command.
+[ModifiesEntity("Counter")]
+public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCounter>
+{
+    public async Task<CommandResult> Handle(IncrementCounter command, CommandContext context)
+    {
+        // The actor is the user that executes the command.
+        // The name of the current principal is usually a good choice.
+        var actor = context.HttpContext.User?.Name;
+
+        // Unauthorized() returns status 401 UNAUTHORIZED, which indicates failed authentication.
+        // Forbidden() returns status 403 FORBIDDEN which indicates that the user is not authorized.
+        // See https://www.webfx.com/web-development/glossary/http-status-codes/ for details.
+        if (actor is null) return Unauthorized();
+        if (!IsAuthorized(actor)) return Forbidden();
+
+        // The path of the request contains the id when modifying an existing entity.
+        var id = new EntityId(context.GetRouteParameter("entityid"));
+        // Retrieve the referenced entity from the EntityStore.
+        var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
+        // Return NotFound() (status 404 NOT FOUND) if the entity doesn't exist.
+        if (counter is null) return NotFound($"There is no counter with id [{id}]");
+
+        // Perform modifications on the entity (which should generate new events).
+        counter.IncrementBy(command.Amount);
+
+        // Publish the changes using the EventPublisher. If the events are not published,
+        // the entity has not officially been changed.
+        await context.EventPublisher.PublishChangesAsync(counter, actor);
+
+        // Return 200 OK if the command was successful.
+        return Ok();
+    }
+}
+```
 
 Each command-handler should be annotated with exactly one of the following attributes:
 
 - `AddsEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/`
 - `DeletesEntityAttribute` - generates an HTTP endpoint on the form `DELETE /<entity>/{entityId}`
 - `ModifiesEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/{entityId}/<property>`
+
+An endpoint for retrieving the complete event history for an entity is automatically added as `GET /entity/{entityId}`.
+
+It is the responsibliity of the `Entity` to allow or disallow specific action based on its current state (though generally not to handle security):
+
+```c#
+using Segerfeldt.EventStore.Source;
+
+// The entities are part of the domain model and their assembly should probably reflect that.
+namespace Domaim;
+
+// The abstract class EntityBase is a useful shortcut to implementing IEntity.
+// It is not necessary to inherit from that class, but it is necessary to implement IEntity.
+public sealed class Counter : EntityBase
+{
+    // It is recommended to define a static EntityType constant.
+    public static readonly EntityType EntityType = new("Counter");
+
+    // The constructor should usually be empty. Just call the base constructor with a constant
+    // EntityType value.
+    // This exact signature is expected by the EntitySource as it will need to instantiate
+    // every entity before replaying its history.
+    public Counter(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
+
+    // Adding a static New() method for creating new entities is recommended.
+    // New entities should usually define initial state information and add events accordingly.
+    public static Counter New(EntityId entityId)
+    {
+        // Always use EntityVersion.New as the version for new entities.
+        // This indicated that the entity does not exist yet in the database.
+        var counter = new User(entityId, EntityVersion.New);
+        counter.Add(new UnpublishedEvent("Registered", new {}));
+        return counter;
+    }
+
+    // Implement operations for manipulating the state
+    public void IncrementBy(int amount)
+    {
+        // Check that the input is acceptable. Thtow an exception if it is not.
+        if (amount <= 0) throw new Exception("amount must be positive");
+        // Add an UnpublishedEvent to indicate a statew change.
+        Add(new UnpublishedEvent("IncrementedBy", new { amount }));
+
+        // If you would rather add IncrementedTo, you will need to know the current
+        // state of the counter. This can be achieved using the ReplaysEventAttribute
+        // (see SourceConsoleApp.Player for an example).
+    }
+}
+```
+
+See the [Example apps](#examples) for more usage examples.
 
 Add the following code to your setup to add Swagger documentation:
 
@@ -38,6 +150,79 @@ The `IncludeXmlComments` call is optional. If you use it, you need to also turn 
 <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DocumentationFile>bin\Release\net7.0\[application name].xml</DocumentationFile>
 </PropertyGroup>
+```
+
+## Projection
+
+The Projection target is meant to implement the Command/Query side synchronisation for a CQRS system.
+
+Set up Projection for ASP.Net in Program.cs:
+
+```c#
+builder.Services.AddSingleton<PositionTracker>();
+builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("events")!), "events")
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetPositionTracker<PositionTracker>();
+```
+
+Receptacles are detected automatically. All classes, in the specified assemblies, that implement `IReceptacle` will be notified.
+
+```c#
+using Segerfeldt.EventStore.Projection;
+
+namespace ProjectionApp;
+
+public record Increment(int amount);
+
+// The abstract class ReceptacleBase is a useful shortcut to implementing IReceptacle.
+// It is not necessary to inherit from that class, but it is necessary to implement IReceptacle.
+public class CounterState : ReceptacleBase
+{
+    // This will be called for every "Registered" event where the Entity.Type is "Counter".
+    // The EntityType property is optional. If the same event name is used for multiple
+    // entities, this property discards irrelevant events.
+    [ReceivesEvent("Registered", EntityType = "Counter")]
+    public void ReceiveNewCounter(string entityId, EmptyDetails details)
+    {
+        // This should usually update a projection database.
+        InsertCounterRow(entityId);
+    }
+
+    // This will be called for every "Incremented" event regardless of entity type.
+    [ReceivesEvent("Incremented")]
+    public void ReceiveCounterIncrement(string entityId, Increment details)
+    {
+        // This should usually update a projection database.
+        IncrementAmountForCounterRow(entityId, details.Amount);
+    }
+}
+```
+
+```c#
+using Segerfeldt.EventStore.Projection;
+
+namespace ProjectionApp;
+
+public class PositionTracker : IPositionTracker
+{
+    public long? GetLastFinishedProjectionId()
+    {
+        // This is called at launch (or shortly thereafter)
+        // to determine which events to skip in the first update.
+        GetPersistedPosition();
+    }
+
+    public void OnProjectionStarting(long position)
+    {
+        // This is called before notifying receptacles
+    }
+
+    public void OnProjectionFinished(long position)
+    {
+        // This is called after notifying receptacles
+        PersistPosition(position);
+    }
+}
 ```
 
 # The Concept Behind Event Sourcing
