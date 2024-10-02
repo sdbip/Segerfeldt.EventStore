@@ -43,7 +43,7 @@ public class ReceptacleBaseTests
     }
 
     [Test]
-    public async Task InvokesMethodWithOnlyEntityIdAndSDataParameters()
+    public async Task InvokesMethodWithEntityIdAndDataParameters()
     {
         var receptacle = new ParameterListTestingReceptacle();
         await receptacle.ReceiveAsync(new Event("an-entity", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, "an-entity-type", @"{""property"":42}", 0));
