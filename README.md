@@ -8,7 +8,7 @@ State is stored in a relational database with built-in support for MS SQL Server
 
 ## Source
 
-The Source target is meant to implement the Command side (a.k.a. the write model) of a CQRS system. Import this in your web service code to start manipulating entities and publishing events.
+The Source library is meant to implement the Command side (a.k.a. the write model) of a CQRS system. Import this in your web service code to start manipulating entities and publishing events.
 
 Add the following line to your Program.cs to automatically find and map endpoints for the command handlers you have defined in your main assembly.
 
@@ -62,15 +62,20 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // Return NotFound() (status 404 NOT FOUND) if the entity doesn't exist.
         if (counter is null) return NotFound($"There is no counter with id [{id}]");
 
-        // Perform modifications on the entity (which should generate new events).
+        // Perform operations on the entity to change its state.
         counter.IncrementBy(command.Amount);
 
-        // Publish the changes using the EventPublisher. If the events are not published,
-        // the entity has not officially been changed.
+        // The changes are represented by adding events. This events need to be published.
+        // Until the events are published, the state has not been changed.
+
+        // Publish the changes using the EventPublisher.
         await context.EventPublisher.PublishChangesAsync(counter, actor);
 
         // Return 200 OK if the command was successful.
         return Ok();
+
+        // It's not necessary to explicitly catch any exceptions. They are automatically
+        // converted to 500 INTERNAL SERVER ERROR by the CommandAPI library.
     }
 }
 ```
@@ -154,16 +159,33 @@ The `IncludeXmlComments` call is optional. If you use it, you need to also turn 
 
 ## Projection
 
-The Projection target is meant to implement the Command/Query side synchronisation for a CQRS system.
+The Projection library is meant to implement the Command-to-Query side synchronisation for a CQRS system.
 
 Set up Projection for ASP.Net in Program.cs:
 
 ```c#
+using Segerfeldt.EventStore.Projection;
+
 builder.Services.AddSingleton<PositionTracker>();
-builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("events")!), "events")
+builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("source_database")!), "source1")
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetPositionTracker<PositionTracker>();
-```
+
+class SqlConnectionPool : IConnectionPool
+{
+    private readonly string connectionString;
+
+    public SqlConnectionPool(string connectionString)
+    {
+        this.connectionString = connectionString;
+    }
+
+    public IDbConnection CreateConnection() => new SqlConnection(connectionString);
+}```
+
+The `PositionTracker` is used to maintain a persisted memory of your place in the event stream. When the synchronization
+service is restarted it should not restart syncing from the first event. The `PositionTracker` will be notified as the
+position changes so that it can update the persisted value.
 
 Receptacles are detected automatically. All classes, in the specified assemblies, that implement `IReceptacle` will be notified.
 
@@ -209,7 +231,7 @@ public class PositionTracker : IPositionTracker
     {
         // This is called at launch (or shortly thereafter)
         // to determine which events to skip in the first update.
-        GetPersistedPosition();
+        return GetPersistedPosition();
     }
 
     public void OnProjectionStarting(long position)
