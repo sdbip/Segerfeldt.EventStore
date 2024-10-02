@@ -28,18 +28,21 @@ public static class ServiceCollectionExtension
         // not have such restrictions. And all IHostedServices added *will* be started by the .Net
         // Web API system.
 
+        services.TryAddSingleton(new EventSources());
+
         var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(getConnectionPool(p)));
 
-        services.TryAddSingleton(new EventSources());
-        var sources = (EventSources?) services.First(s => s.ServiceType == typeof(EventSources)).ImplementationInstance;
-        sources?.Add(builder, eventSourceName);
-
+        // A new hosted service is created for each event-source.
         services.AddSingleton<IHostedService>(p =>
         {
-            var sources = p.GetRequiredService<EventSources>();
-            sources.Add(builder.Build(p), eventSourceName);
+            var eventSource = builder.Build(p);
 
-            return new HostedEventSource(sources[eventSourceName]);
+            // Add the eventSource to EventSources to allow tests to inject events
+            // This is not used outside of testing
+            var sources = p.GetRequiredService<EventSources>();
+            sources.Add(eventSource, eventSourceName);
+
+            return new HostedEventSource(eventSource);
         });
         return builder;
     }
