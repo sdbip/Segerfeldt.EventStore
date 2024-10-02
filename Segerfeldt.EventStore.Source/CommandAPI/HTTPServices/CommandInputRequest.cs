@@ -45,17 +45,16 @@ internal class CommandInputRequest
         return dto is null ? actionResult : new OkObjectResult(dto);
     }
 
-    private static bool IsErrorResult(ActionResult<object?> commandResult)
+    private static bool IsErrorResult(ActionResult<object> commandResult)
     {
         var convertible = commandResult.Result as IConvertToActionResult;
         var statusCodeResult = convertible?.Convert() as IStatusCodeActionResult;
         return statusCodeResult?.StatusCode is not null or (>= 200 and < 300);
     }
 
-    private async Task<ActionResult<object?>> ParseCommand(MethodBase method)
+    private async Task<ActionResult<object>> ParseCommand(MethodBase method)
     {
         if (method.GetParameters().Length < 2) return new BadRequestObjectResult("");
-        if (method.GetParameters().Length < 2) return (object?)null;
 
         var commandType = method.GetParameters()[0].ParameterType;
         object? command;
@@ -63,7 +62,7 @@ internal class CommandInputRequest
             command = DeserializeQueryCommand(commandType);
         else
             command = await DeserializeCommand(commandType);
-        if (command is null) return new ActionResult<object?>(new BadRequestObjectResult("Command is null"));
+        if (command is null) return new ActionResult<object>(new BadRequestObjectResult("Command is null"));
 
         var missingProperties = GetMissingProperties(command).ToList();
         if (missingProperties.Any())
