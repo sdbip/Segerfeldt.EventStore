@@ -2,16 +2,16 @@ using System.Collections.Generic;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-public class EventSources
+public class ReceptacleTester
 {
     private readonly Dictionary<string, EventSource> eventSources = new();
 
-    public void Add(EventSource eventSource, string eventSourceName)
+    internal void Add(EventSource eventSource, string eventSourceName)
     {
         eventSources[eventSourceName] = eventSource;
     }
 
-    public void Receive(IEnumerable<Event> events, string eventSourceName)
+    public void Notify(string eventSourceName, params Event[] events)
     {
         eventSources[eventSourceName].Notify(events);
     }

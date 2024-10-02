@@ -80,7 +80,7 @@ public class EndpointTests
 
     private void Receive(params Event[] events)
     {
-        var eventSources = webApplicationFactory.Services.GetRequiredService<EventSources>();
-        eventSources.Receive(events, "events");
+        var tester = webApplicationFactory.Services.GetRequiredService<ReceptacleTester>();
+        tester.Notify("events", events);
     }
 }
