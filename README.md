@@ -30,7 +30,7 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 
 using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
 
-// If is recommended to separate commands and entities in different namespaces
+// It is recommended to separate commands and entities in different namespaces
 // (or even different assemblies).
 using Domain;
 namespace Commands;
@@ -62,11 +62,16 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // Return NotFound() (status 404 NOT FOUND) if the entity doesn't exist.
         if (counter is null) return NotFound($"There is no counter with id [{id}]");
 
-        // Perform operations on the entity to change its state.
-        counter.IncrementBy(command.Amount);
+        // Convert command properties to domain value objects.
+        var amount = new Amount(command.Amount);
 
-        // The changes are represented by adding events. This events need to be published.
-        // Until the events are published, the state has not been changed.
+        // Perform operations on the entity to change its state.
+        counter.IncrementBy(amount);
+
+        // The changes are performed by adding events. These events need to be published.
+        // Publishing will fail if there are concurrent changes to the same entity. Until
+        // the publishing step has completed successfully, the state of the entity cannot
+        // be said to have changed.
 
         // Publish the changes using the EventPublisher.
         await context.EventPublisher.PublishChangesAsync(counter, actor);
@@ -75,7 +80,8 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         return Ok();
 
         // It's not necessary to explicitly catch any exceptions. They are automatically
-        // converted to 500 INTERNAL SERVER ERROR by the CommandAPI library.
+        // converted to 500 INTERNAL SERVER ERROR by the CommandAPI library. If you want
+        // to return other
     }
 }
 ```
@@ -88,13 +94,39 @@ Each command-handler should be annotated with exactly one of the following attri
 
 An endpoint for retrieving the complete event history for an entity is automatically added as `GET /entity/{entityId}`.
 
-It is the responsibliity of the `Entity` to allow or disallow specific action based on its current state (though generally not to handle security):
+It is the responsibliity of the `Entity` to allow or disallow specific actions based on its current state (though generally not to handle security):
 
 ```c#
 using Segerfeldt.EventStore.Source;
 
-// The entities are part of the domain model and their assembly should probably reflect that.
+// Entities and value objects are part of the domain model in DDD, and
+// their assembly name and namespace should probably reflect that.
 namespace Domaim;
+
+// Value objects are extremely useful as they increase type safety,
+// thay can encapsulate validation and computation, and they can be
+// compared for equality.
+public sealed class Amount : ValueObject<Amount>
+{
+    // The amount is stored as an immutable property.
+    // You should never allow mutation in a value object.
+    public int Amount { get; }
+
+    public Amount(int amount)
+    {
+        // Check that the input is acceptable. Throw an exception if it is not.
+        // This makes it impossible to instantiate the value object with an invalid
+        // amount, and Amount instances will not need further validation.
+        if (amount <= 0) throw new Exception("amount must be positive");
+
+        Amount = amount;
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents() =>
+        // Prefer an ImmutableArray or other immutable enumeration type.
+        ImmutableArray.Create<object>(Amount);
+        // The yield syntax can also be used, which is good if you have many properties.
+}
 
 // The abstract class EntityBase is a useful shortcut to implementing IEntity.
 // It is not necessary to inherit from that class, but it is necessary to implement IEntity.
@@ -114,24 +146,46 @@ public sealed class Counter : EntityBase
     public static Counter New(EntityId entityId)
     {
         // Always use EntityVersion.New as the version for new entities.
-        // This indicated that the entity does not exist yet in the database.
+        // This indicates that the entity does not exist yet in the database.
         var counter = new User(entityId, EntityVersion.New);
         counter.Add(new UnpublishedEvent("Registered", new {}));
         return counter;
     }
 
     // Implement operations for manipulating the state
-    public void IncrementBy(int amount)
+    public void IncrementBy(Amount amount)
     {
-        // Check that the input is acceptable. Thtow an exception if it is not.
-        if (amount <= 0) throw new Exception("amount must be positive");
-        // Add an UnpublishedEvent to indicate a statew change.
-        Add(new UnpublishedEvent("IncrementedBy", new { amount }));
-
-        // If you would rather add IncrementedTo, you will need to know the current
-        // state of the counter. This can be achieved using the ReplaysEventAttribute
-        // (see SourceConsoleApp.Player for an example).
+        // Add an UnpublishedEvent to indicate the change.
+        // You could probably pass the Amount value as-is here, but it would not be
+        // recommended as the domain class should always be safe to refactor.
+        // The event structure however should never be allowed to change (as that would
+        // make old and new details incompatible).
+        Add(new UnpublishedEvent("IncrementedBy", new IncrementedByDetails(amount.Amount));
     }
+
+    // If you need knowlegde about the current state to protect invariants, you should
+    // add methods tagged with the ReplaysEventAttribute. (Their names are irrelevant
+    // as long as there is no conflict.)
+    [ReplaysEvent("IncrementedBy")]
+    public void OnReplayOfIncrementedBy(IncrementedByDetails details)
+    {
+        // Update internal fields as needed to enforce domain rules.
+    }
+
+    // All methods tagged with the corresponding event name will be invoked for
+    // every published event in the history.
+
+    // Replay-methods can optionally be passed the entire PublishedEvent object
+    // instead of just the details:
+    [ReplaysEvent("IncrementedBy")]
+    public void OnReplayOfIncrementedBy(PublishedEvent @event)
+    {
+        // ... but then the details will not be converted automatically.
+        var details = @event.DetailsAs<IncrementedByDetails>();
+        // ...
+    }
+
+    public record IncrementedByDetails(int amount);
 }
 ```
 
@@ -149,7 +203,7 @@ services.AddSwaggerGen(options =>
 });
 ```
 
-The `IncludeXmlComments` call is optional. If you use it, you need to also turn on XML documentation in your .csproj file:
+The `IncludeXmlComments` call is optional. If you do use it, you will need to also turn on XML documentation in your .csproj file:
 
 ```xml
 <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -262,21 +316,19 @@ Event Sourcing is a product of Domain-Driven Design (DDD). In DDD, we have two c
 
 ## Value Objects
 
-Value objects are not modeled by this library, but it is still important to understand them.
-
 A value object is (as the term implies) an object that represents a specific value. Values never change; you can only replace a value with a new one. Value objects are therefore always immutable.
 
 Value objects typically have two functions: they can be compared for structural equality, and they can be validated for correct user input.
 
-It should not be possible to instantiate an invalid value object. The initializer should prevent such, typically by throwing an exception or returning `nil` when invalid data is encountered. If the programmer can rely on this working, they will not need to validate the data in their code; it is enough to declare that a variable must be of the correct type (and not `nil`).
+It should not be possible to instantiate an invalid value object. The constructor (or factory) should prevent such, typically by throwing an exception or returning a failure result (see for example Vlad Khorikov's [CSharpFunctionalExtensions](https://github.com/vkhorikov/CSharpFunctionalExtensions/blob/master/CSharpFunctionalExtensions/Result/Result.cs)) when invalid data is encountered. If the programmer can rely on this working, they will not need to validate the data in their code; it is enough to declare that a variable must be of the correct type (and not `null`).
 
-Most value objects conform to `Equatable` and `Hashable`. They can thus be used in sets and as dictionary keys. A mutable object used as a dictionary key can be changed after it's added making it impossible to find again. Immutability is necessary to guarantee correct behaviour.
+Value objects can be used in sets and as dictionary keys. A mutable object used as a dictionary key can be changed after it's added, altering its hash-code and making it impossible to find again. Immutability is necessary to guarantee correct behaviour.
 
-`Equatable` value objects can also be `Comparable` and they can be used in calculations. You might for example add (`+`) two value objects of same type to get their sum. Or you might multiply a value object with a scalar (e.g. an interest rate). The result of a calculation is typically an object of the same type as the input, but it could be otherwise. E.g. `Ingredient1` plus `Ingredient2` might return a `Cake`.
+Value objects can also be used in calculations. You might for example `Add()` (or `+`) two value objects of same type to get their sum. Or you might multiply a value object with a scalar (e.g. a `Money` amount and an interest rate). The result of a calculation is typically an object of the same type as the input, but it could be otherwise. `Ingredient1` combined with `Ingredient2` might for example produce a `Cake`.
 
-Value objects should also be encapsulated. They should have an internal representation of data and an external interface. Users of the value object should only ever couple to the interface, never to the concrete data representation. That allows the storage strategy to change without breaking references to the value object. And it also helps the programmer stay focussed on the *meaning* of the value rather than its *composition*.
+Value objects should also be encapsulated. They should have an internal representation of data and an external interface. Users of the value object should only ever couple to the interface, never to the concrete data representation. That allows the storage strategy to change without breaking references to the value object. And it also helps the programmer stay focused on the *meaning* of the value rather than its *composition*.
 
-Should, for example, the data representation of an amount of `Money` be composed of an `Int` counting the cents (100 meaning one dollar), a `Double` value of dollars (0.5 to represent 50 cents) or two separate `Int` values (one for dollars and one for cents, where cents < 100)? If you ever need to change the data format to support new use cases or a need for higher precision, encapsulation is a guard against errors in all code outside the `Money` type itself.
+Should, for example, the data representation of an amount of `Money` be composed of an `Int` counting the cents (100 meaning one dollar), a `Double` value of dollars (0.5 to represent 50 cents) or two separate `Int` values (one for dollars and one for cents, where cents < 100)? If you ever need to change the data format to support new use cases or a develop a need for higher precision, encapsulation is a guard against errors in all code outside the `Money` type itself.
 
 ## Entities
 
@@ -296,9 +348,9 @@ Unlike value objects, entities possess an identifier. Since the `Entity` is stat
 
 ## Events
 
-DDD teaches us to focus on how the business processes *change* the state rather than just what the state is at any given time. By focusing on how the changes, and the reason for the changes, we can better understand how our domain works.
+DDD teaches us to focus on how the business processes *change* the state rather than just what the state is at any given time. By focusing on how and why the state changes we can better understand how our domain works.
 
-This library employs event sourcing, which means that we define the state of an entity by listing the changes that has happened to it since it was first added to the system/application. These changes are commonly referred to as `Event`s. Events specify the details of how the state changed, which user caused it and at what time the change occurred.
+This library employs event sourcing, which means that we define the state of an entity by listing all the changes in order that have been made to it since it was first added to the system/application. These changes are commonly referred to as `Event`s. Events specify the conceptual meaning of each change and lists its specific details. It also includes which user caused the change and at what time the `Event` was published.
 
 By storing all events in a way that persists their chronology, the current state of the entire system is well defined. In functional programming terms the state of each `Entity` can be implemented as a simple `fold()` operation. The state of the complete system being the aggregated state of all entities is then the `fold()` operation mapped over the list of lists that is the events of all entities.
 
