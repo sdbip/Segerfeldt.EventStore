@@ -22,7 +22,7 @@ public class EndpointTests
     [SetUp]
     public void Setup()
     {
-        webApplicationFactory = new WebApplicationFactory<ScoreBoard>();
+        webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
 
         var positionTracker = webApplicationFactory.Services.GetService<PositionTracker>();
