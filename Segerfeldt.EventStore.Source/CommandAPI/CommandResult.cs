@@ -21,7 +21,7 @@ public static class CommandResultExtension
     public static ActionResult ActionResult(this ICommandResult result) =>
         result.Content is null
             ? new StatusCodeResult(result.StatusCode)
-            : new ObjectResult(result.Content) { StatusCode = result.StatusCode };
+            : new OkObjectResult(result.Content) { StatusCode = result.StatusCode };
 
     public static bool IsError(this ICommandResult commandResult) => IsErrorStatus(commandResult.StatusCode);
 

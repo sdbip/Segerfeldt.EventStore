@@ -42,9 +42,9 @@ public class CommandResultTests
         var actionResult = result.ActionResult();
 
         Assert.That(result.Value, Is.EqualTo(new {}));
-        Assert.That(actionResult, Is.TypeOf<ObjectResult>());
-        Assert.That((actionResult as ObjectResult)?.StatusCode, Is.EqualTo(200));
-        Assert.That((actionResult as ObjectResult)?.Value, Is.EqualTo(new {}));
+        Assert.That(actionResult, Is.TypeOf<OkObjectResult>());
+        Assert.That((actionResult as OkObjectResult)?.StatusCode, Is.EqualTo(200));
+        Assert.That((actionResult as OkObjectResult)?.Value, Is.EqualTo(new {}));
     }
 
     [Test]
@@ -54,9 +54,9 @@ public class CommandResultTests
         var actionResult = result.ActionResult();
 
         Assert.That(result.Content, Is.EqualTo("sample error message"));
-        Assert.That(actionResult, Is.TypeOf<ObjectResult>());
-        Assert.That((actionResult as ObjectResult)?.StatusCode, Is.EqualTo(400));
-        Assert.That((actionResult as ObjectResult)?.Value, Is.EqualTo("sample error message"));
+        Assert.That(actionResult, Is.TypeOf<OkObjectResult>());
+        Assert.That((actionResult as OkObjectResult)?.StatusCode, Is.EqualTo(400));
+        Assert.That((actionResult as OkObjectResult)?.Value, Is.EqualTo("sample error message"));
     }
 
     [Test]
