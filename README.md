@@ -181,7 +181,8 @@ class SqlConnectionPool : IConnectionPool
     }
 
     public IDbConnection CreateConnection() => new SqlConnection(connectionString);
-}```
+}
+```
 
 The `PositionTracker` is used to maintain a persisted memory of your place in the event stream. When the synchronization
 service is restarted it should not restart syncing from the first event. The `PositionTracker` will be notified as the
