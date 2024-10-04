@@ -1,0 +1,5 @@
+# TODO
+
+- Command-line `dotnet test` fails sporadically (even habitually?)
+  - It is always the `SQLServer*` tests that fail.
+  - Maybe my Docker instance is slowed down sporadically?

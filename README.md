@@ -4,8 +4,6 @@ A package for using event-sourcing in applications. It is particularly useful wh
 
 State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL.
 
-# Usage
-
 ## Source
 
 The Source library is meant to implement the Command side (a.k.a. the write model) of a CQRS system. Import this in your web service code to start manipulating entities and publishing events.
