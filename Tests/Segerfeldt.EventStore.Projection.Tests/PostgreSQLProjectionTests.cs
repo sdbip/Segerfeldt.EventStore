@@ -21,7 +21,7 @@ public class PostgreSQLProjectionTests
     [SetUp]
     public void Setup()
     {
-        connection = new NpgsqlConnection("Server=localhost;Database=es_test;User Id=johan");
+        connection = new NpgsqlConnection("Server=localhost;Database=es_test;User Id=johan;Include Error Detail=True");
         delayConfiguration = new Mock<IPollingStrategy>();
         positionTracker = new Mock<IPositionTracker>();
 

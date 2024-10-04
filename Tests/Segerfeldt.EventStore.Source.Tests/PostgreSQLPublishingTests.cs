@@ -14,7 +14,7 @@ public class PostgreSQLPublishingTests
     [SetUp]
     public void Setup()
     {
-        connection = new NpgsqlConnection("Server=localhost;Database=es_test;");
+        connection = new NpgsqlConnection("Server=localhost;Database=es_test;Include Error Detail=True");
         var connectionPool = new SingletonConnectionPool(connection);
         publisher = new EventPublisher(connectionPool);
         PostgreSQL.Schema.CreateIfMissing(connection);

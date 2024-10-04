@@ -19,7 +19,7 @@ public class PostgreSQLReconstitutionTests
     [SetUp]
     public void Setup()
     {
-        connection = new NpgsqlConnection("Server=localhost;Database=es_test;");
+        connection = new NpgsqlConnection("Server=localhost;Database=es_test;Include Error Detail=True");
         var connectionPool = new SingletonConnectionPool(connection);
         store = new EntityStore(connectionPool);
 
