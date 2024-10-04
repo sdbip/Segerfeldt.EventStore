@@ -360,6 +360,16 @@ And it is also well defined what the state was at any point of time in the past.
 
 Projection can be used for other purposes than the Query side of CQRS. It can for example be used to communicate between bounded contexts. Or it can be used to generate one-off reports. Or myriad other things.
 
+## What About Aggregates?
+
+In his “Big Blue Book,” Eric Evans defines the term “aggregate.” This refers to a collection of entities that can only exist meaningfully as a group. This group always has an “aggregate root” which is one of the contained entities. (It can also be called “the root entity.”) Other event sourcing libraries add a class named `Aggregate` to refer to such groups, and to generate the events that define them. This is however a confusing term as it literally refers to the relationship between entities, but conceptually to the group as an object.
+
+The aggregate is called `Entity` in this library; mostly because every aggregate is clearly defined by referencing its root entity making the confusing term redundant. It has similar purpose as the `Aggregate` class in other libraries, but it doesn't introduce a third term for modelling. (The terms “entity” and “value object” are quite enough, thank you.)
+
+Other libraries often treat the `Aggregate` much like a list of commands rather than a modelling object. Commands often perform multiple operations on an entity in one batch. This is not how `Entity` is used here. Instead commands are assumed to be external to the model, and they can freely compose what operations to perform (or manipulate multiple entities) before publishing the generated events.
+
+The aggregate *rule* still applies though. Entities that belong to an aggregate relationship can only be accessed through the root entity. It should not be possible to access a child entity without its parent. It is however up to the developer to define these entity classes and invariants, and to couple them to the root entity so that they can add events (and replay them correctly when necessary for maintaining internal cnsistency).
+
 # Examples
 
 See the Apps/ directory for example applications.
