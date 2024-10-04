@@ -26,7 +26,8 @@ public sealed class DefaultEventSourceRepository : IEventSourceRepository
             return connection.OpenAndExecute(_ =>
             {
                 var command = connection.CreateCommand("""
-                    SELECT * FROM Events
+                    SELECT Events.*, Entities.type AS entity_type FROM Events
+                    JOIN Entities ON Entities.id = Events.entity_id
                         WHERE position > @position
                         ORDER BY position, version
                     """);

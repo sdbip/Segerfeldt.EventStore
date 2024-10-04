@@ -8,7 +8,6 @@ CREATE TABLE Entities (
 IF OBJECT_ID('Events') IS NULL
 CREATE TABLE Events (
     entity_id NVARCHAR(256) NOT NULL REFERENCES Entities (id),
-    entity_type NVARCHAR(MAX) NOT NULL,
     name NVARCHAR(MAX) NOT NULL,
     details NVARCHAR(MAX) NOT NULL,
     actor NVARCHAR(MAX) NOT NULL,

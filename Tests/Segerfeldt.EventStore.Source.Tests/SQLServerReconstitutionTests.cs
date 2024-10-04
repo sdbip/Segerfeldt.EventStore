@@ -70,7 +70,7 @@ public class SQLServerReconstitutionTests
         try
         {
             GivenEntity("an-entity-3", "a-type");
-            GivenEvent("an-entity-3", "a-type", "an-event", @"{""meaning"":42}");
+            GivenEvent("an-entity-3", "an-event", @"{""meaning"":42}");
         }
         finally
         {
@@ -99,9 +99,9 @@ public class SQLServerReconstitutionTests
         try
         {
             GivenEntity("an-entity-4", "a-type");
-            GivenEvent("an-entity-4", "a-type", "first-event", version: 1);
-            GivenEvent("an-entity-4", "a-type", "third-event", version: 3);
-            GivenEvent("an-entity-4", "a-type", "second-event", version: 2);
+            GivenEvent("an-entity-4", "first-event", version: 1);
+            GivenEvent("an-entity-4", "third-event", version: 3);
+            GivenEvent("an-entity-4", "second-event", version: 2);
         }
         finally
         {
@@ -126,7 +126,7 @@ public class SQLServerReconstitutionTests
         try
         {
             GivenEntity("an-entity-5", "a-type");
-            GivenEvent("an-entity-5", "a-type", "first-event", "johan", timestamp);
+            GivenEvent("an-entity-5", "first-event", "johan", timestamp);
         }
         finally
         {
@@ -149,9 +149,9 @@ public class SQLServerReconstitutionTests
         try
         {
             GivenEntity("an-entity-6", "a-type");
-            GivenEvent("an-entity-6", "a-type", "first-event", version: 1);
-            GivenEvent("an-entity-6", "a-type", "third-event", version: 3);
-            GivenEvent("an-entity-6", "a-type", "second-event", version: 2);
+            GivenEvent("an-entity-6", "first-event", version: 1);
+            GivenEvent("an-entity-6", "third-event", version: 3);
+            GivenEvent("an-entity-6", "second-event", version: 2);
         }
         finally
         {
@@ -198,27 +198,25 @@ public class SQLServerReconstitutionTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string entityType, string eventName, string actor, DateTimeOffset timestamp)
+    private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
     {
         var commandText =
-            @"INSERT INTO Events (entity_id, entity_type, name, details, actor, timestamp, version, position)
-                    VALUES (@entityId, @entityType, @eventName, '{}', @actor, @timestamp, 1, 1)";
+            @"INSERT INTO Events (entity_id, name, details, actor, timestamp, version, position)
+                    VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);
         command.AddParameter("@entityId", entityId);
-        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
         command.AddParameter("@timestamp", timestamp.UtcDateTime.DaysSinceEpoch());
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string entityType, string eventName, string details = "{}", int version = 1)
+    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position)
-                    VALUES (@entityId, @entityType, @eventName, @details, 'test', @version, 1)");
+            @"INSERT INTO Events (entity_id, name, details, actor, version, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
         command.AddParameter("@entityId", entityId);
-        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
         command.AddParameter("@version", version);

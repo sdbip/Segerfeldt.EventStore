@@ -40,8 +40,8 @@ public class SQLiteSnapshotTests
     public void ReplaysPublishedEvents()
     {
         GivenEntity("an-entity-2", "a-type");
-        GivenEvent("an-entity-2", "a-type", "at-snapshot-event", version: 42);
-        GivenEvent("an-entity-2", "a-type", "after-snapshot-event", version: 43);
+        GivenEvent("an-entity-2", "at-snapshot-event", version: 42);
+        GivenEvent("an-entity-2", "after-snapshot-event", version: 43);
 
         var snapshot = new Snapshot(new EntityId("an-entity-2"), new EntityType("a-type"), EntityVersion.Of(42));
         var entity = store.Reconstitute(snapshot);
@@ -60,13 +60,12 @@ public class SQLiteSnapshotTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string entityType, string eventName, string details = "{}", int version = 1)
+    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position)
-                    VALUES (@entityId, @entityType, @eventName, @details, 'test', @version, 1)");
+            @"INSERT INTO Events (entity_id, name, details, actor, version, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
         command.AddParameter("@entityId", entityId);
-        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
         command.AddParameter("@version", version);

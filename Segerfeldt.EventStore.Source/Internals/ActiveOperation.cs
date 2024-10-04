@@ -28,13 +28,12 @@ internal abstract class ActiveOperation
             : EntityVersion.Of(Convert.ToInt32(scalar));
     }
 
-    protected async Task InsertEventAsync(EntityId entityId, EntityType entityType, UnpublishedEvent @event, EntityVersion version, long position)
+    protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EntityVersion version, long position)
     {
         var command = transaction.CreateCommand(
-            "INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position)" +
-            " VALUES (@entityId, @entityType, @eventName, @details, @actor, @version, @position)",
+            "INSERT INTO Events (entity_id, name, details, actor, version, position)" +
+            " VALUES (@entityId, @eventName, @details, @actor, @version, @position)",
             ("@entityId", entityId.ToString()),
-            ("@entityType", entityType.ToString()),
             ("@eventName", @event.Name),
             ("@details", JSON.Serialize(@event.Details)),
             ("@actor", actor),
@@ -69,11 +68,11 @@ internal abstract class ActiveOperation
         var entityVersions = await Task.WhenAll(
             entities.Select(async entity =>
             {
-                var (id, type, currentVersion, events) = entity;
+                var (id, _, currentVersion, events) = entity;
                 var incrementingVersions = InfiniteVersionsFrom(currentVersion.Next());
                 var tuples = events.Zip(incrementingVersions).ToList();
                 foreach (var (@event, version) in tuples)
-                    await InsertEventAsync(id, type, @event, version, position);
+                    await InsertEventAsync(id, @event, version, position);
 
                 var (_, lastInsertedVersion) = tuples.Last();
                 await UpdateVersionAsync(id, lastInsertedVersion);

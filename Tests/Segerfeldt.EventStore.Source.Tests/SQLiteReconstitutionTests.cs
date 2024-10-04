@@ -165,11 +165,10 @@ public class SQLiteReconstitutionTests
 
     private void GivenEvent(string entityId, string entityType, string eventName, string actor, DateTimeOffset timestamp)
     {
-        string commandText = @"INSERT INTO Events (entity_id, entity_type, name, details, actor, timestamp, version, position)
-                                 VALUES (@entityId, @entityType, @eventName, '{}', @actor, @timestamp, 1, 1)";
+        string commandText = @"INSERT INTO Events (entity_id, name, details, actor, timestamp, version, position)
+                                 VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);
         command.AddParameter("@entityId", entityId);
-        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
         command.AddParameter("@timestamp", timestamp.UtcDateTime.DaysSinceEpoch());
@@ -179,10 +178,9 @@ public class SQLiteReconstitutionTests
     private void GivenEvent(string entityId, string entityType, string eventName, string details = "{}", int version = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position)
-                    VALUES (@entityId, @entityType, @eventName, @details, 'test', @version, 1)");
+            @"INSERT INTO Events (entity_id, name, details, actor, version, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
         command.AddParameter("@entityId", entityId);
-        command.AddParameter("@entityType", entityType);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
         command.AddParameter("@version", version);

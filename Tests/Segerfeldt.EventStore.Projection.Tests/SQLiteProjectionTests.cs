@@ -122,8 +122,8 @@ public class SQLiteProjectionTests
     private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position)
-                    VALUES (@entityId, 'a-type', @eventName, @details, 'test', @version, @position)");
+            @"INSERT INTO Events (entity_id, name, details, actor, version, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @version, @position)");
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
