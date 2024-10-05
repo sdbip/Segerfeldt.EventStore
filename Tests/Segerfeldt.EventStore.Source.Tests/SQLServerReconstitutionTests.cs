@@ -12,13 +12,18 @@ namespace Segerfeldt.EventStore.Source.Tests;
 
 public class SQLServerReconstitutionTests
 {
+    private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
+
     private SqlConnection connection = null!;
     private EntityStore store = null!;
 
     [SetUp]
     public void Setup()
     {
-        connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
+        Assert.That(connectionString, Is.Not.Null,
+            "MSSQL_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
+
+        connection = new SqlConnection(connectionString);
         var connectionPool = new SingletonConnectionPool(connection);
         store = new EntityStore(connectionPool);
 

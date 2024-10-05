@@ -1,0 +1,10 @@
+<!-- https://learn.microsoft.com/en-us/visualstudio/test/configure-unit-tests-by-using-a-dot-runsettings-file?view=vs-2019#specify-environment-variables-in-the-runsettings-file -->
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <POSTGRES_TEST_CONNECTION_STRING>Server=localhost;Database=test;Include Error Detail=True</POSTGRES_TEST_CONNECTION_STRING>
+      <MSSQL_TEST_CONNECTION_STRING>Server=localhost;Database=test;User Id=sa;Password=**********;</MSSQL_TEST_CONNECTION_STRING>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

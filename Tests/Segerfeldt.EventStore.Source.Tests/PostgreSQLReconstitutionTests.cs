@@ -13,13 +13,18 @@ namespace Segerfeldt.EventStore.Source.Tests;
 
 public class PostgreSQLReconstitutionTests
 {
+    private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
+
     private NpgsqlConnection connection = null!;
     private EntityStore store = null!;
 
     [SetUp]
     public void Setup()
     {
-        connection = new NpgsqlConnection("Server=localhost;Database=es_test;Include Error Detail=True");
+        Assert.That(connectionString, Is.Not.Null,
+            "POSTGRES_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
+
+        connection = new NpgsqlConnection(connectionString);
         var connectionPool = new SingletonConnectionPool(connection);
         store = new EntityStore(connectionPool);
 

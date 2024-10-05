@@ -4,6 +4,7 @@ using Npgsql;
 
 using NUnit.Framework;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,8 @@ namespace Segerfeldt.EventStore.Projection.Tests;
 
 public class PostgreSQLProjectionTests
 {
+    private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
+
     private NpgsqlConnection connection = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
@@ -21,12 +24,15 @@ public class PostgreSQLProjectionTests
     [SetUp]
     public void Setup()
     {
-        connection = new NpgsqlConnection("Server=localhost;Database=es_test;User Id=johan;Include Error Detail=True");
+        Assert.That(connectionString, Is.Not.Null,
+            "POSTGRES_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
+
+        connection = new NpgsqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
         positionTracker = new Mock<IPositionTracker>();
 
         var connectionPool = new Mock<IConnectionPool>();
-        connectionPool.Setup(pool => pool.CreateConnection()).Returns(new NpgsqlConnection("Server=localhost;Database=es_test;User Id=johan"));
+        connectionPool.Setup(pool => pool.CreateConnection()).Returns(new NpgsqlConnection(connectionString));
         eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), positionTracker.Object, delayConfiguration.Object);
 
         delayConfiguration

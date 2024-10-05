@@ -8,13 +8,15 @@ State is stored in a relational database with built-in support for MS SQL Server
 
 Run tests from your IDE or by using `dotnet test`.
 
+Tests need environment variables to run. Copy the sample.runsettings file to a new file named .runsettings and edit that file to match your setup. This file will not be tracked by Git so you can enter your secrets without worry.
+
 ## PostgreSQL
 
 The tests will fail without write-access to a running PostgreSQL test-database. Ensure that the PostgreSQL server is started, and that a test database has been created, before running tests.
 
 You can download [Postgres.app](https://postgresapp.com) which is probably the easiest to run PostgreSQL on a Mac. It is also available as a [Docker image](https://hub.docker.com/_/postgres/) and by [direct installation](https://www.postgresql.org/download/).
 
-The test connection-string is hard-coded as `Server=localhost;Database=es_test;Include Error Detail=True`
+Edit the `POSTGRES_TEST_CONNECTION_STRING` variables in .runsettings to match your PostgreSQL setup.
 
 ## MS SQL Server
 
@@ -22,7 +24,7 @@ The tests will fail without write-access to a running SQL Server test-database. 
 
 SQL Server is available as a [Docker image](https://hub.docker.com/r/microsoft/mssql-server). You can also download a “[free specialized edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads).”.
 
-The test connection-string is hard-coded as `Server=localhost;Database=test;User Id=sa;Password=S_12345678;`
+Edit the `MSSQL_TEST_CONNECTION_STRING` variables in .runsettings to match your SQL Server setup.
 
 # Testing NuGet Packages
 

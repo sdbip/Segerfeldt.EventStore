@@ -2,6 +2,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace Segerfeldt.EventStore.Projection.Tests;
 // ReSharper disable once InconsistentNaming
 public class SQLServerProjectionTests
 {
+    private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
+
     private SqlConnection connection = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
@@ -21,7 +24,10 @@ public class SQLServerProjectionTests
     [SetUp]
     public void Setup()
     {
-        connection = new SqlConnection("Server=localhost;Database=test;User Id=sa;Password=S_12345678;");
+        Assert.That(connectionString, Is.Not.Null,
+            "MSSQL_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
+
+        connection = new SqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
         positionTracker = new Mock<IPositionTracker>();
 

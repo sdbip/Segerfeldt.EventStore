@@ -8,3 +8,4 @@ riderModule.iml
 *.user
 Apps/ProjectionWebApplication/appsettings.Development.json
 Apps/SourceWebApplication/source_web_application.db
+.runsettings
