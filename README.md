@@ -1,34 +1,34 @@
 # Segerfeldt.EventStore
 
-A package for using event-sourcing in applications. It is particularly useful when using the CQRS architecture style. The Command side would employ the `Source` package, and the Query side would use the `Projection` package.
+A set of NuGet packages for employing event-sourcing in applications. It is particularly useful when using the CQRS architecture style. The Command side would employ the `Source` package, and the Query side would use the `Projection` package.
 
-State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL.
+State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL. See the [Tables](#tables) section for schema details.
 
 # Build and Test
 
 Run tests from your IDE or by using `dotnet test`.
 
-Tests need environment variables to run. Copy the sample.runsettings file to a new file named .runsettings and edit that file to match your setup. This file will not be tracked by Git so you can enter your secrets without worry.
+Tests need databases and environment variables to run. Copy the sample.runsettings file to a new file named .runsettings and edit that file to match your setup. This file will not be tracked by Git so you can enter your secrets without worrying that they might be exposed on GitHub.
 
 ## PostgreSQL
 
-The tests will fail without write-access to a running PostgreSQL test-database. Ensure that the PostgreSQL server is started, and that a test database has been created, before running tests.
+The tests will fail without write-access to a running PostgreSQL test-database. Ensure that the PostgreSQL server is started and that a test database has been created before running tests.
 
 You can download [Postgres.app](https://postgresapp.com) which is probably the easiest to run PostgreSQL on a Mac. It is also available as a [Docker image](https://hub.docker.com/_/postgres/) and by [direct installation](https://www.postgresql.org/download/).
 
-Edit the `POSTGRES_TEST_CONNECTION_STRING` variables in .runsettings to match your PostgreSQL setup.
+Edit the `POSTGRES_TEST_CONNECTION_STRING` variable in .runsettings to match your PostgreSQL setup.
 
 ## MS SQL Server
 
-The tests will fail without write-access to a running SQL Server test-database. Ensure that SQL Server is started, and that a test database has been created, before running tests.
+The tests will fail without write-access to a running SQL Server test-database. Ensure that SQL Server is started and that a test database has been created before running tests.
 
 SQL Server is available as a [Docker image](https://hub.docker.com/r/microsoft/mssql-server). You can also download a “[free specialized edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads).”.
 
-Edit the `MSSQL_TEST_CONNECTION_STRING` variables in .runsettings to match your SQL Server setup.
+Edit the `MSSQL_TEST_CONNECTION_STRING` variable in .runsettings to match your SQL Server setup.
 
 # Testing NuGet Packages
 
-You can test the NuGet package without publishing it.
+You can test the NuGet packages without publishing them.
 
 First set up a local NuGet store as described here:
 https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
@@ -43,7 +43,7 @@ nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.
 nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
 ```
 
-To reference the NuGet package in another solution, you will first need to configure NuGet to find your local repo.
+To reference the NuGet packages in another solution, you will first need to configure NuGet to find your local repo.
 
 If you have the option, you should probably use your Visual Studio IDE to set it up. But you might not have that option, or you might prefer to set it up as a config file in your Git repository so that all developers have the same configuration automatically. The configuration file looks like this:
 
@@ -81,7 +81,7 @@ Add the following line to your Program.cs to automatically find and map endpoint
 app.MapCommands(Assembly.GetExecutingAssembly());
 ```
 
-You can optionally define your endpoints in a different assembly (or in several). Just make sure to pass them as agruments to the `MapCommands` call:
+You can optionally define your endpoints in a different assembly (or in several). Just make sure to pass them as arguments to the `MapCommands` call:
 
 ```csharp
 app.MapCommands(assembly1, assembly2);
@@ -166,7 +166,7 @@ using Segerfeldt.EventStore.Source;
 
 // Entities and value objects are part of the domain model in DDD, and
 // their assembly name and namespace should probably reflect that.
-namespace Domaim;
+namespace Domain;
 
 // Value objects are extremely useful as they increase type safety,
 // thay can encapsulate validation and computation, and they can be
@@ -303,11 +303,7 @@ class SqlConnectionPool : IConnectionPool
 }
 ```
 
-The `PositionTracker` is used to maintain a persisted memory of your place in the event stream. When the synchronization
-service is restarted it should not restart syncing from the first event. The `PositionTracker` will be notified as the
-position changes so that it can update the persisted value.
-
-Receptacles are detected automatically. All classes, in the specified assemblies, that implement `IReceptacle` will be notified.
+Receptacles are detected automatically in the specified assemblies. All `public` classes that implement `IReceptacle` will be notified.
 
 ```c#
 using Segerfeldt.EventStore.Projection;
@@ -339,6 +335,10 @@ public class CounterState : ReceptacleBase
     }
 }
 ```
+
+The `PositionTracker` is used to maintain a persisted memory of your place in the event stream. When the synchronization
+service is restarted it should not restart syncing from the first event. The `PositionTracker` will be notified as the
+position changes so that it can update the persisted value.
 
 ```c#
 using Segerfeldt.EventStore.Projection;
@@ -492,11 +492,3 @@ The `name` and `details` (JSON) columns define what changed for the entity. The 
 The `actor` and `timestamp` columns are metadata that can be used for auditing.
 
 The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
-
-## Database Support
-
-There is currently support for three database providers.
-
-- MS SQL Server
-- PostgreSQL
-- SQLite
