@@ -435,6 +435,8 @@ Other libraries often treat the `Aggregate` much like a list of commands rather 
 
 The aggregate *rule* still applies though. Entities that belong to an aggregate relationship can only be accessed through the root entity. It should not be possible to access a child entity without its parent. It is however up to the developer to define these entity classes and invariants, and to couple them to the root entity so that they can add events (and replay them correctly when necessary for maintaining internal cnsistency).
 
+There is an example of how an aggregate might be constructed in the test case `Segerfeldt.EventStore.Source.Tests.AggregateTests`. Please do not take it as canon; you own implementation will probably be a better match for your purpose.
+
 # Examples
 
 See the Apps/ directory for example applications.
