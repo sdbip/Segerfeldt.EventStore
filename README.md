@@ -385,7 +385,7 @@ A value object is (as the term implies) an object that represents a specific val
 
 Value objects typically have two functions: they can be compared for structural equality, and they can be validated for correct user input.
 
-It should not be possible to instantiate an invalid value object. The constructor (or factory) should prevent such, typically by throwing an exception or returning a failure result (see for example Vlad Khorikov's [CSharpFunctionalExtensions](https://github.com/vkhorikov/CSharpFunctionalExtensions/blob/master/CSharpFunctionalExtensions/Result/Result.cs)) when invalid data is encountered. If the programmer can rely on this working, they will not need to validate the data in their code; it is enough to declare that a variable must be of the correct type (and not `null`).
+It should not be possible to instantiate an invalid value object. The constructor (or factory) should prevent such, typically by throwing an exception or returning a failure result when invalid data is encountered. (See for example Vlad Khorikov's [CSharpFunctionalExtensions](https://github.com/vkhorikov/CSharpFunctionalExtensions/blob/master/CSharpFunctionalExtensions/Result/Result.cs).) If the programmer can trust that this is enforced, they will not need to validate the data in their code; it is enough to declare that a variable must be of the correct type (and not `null`).
 
 Value objects can be used in sets and as dictionary keys. A mutable object used as a dictionary key can be changed after it's added, altering its hash-code and making it impossible to find again. Immutability is necessary to guarantee correct behaviour.
 
