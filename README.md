@@ -4,6 +4,71 @@ A package for using event-sourcing in applications. It is particularly useful wh
 
 State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL.
 
+# Build and Test
+
+Run tests from your IDE or by using `dotnet test`.
+
+## PostgreSQL
+
+The tests will fail without write-access to a running PostgreSQL test-database. Ensure that the PostgreSQL server is started, and that a test database has been created, before running tests.
+
+You can download [Postgres.app](https://postgresapp.com) which is probably the easiest to run PostgreSQL on a Mac. It is also available as a [Docker image](https://hub.docker.com/_/postgres/) and by [direct installation](https://www.postgresql.org/download/).
+
+The test connection-string is hard-coded as `Server=localhost;Database=es_test;Include Error Detail=True`
+
+## MS SQL Server
+
+The tests will fail without write-access to a running SQL Server test-database. Ensure that SQL Server is started, and that a test database has been created, before running tests.
+
+SQL Server is available as a [Docker image](https://hub.docker.com/r/microsoft/mssql-server). You can also download a “[free specialized edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads).”.
+
+The test connection-string is hard-coded as `Server=localhost;Database=test;User Id=sa;Password=S_12345678;`
+
+# Testing NuGet Packages
+
+You can test the NuGet package without publishing it.
+
+First set up a local NuGet store as described here:
+https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
+
+Update the `<PackageVersion>` value in the .csproj file(s) and build for Release. Then run one or more of the following commands to deploy the output:
+
+```shell
+nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
+```
+
+To reference the NuGet package in another solution, you will first need to configure NuGet to find your local repo.
+
+If you have the option, you should probably use your Visual Studio IDE to set it up. But you might not have that option, or you might prefer to set it up as a config file in your Git repository so that all developers have the same configuration automatically. The configuration file looks like this:
+
+```xml
+<packageSources>
+    <add key="local" value="file:///path/to/nuget/packages/" /> <!-- Not tested -->
+</packageSources>
+```
+
+You can place this configuration in any of the files described in this S/O answer: https://stackoverflow.com/a/51381519.
+
+Alternatively, you can use the `nuget sources` command described here: https://learn.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources.
+
+Once you have set up the repository link correctly, you can reference it in your project using the Visual Studio IDE or by adding the following `<ItemGroup/>` to your .csproj file.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="Segerfeldt.EventStore.Source.NUnit" Version="0.0.1" />
+    </ItemGroup>
+</Project>
+```
+
+More information about NuGet hosting and configurtion can be found here: https://learn.microsoft.com/en-us/nuget/hosting-packages/overview
+
+# Usage
+
 ## Source
 
 The Source library is meant to implement the Command side (a.k.a. the write model) of a CQRS system. Import this in your web service code to start manipulating entities and publishing events.
@@ -326,7 +391,7 @@ Value objects can also be used in calculations. You might for example `Add()` (o
 
 Value objects should also be encapsulated. They should have an internal representation of data and an external interface. Users of the value object should only ever couple to the interface, never to the concrete data representation. That allows the storage strategy to change without breaking references to the value object. And it also helps the programmer stay focused on the *meaning* of the value rather than its *composition*.
 
-Should, for example, the data representation of an amount of `Money` be composed of an `Int` counting the cents (100 meaning one dollar), a `Double` value of dollars (0.5 to represent 50 cents) or two separate `Int` values (one for dollars and one for cents, where cents < 100)? If you ever need to change the data format to support new use cases or a develop a need for higher precision, encapsulation is a guard against errors in all code outside the `Money` type itself.
+Should, for example, the data representation of an amount of `Money` be composed of an `Int` counting the cents (100 meaning one dollar), a `Double` value of dollars (0.5 to represent 50 cents) or two separate `Int` values (one for dollars and one for cents, where cents < 100)? If you ever need to change the data format to support new use cases or higher precision, encapsulation is a guard against errors in all code outside the `Money` type itself.
 
 ## Entities
 
@@ -431,46 +496,3 @@ There is currently support for three database providers.
 - MS SQL Server
 - PostgreSQL
 - SQLite
-
-# Deploying to NuGet (local)
-
-You can test the NuGet package without publishing it.
-
-First set up a local NuGet store as described here:
-https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
-
-Update the `<PackageVersion>` value in the .csproj file(s) and build for Release. Then run one or more of the following commands to deploy the output:
-
-```shell
-nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
-
-nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
-
-nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
-```
-
-To reference the NuGet package in another solution, you will first need to configure NuGet to find your local repo.
-
-If you have the option, you should probably use your Visual Studio IDE to set it up. But you might not have that option, or you might prefer to set it up as a config file in your Git repository so that all developers have the same configuration automatically. The configuration file looks like this:
-
-```xml
-<packageSources>
-    <add key="local" value="file:///path/to/nuget/packages/" /> <!-- Not tested -->
-</packageSources>
-```
-
-You can place this configuration in any of the files described in this S/O answer: https://stackoverflow.com/a/51381519.
-
-Alternatively, you can use the `nuget sources` command described here: https://learn.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources.
-
-Once you have set up the repository link correctly, you can reference it in your project using the Visual Studio IDE or by adding the following `<ItemGroup/>` to your .csproj file.
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-    <ItemGroup>
-        <PackageReference Include="Segerfeldt.EventStore.Source.NUnit" Version="0.0.1" />
-    </ItemGroup>
-</Project>
-```
-
-More information about NuGet hosting and configurtion can be found here: https://learn.microsoft.com/en-us/nuget/hosting-packages/overview
