@@ -1,6 +1,6 @@
 # Segerfeldt.EventSourcing Usage
 
-This document is meant to help develop clients using the Segerfeldt.EventSourcing NuGet packages. If you are not familiar with the concept, there is documentation describing [event-sourcing](./ES.md) you should probably read first.
+This document is meant to help develop clients that employ the Segerfeldt.EventSourcing NuGet packages. If you are not familiar with event sourcing, you should probably read the [documentation describing the concepts](./ES.md) first.
 
 See the Apps/ directory for example applications.
 
@@ -40,7 +40,7 @@ The `IncludeXmlComments` call is optional. If you do use it, you will need to al
 
 ```xml
 <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DocumentationFile>bin\Release\net7.0\[application name].xml</DocumentationFile>
+    <DocumentationFile>bin\Release\net8.0\[application name].xml</DocumentationFile>
 </PropertyGroup>
 ```
 
@@ -54,16 +54,15 @@ Define a command-handler by adding a class like this:
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-// It is recommended to separate commands and entities in different namespaces
-// (or even different assemblies).
+// It is recommended to separate commands and entities in different assemblies, not just namespaces.
 using Domain;
 namespace Commands;
 
 public record IncrementCounter(int amount);
 
-// Implement the ICommandHandler<> interface to declare a command handler. The
-// `ModifiesEntityAttribute` (or one of its companions) defines the signature
-// for a RESTful endpoint that executes the command.
+// Implement one of the ICommandHandler interfaces to declare a command handler. The
+// `ModifiesEntityAttribute` (and its subclasses) defines the path pattern and the
+// verb/method for the command's HTTP endpoint.
 [ModifiesEntity("Counter")]
 public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCounter>
 {
@@ -73,17 +72,18 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // The name of the current principal is usually a good choice.
         var actor = context.HttpContext.User?.Name;
 
-        // Unauthorized() returns status 401 UNAUTHORIZED, which indicates failed authentication.
-        // Forbidden() returns status 403 FORBIDDEN which indicates that the user is not authorized.
-        // See https://www.webfx.com/web-development/glossary/http-status-codes/ for details.
+        // Return status 401 UNAUTHORIZED if authentication fails.
         if (actor is null) return CommandResult.Unauthorized();
+        // Return 403 FORBIDDEN if user doesn't have access to this command.
         if (!IsAuthorized(actor)) return CommandResult.Forbidden();
+
+        // See http://httpstatuses.com/ for details about response status codes.
 
         // The path of the request contains the id when modifying an existing entity.
         var id = new EntityId(context.GetRouteParameter("entityid"));
         // Retrieve the referenced entity from the EntityStore.
         var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
-        // Return NotFound() (status 404 NOT FOUND) if the entity doesn't exist.
+        // Return 404 NOT FOUND if the entity doesn't exist.
         if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
         // Convert command properties to domain value objects.
@@ -92,33 +92,36 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // Perform operations on the entity to change its state.
         counter.IncrementBy(amount);
 
-        // The changes are performed by adding events. These events need to be published.
-        // Publishing will fail if there are concurrent changes to the same entity. Until
-        // the publishing step has completed successfully, the state of the entity cannot
-        // be said to have changed.
-
-        // Publish the changes using the EventPublisher.
+        // The entity will add new events to define its new state. Publish them using the EventPublisher.
         await context.EventPublisher.PublishChangesAsync(counter, actor);
 
-        // Return 204 NO CONTENT (or 200 OK) if the command was successful.
-        return CommandResult.Ok();
+        // Return 204 NO CONTENT (or 200 OK if there is a payload) if the command was successful.
+        return CommandResult.NoContent();
 
-        // It's not necessary to explicitly catch any exceptions. They are automatically
-        // converted to 500 INTERNAL SERVER ERROR by the CommandAPI library. If you want
-        // to return other
+        // It's not necessary to explicitly catch exceptions. They will be caught implicitly
+        // by the CommandAPI infrastructure, and are automatically converted to 500 INTERNAL
+        // SERVER ERROR. If you want to return a different status however, you will of course
+        // have to catch the exceptions.
     }
 }
 ```
 
+> Note: While it is possible to add a general error handler to .Net Web API (and while it would probably be possible to make the CommandAPI system compatible), it is not a recommended practice. An event handler has three big problems:
+>
+> 1. It applies the same error handling to every single request whether appropriate or not.
+> 2. Middleware is confusing and hard to use, as the order in which it is added (and hence applied) tends to matter to its function.
+> 3. It violates DAMP (Direct And Meaningful Phrases) by hiding away important logic from the developer.
+>    DAMP is a great and useful principle that should probably be heeded more.
+
 Each command-handler should be annotated with exactly one of the following attributes:
 
 - `AddsEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/`
-- `DeletesEntityAttribute` - generates an HTTP endpoint on the form `DELETE /<entity>/{entityId}`
-- `ModifiesEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/{entityId}/<property>`
+- `DeletesEntityAttribute` - generates an HTTP endpoint on the form `DELETE /<entity>/{entityid}`
+- `ModifiesEntityAttribute` - generates an HTTP endpoint on the form `POST /<entity>/{entityid}/<property>`
 
-An endpoint for retrieving the complete event history for an entity is automatically added as `GET /entity/{entityId}`.
+An additional endpoint for retrieving the complete event history for any entity is automatically added as `GET /entity/{entityid}`.
 
-It is the responsibliity of the `Entity` to allow or disallow specific actions based on its current state (though generally not to handle security):
+It is the responsibliity of the `Entity` to allow or disallow specific actions based on its current state (though generally not to handle user privileges):
 
 ```c#
 using Segerfeldt.EventStore.Source;
@@ -127,23 +130,22 @@ using Segerfeldt.EventStore.Source;
 // their assembly name and namespace should probably reflect that.
 namespace Domain;
 
-// Value objects are extremely useful as they increase type safety,
-// thay can encapsulate validation and computation, and they can be
-// compared for equality.
+// Value objects are extremely useful as they increase type safety, they can
+// encapsulate validation and computation, and they can be compared for equality.
 public sealed class Amount : ValueObject<Amount>
 {
-    // The amount is stored as an immutable property.
+    // The amount value is stored as an immutable property.
     // You should never allow mutation in a value object.
-    public int Amount { get; }
+    public int Value { get; }
 
-    public Amount(int amount)
+    private Amount(int value)
     {
         // Check that the input is acceptable. Throw an exception if it is not.
-        // This makes it impossible to instantiate the value object with an invalid
-        // amount, and Amount instances will not need further validation.
-        if (amount <= 0) throw new Exception("amount must be positive");
+        // This makes it impossible to instantiate the Amount object with an invalid
+        // value, and Amount instances will need no further validation.
+        if (value <= 0) throw new ArgumentOutOfRangeException("Amount value must be positive");
 
-        Amount = amount;
+       Value = value;
     }
 
     protected override IEnumerable<object> GetEqualityComponents() =>
@@ -184,7 +186,7 @@ public sealed class Counter : EntityBase
         // recommended as the domain class should always be safe to refactor.
         // The event structure however should never be allowed to change (as that would
         // make old and new details incompatible).
-        Add(new UnpublishedEvent("IncrementedBy", new IncrementedByDetails(amount.Amount));
+        Add(new UnpublishedEvent("IncrementedBy", new IncrementedByDetails(amount.Value));
     }
 
     // If you need knowlegde about the current state to protect invariants, you should
@@ -227,7 +229,7 @@ builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuratio
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetPositionTracker<PositionTracker>();
 
-class SqlConnectionPool : IConnectionPool
+internal sealed class SqlConnectionPool : IConnectionPool
 {
     private readonly string connectionString;
 
@@ -251,11 +253,11 @@ using Segerfeldt.EventStore.Projection;
 
 namespace ProjectionApp;
 
-public record Increment(int amount);
+public record IncrementDTO(int amount);
 
 // The abstract class ReceptacleBase is a useful shortcut to implementing IReceptacle.
 // It is not necessary to inherit from that class, but it is necessary to implement IReceptacle.
-public class CounterState : ReceptacleBase
+public sealed class CounterState : ReceptacleBase
 {
     // This will be called for every "Registered" event where the Entity.Type is "Counter".
     // The EntityType property is optional. If the same event name is used for multiple
@@ -269,7 +271,7 @@ public class CounterState : ReceptacleBase
 
     // This will be called for every "Incremented" event regardless of entity type.
     [ReceivesEvent("Incremented")]
-    public void ReceiveCounterIncrement(string entityId, Increment details)
+    public void ReceiveCounterIncrement(string entityId, IncrementDTO details)
     {
         // This should usually update a projection database.
         IncrementAmountForCounterRow(entityId, details.Amount);
@@ -286,7 +288,7 @@ using Segerfeldt.EventStore.Projection;
 
 namespace ProjectionApp;
 
-public class PositionTracker : IPositionTracker
+public sealed class PositionTracker : IPositionTracker
 {
     public long? GetLastFinishedProjectionId()
     {
