@@ -1,12 +1,12 @@
 # Segerfeldt.EventSourcing Usage
 
-This document is meant to help develop clients using the Segerfeldt.EventSourcing NuGet packages. If you are not familiar with thew concepts, there is documentation describing [event-sourcing](./ES.md) you should probably read first.
+This document is meant to help develop clients using the Segerfeldt.EventSourcing NuGet packages. If you are not familiar with the concept, there is documentation describing [event-sourcing](./ES.md) you should probably read first.
 
 See the Apps/ directory for example applications.
 
 - ProjectionWebApplication: an example of subscribing to published events in order to track aggregate state for multiple entities
+- SourceWebApplication: as example of publishing of events through command handlers in a web application
 - SourceConsoleApp: an example of direct (simpler) generation and publishing of events
-- SourceWebApplication: a complete (more complex) example of publishing of events through command handlers in a web application
 
 ## Source Setup
 
@@ -54,8 +54,6 @@ Define a command-handler by adding a class like this:
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
-
 // It is recommended to separate commands and entities in different namespaces
 // (or even different assemblies).
 using Domain;
@@ -78,15 +76,15 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // Unauthorized() returns status 401 UNAUTHORIZED, which indicates failed authentication.
         // Forbidden() returns status 403 FORBIDDEN which indicates that the user is not authorized.
         // See https://www.webfx.com/web-development/glossary/http-status-codes/ for details.
-        if (actor is null) return Unauthorized();
-        if (!IsAuthorized(actor)) return Forbidden();
+        if (actor is null) return CommandResult.Unauthorized();
+        if (!IsAuthorized(actor)) return CommandResult.Forbidden();
 
         // The path of the request contains the id when modifying an existing entity.
         var id = new EntityId(context.GetRouteParameter("entityid"));
         // Retrieve the referenced entity from the EntityStore.
         var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
         // Return NotFound() (status 404 NOT FOUND) if the entity doesn't exist.
-        if (counter is null) return NotFound($"There is no counter with id [{id}]");
+        if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
         // Convert command properties to domain value objects.
         var amount = new Amount(command.Amount);
@@ -102,8 +100,8 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // Publish the changes using the EventPublisher.
         await context.EventPublisher.PublishChangesAsync(counter, actor);
 
-        // Return 200 OK if the command was successful.
-        return Ok();
+        // Return 204 NO CONTENT (or 200 OK) if the command was successful.
+        return CommandResult.Ok();
 
         // It's not necessary to explicitly catch any exceptions. They are automatically
         // converted to 500 INTERNAL SERVER ERROR by the CommandAPI library. If you want
