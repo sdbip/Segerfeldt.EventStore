@@ -4,8 +4,6 @@ using NUnit.Framework;
 
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
-
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public class CommandResultTests
@@ -14,20 +12,20 @@ public class CommandResultTests
     [TestCase(300)]
     public void IsError(int statusCode)
     {
-        Assert.That(Error(statusCode).IsError, Is.True);
+        Assert.That(CommandResult.Error(statusCode).IsError, Is.True);
     }
 
     [TestCase(200)]
     [TestCase(299)]
     public void Error_ThrowsIfNotError(int statusCode)
     {
-        Assert.That(() => Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
+        Assert.That(() => CommandResult.Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
     }
 
     [Test]
     public void NoValue_ConvertsToActionResultWithoutMessage()
     {
-        var result = Ok();
+        var result = CommandResult.NoContent();
         var actionResult = result.ActionResult();
 
         Assert.That(result.Content, Is.Null);
@@ -38,7 +36,7 @@ public class CommandResultTests
     [Test]
     public void Value_ConvertsToActionResultWithMessage()
     {
-        var result = Ok(new {});
+        var result = CommandResult.Ok(new {});
         var actionResult = result.ActionResult();
 
         Assert.That(result.Value, Is.EqualTo(new {}));
@@ -50,7 +48,7 @@ public class CommandResultTests
     [Test]
     public void Error_ConvertsToActionResultWithMessage()
     {
-        var result = BadRequest("sample error message");
+        var result = CommandResult.BadRequest("sample error message");
         var actionResult = result.ActionResult();
 
         Assert.That(result.Content, Is.EqualTo("sample error message"));
@@ -62,7 +60,7 @@ public class CommandResultTests
     [Test]
     public void UntypedError_ChainsToTypedError()
     {
-        var initial = BadRequest("sample error message");
+        var initial = CommandResult.BadRequest("sample error message");
         var result = initial.SameErrorFor<string>();
 
         Assert.That(result.IsError(), Is.True);
@@ -72,7 +70,7 @@ public class CommandResultTests
     [Test]
     public void TypedError_ChainsToOtherType()
     {
-        var initial = BadRequest("sample error message").SameErrorFor<int>();
+        var initial = CommandResult.BadRequest("sample error message").SameErrorFor<int>();
         var result = initial.SameErrorFor<string>();
 
         Assert.That(result.IsError(), Is.True);
@@ -82,7 +80,7 @@ public class CommandResultTests
     [Test]
     public void TypedError_ChainsToUntypedError()
     {
-        var initial = BadRequest("sample error message").SameErrorFor<int>();
+        var initial = CommandResult.BadRequest("sample error message").SameErrorFor<int>();
         var result = initial.SameError();
 
         Assert.That(result.IsError(), Is.True);

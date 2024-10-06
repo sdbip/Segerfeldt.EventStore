@@ -4,8 +4,6 @@ using NUnit.Framework;
 
 using Segerfeldt.EventStore.Source.Tests;
 
-using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
-
 namespace Segerfeldt.EventStore.Source.NUnit.Tests;
 
 public sealed class EntityExtensionTests

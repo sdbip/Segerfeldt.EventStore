@@ -5,7 +5,6 @@ using NUnit.Framework;
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Tests.CommandAPI;
@@ -43,7 +42,7 @@ public sealed class CommandHandlerExecuterTests
     private class CommandHandler : ICommandHandler<EmptyCommand>
     {
         public Task<CommandResult> Handle(EmptyCommand command, CommandContext context) =>
-            Task.FromResult(Ok());
+            Task.FromResult(CommandResult.NoContent());
     }
 
     private class ThrowingCommandHandler : ICommandHandler<EmptyCommand>
@@ -66,7 +65,7 @@ public sealed class CommandHandlerExecuterTests
         public static RespondingCommandHandler WithResponseValue(int responseValue) => new(responseValue);
 
         public Task<CommandResult<ResponseDTO>> Handle(EmptyCommand command, CommandContext context) =>
-            Task.FromResult(Ok(new ResponseDTO(responseValue)));
+            Task.FromResult(CommandResult.Ok(new ResponseDTO(responseValue)));
     }
 
     private record EmptyCommand();

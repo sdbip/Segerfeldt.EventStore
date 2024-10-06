@@ -3,8 +3,6 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 
 using SourceWebApplication.Domaim;
 
-using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
-
 namespace SourceWebApplication.Commands;
 
 /// <summary>This summary is used to describe the generated endpoint as well as the command DTO.</summary>
@@ -26,17 +24,17 @@ public class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddress, st
         }
         catch (Exception exception)
         {
-            return Forbidden(exception.Message);
+            return CommandResult.Forbidden(exception.Message);
         }
 
         var id = new EntityId(context.GetRouteParameter("entityid"));
         var entity = await context.EntityStore.ReconstituteAsync<User>(id, User.EntityType);
-        if (entity is null) return NotFound($"There is no user with username [{id}]");
+        if (entity is null) return CommandResult.NotFound($"There is no user with username [{id}]");
 
         entity.SetEmailAddress(emailAddress);
 
         await context.EventPublisher.PublishChangesAsync(entity, "test_user");
         await context.EventPublisher.PublishChangesAsync(availability, "test_user");
-        return Ok();
+        return CommandResult.NoContent();
     }
 }

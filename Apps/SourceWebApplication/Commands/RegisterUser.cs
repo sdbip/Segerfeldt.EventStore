@@ -3,8 +3,6 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 
 using SourceWebApplication.Domaim;
 
-using static Segerfeldt.EventStore.Source.CommandAPI.CommandResult;
-
 namespace SourceWebApplication.Commands;
 
 /// <summary>This summary is used to describe the generated endpoint as well as the command DTO.</summary>
@@ -19,10 +17,10 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
     {
         var entityId = new EntityId(command.Username);
         if (context.EntityStore.ContainsEntity(entityId))
-            return Forbidden($"The username [{entityId}] is already in use");
+            return CommandResult.Forbidden($"The username [{entityId}] is already in use");
 
         var user = User.New(entityId);
         await context.EventPublisher.PublishChangesAsync(user, "test_user");
-        return Ok();
+        return CommandResult.NoContent();
     }
 }

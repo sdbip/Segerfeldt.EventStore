@@ -51,7 +51,7 @@ public class CommandResult : ICommandResult
         Content = content;
     }
 
-    public static CommandResult Ok() => new(StatusCodes.Status204NoContent, null);
+    public static CommandResult NoContent() => new(StatusCodes.Status204NoContent, null);
     public static CommandResult<T> Ok<T>(T value) => new(StatusCodes.Status200OK, value, value);
 
     public static CommandResult BadRequest(object error) => new(StatusCodes.Status400BadRequest, error);
