@@ -24,7 +24,7 @@ Edit the `POSTGRES_TEST_CONNECTION_STRING` variable in .runsettings to match you
 
 The tests will fail without write-access to a running SQL Server test-database. Ensure that SQL Server is started and that a test database has been created before running tests.
 
-SQL Server is available as a [Docker image](https://hub.docker.com/r/microsoft/mssql-server). You can also download a “[free specialized edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads).”.
+SQL Server is available as a [Docker image](https://hub.docker.com/r/microsoft/mssql-server). You can also download a “[free specialized edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads).”
 
 Edit the `MSSQL_TEST_CONNECTION_STRING` variable in .runsettings to match your SQL Server setup.
 
