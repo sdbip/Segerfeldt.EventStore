@@ -1,3 +1,9 @@
+<!--
+    This comment only exists to disable the Markdownlint rule
+    MD025/single-title/single-h1: Multiple top-level headings in the same document
+    This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
+-->
+
 # Segerfeldt.EventStore
 
 A set of NuGet packages for employing event-sourcing in applications. It is particularly useful when employing the CQRS architecture style. The Command side would reference the `Source` package, and the Query side would use the `Projection` package.
@@ -33,7 +39,7 @@ Edit the `MSSQL_TEST_CONNECTION_STRING` variable in .runsettings to match your S
 You can test the NuGet packages without publishing them.
 
 First set up a local NuGet store as described here:
-https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds
+<https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds>
 
 Update the `<PackageVersion>` value in the .csproj file(s) and build for Release. Then run one or more of the following commands to deploy the output:
 
@@ -55,9 +61,9 @@ If you have the option, you should probably use your Visual Studio IDE to set it
 </packageSources>
 ```
 
-You can place this configuration in any of the files described in this S/O answer: https://stackoverflow.com/a/51381519.
+You can place this configuration in any of the files described in this S/O answer: <https://stackoverflow.com/a/51381519>.
 
-Alternatively, you can use the `nuget sources` command described here: https://learn.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources.
+Alternatively, you can use the `nuget sources` command described here: <https://learn.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources>.
 
 Once you have set up the repository link correctly, you can reference it in your project using the Visual Studio IDE or by adding the following `<ItemGroup/>` to your .csproj file.
 
@@ -69,7 +75,7 @@ Once you have set up the repository link correctly, you can reference it in your
 </Project>
 ```
 
-More information about NuGet hosting and configurtion can be found here: https://learn.microsoft.com/en-us/nuget/hosting-packages/overview
+More information about NuGet hosting and configurtion can be found here: <https://learn.microsoft.com/en-us/nuget/hosting-packages/overview>
 
 # Technical Notes
 
