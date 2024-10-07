@@ -75,7 +75,7 @@ Once you have set up the repository link correctly, you can reference it in your
 </Project>
 ```
 
-More information about NuGet hosting and configurtion can be found here: <https://learn.microsoft.com/en-us/nuget/hosting-packages/overview>
+More information about NuGet hosting and configuration can be found here: <https://learn.microsoft.com/en-us/nuget/hosting-packages/overview>
 
 # Technical Notes
 
@@ -109,7 +109,7 @@ The `Entities` table:
 "version" INT
 ```
 
-The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see Optimistic Concurrency above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, an error will be thrown.
+The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, an error will be thrown.
 
 The `Events` table:
 
@@ -127,6 +127,4 @@ The events table is the main storage space for entity state. The `entity_id` col
 
 The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
 
-The `actor` and `timestamp` columns are metadata that can be used for auditing.
-
-The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
+The `actor` and `timestamp` columns are metadata that can be used for auditing. The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
