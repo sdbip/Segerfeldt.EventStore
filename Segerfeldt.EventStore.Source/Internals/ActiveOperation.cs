@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.Internals;
@@ -28,16 +29,16 @@ internal abstract class ActiveOperation
             : EntityVersion.Of(Convert.ToInt32(scalar));
     }
 
-    protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EntityVersion version, long position)
+    protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EntityVersion ordinal, long position)
     {
         var command = transaction.CreateCommand(
-            "INSERT INTO Events (entity_id, name, details, actor, version, position)" +
-            " VALUES (@entityId, @eventName, @details, @actor, @version, @position)",
+            "INSERT INTO Events (entity_id, name, details, actor, ordinal, position)" +
+            " VALUES (@entityId, @eventName, @details, @actor, @ordinal, @position)",
             ("@entityId", entityId.ToString()),
             ("@eventName", @event.Name),
             ("@details", JSON.Serialize(@event.Details)),
             ("@actor", actor),
-            ("@version", version.Value),
+            ("@ordinal", ordinal.Value),
             ("@position", position));
         await command.ExecuteNonQueryAsync();
     }

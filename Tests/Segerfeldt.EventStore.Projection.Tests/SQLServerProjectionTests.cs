@@ -70,18 +70,16 @@ public class SQLServerProjectionTests
     public void ReportsEventsOrderedByVersion()
     {
         GivenEntity("an-entity");
-        GivenEvent("an-entity", "first-event", version: 1);
-        GivenEvent("an-entity", "third-event", version: 3);
-        GivenEvent("an-entity", "second-event", version: 2);
+        GivenEvent("an-entity", "first-event", ordinal: 1);
+        GivenEvent("an-entity", "third-event", ordinal: 3);
+        GivenEvent("an-entity", "second-event", ordinal: 2);
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
 
         eventSource.StartReceiving();
 
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-        Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
-        Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
-        Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
+        Assert.That(notifiedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
     }
 
     [Test]
@@ -93,12 +91,12 @@ public class SQLServerProjectionTests
         var notifiedEvents = CaptureNotifiedEvents("an-event");
         GivenEntity("an-entity");
 
-        GivenEvent("an-entity", "an-event", version: 1, position: 1);
+        GivenEvent("an-entity", "an-event", ordinal: 1, position: 1);
 
         eventSource.StartReceiving();
         notifiedEvents.Clear();
 
-        GivenEvent("an-entity", "an-event", version: 2, position: 2);
+        GivenEvent("an-entity", "an-event", ordinal: 2, position: 2);
 
         Thread.Sleep(100);
 
@@ -154,18 +152,18 @@ public class SQLServerProjectionTests
         }
     }
 
-    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
+    private void GivenEvent(string entityId, string eventName, string details = "{}", int ordinal = 1, long position = 1)
     {
         connection.Open();
         try
         {
             using var command = connection.CreateCommand(
-                @"INSERT INTO Events (entity_id, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, @position)");
+                @"INSERT INTO Events (entity_id, name, details, actor, ordinal, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @ordinal, @position)");
             command.AddParameter("@entityId", entityId);
             command.AddParameter("@eventName", eventName);
             command.AddParameter("@details", details);
-            command.AddParameter("@version", version);
+            command.AddParameter("@ordinal", ordinal);
             command.AddParameter("@position", position);
             command.ExecuteNonQuery();
         }

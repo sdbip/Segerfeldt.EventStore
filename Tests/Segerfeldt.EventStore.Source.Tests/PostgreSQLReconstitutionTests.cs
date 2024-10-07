@@ -102,9 +102,9 @@ public class PostgreSQLReconstitutionTests
         try
         {
             GivenEntity("an-entity-4", "a-type");
-            GivenEvent("an-entity-4", "first-event", version: 1);
-            GivenEvent("an-entity-4", "third-event", version: 3);
-            GivenEvent("an-entity-4", "second-event", version: 2);
+            GivenEvent("an-entity-4", "first-event", ordinal: 1);
+            GivenEvent("an-entity-4", "third-event", ordinal: 3);
+            GivenEvent("an-entity-4", "second-event", ordinal: 2);
         }
         finally
         {
@@ -152,9 +152,9 @@ public class PostgreSQLReconstitutionTests
         try
         {
             GivenEntity("an-entity-6", "a-type");
-            GivenEvent("an-entity-6", "first-event", version: 1);
-            GivenEvent("an-entity-6", "third-event", version: 3);
-            GivenEvent("an-entity-6", "second-event", version: 2);
+            GivenEvent("an-entity-6", "first-event", ordinal: 1);
+            GivenEvent("an-entity-6", "third-event", ordinal: 3);
+            GivenEvent("an-entity-6", "second-event", ordinal: 2);
         }
         finally
         {
@@ -204,7 +204,7 @@ public class PostgreSQLReconstitutionTests
     private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
     {
         string commandText =
-            @"INSERT INTO Events (entity_id, name, details, actor, timestamp, version, position)
+            @"INSERT INTO Events (entity_id, name, details, actor, timestamp, ordinal, position)
                     VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);
         command.AddParameter("@entityId", entityId);
@@ -214,15 +214,15 @@ public class PostgreSQLReconstitutionTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1)
+    private void GivenEvent(string entityId, string eventName, string details = "{}", int ordinal = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity_id, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, 1)");
+            @"INSERT INTO Events (entity_id, name, details, actor, ordinal, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @ordinal, 1)");
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
-        command.AddParameter("@version", version);
+        command.AddParameter("@ordinal", ordinal);
         command.ExecuteNonQuery();
     }
 

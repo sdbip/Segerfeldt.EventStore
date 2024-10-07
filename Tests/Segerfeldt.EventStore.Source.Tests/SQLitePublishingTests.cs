@@ -41,14 +41,14 @@ public class SQLitePublishingTests
             Entity = reader["entity_id"],
             Name = reader["name"],
             Details = reader["details"],
-            Version = reader["version"],
+            Ordinal = reader["ordinal"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Version = (object) 0L,
+            Ordinal = (object) 0L,
             Position = (object) 0L
         }));
     }
@@ -71,14 +71,14 @@ public class SQLitePublishingTests
             Entity = reader["entity_id"],
             Name = reader["name"],
             Details = reader["details"],
-            Version = reader["version"],
+            Ordinal = reader["ordinal"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Version = (object) 0L,
+            Ordinal = (object) 0L,
             Position = (object) 0L
         }));
     }
@@ -104,14 +104,14 @@ public class SQLitePublishingTests
             Entity = reader["entity_id"],
             Name = reader["name"],
             Details = reader["details"],
-            Version = reader["version"],
+            Ordinal = reader["ordinal"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Version = (object) 1L,
+            Ordinal = (object) 1L,
             Position = (object) 0L
         }));
     }

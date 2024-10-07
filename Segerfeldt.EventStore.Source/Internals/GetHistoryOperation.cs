@@ -23,7 +23,7 @@ internal sealed class GetHistoryOperation
     {
         var command = connection.CreateCommand(
             "SELECT type, version FROM Entities WHERE id = @entityId;" +
-            "SELECT * FROM Events WHERE entity_id = @entityId AND version > @entityVersion ORDER BY version",
+            "SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @entityVersion ORDER BY ordinal",
             ("@entityId", entityId.ToString()),
             ("@entityVersion", entityVersion.Value));
 

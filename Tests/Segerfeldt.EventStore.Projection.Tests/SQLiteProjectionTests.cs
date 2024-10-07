@@ -50,9 +50,9 @@ public class SQLiteProjectionTests
     public void ReportsEventsOrderedByVersion()
     {
         GivenEntity("an-entity");
-        GivenEvent("an-entity", "first-event", version: 1);
-        GivenEvent("an-entity", "third-event", version: 3);
-        GivenEvent("an-entity", "second-event", version: 2);
+        GivenEvent("an-entity", "first-event", ordinal: 1);
+        GivenEvent("an-entity", "third-event", ordinal: 3);
+        GivenEvent("an-entity", "second-event", ordinal: 2);
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event", "third-event");
 
@@ -71,11 +71,11 @@ public class SQLiteProjectionTests
 
         GivenEntity("an-entity");
         var receivedEvents = CaptureReceivedEvents("early-event", "late-event");
-        GivenEvent("an-entity", "early-event", version: 1, position: 1);
+        GivenEvent("an-entity", "early-event", ordinal: 1, position: 1);
         eventSource.StartReceiving();
         receivedEvents.Clear();
 
-        GivenEvent("an-entity", "late-event", version: 2, position: 2);
+        GivenEvent("an-entity", "late-event", ordinal: 2, position: 2);
 
         Thread.Sleep(100);
 
@@ -119,15 +119,15 @@ public class SQLiteProjectionTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string eventName, string details = "{}", int version = 1, long position = 1)
+    private void GivenEvent(string entityId, string eventName, string details = "{}", int ordinal = 1, long position = 1)
     {
         var command = connection.CreateCommand(
-            @"INSERT INTO Events (entity_id, name, details, actor, version, position)
-                    VALUES (@entityId, @eventName, @details, 'test', @version, @position)");
+            @"INSERT INTO Events (entity_id, name, details, actor, ordinal, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @ordinal, @position)");
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@details", details);
-        command.AddParameter("@version", version);
+        command.AddParameter("@ordinal", ordinal);
         command.AddParameter("@position", position);
         command.ExecuteNonQuery();
     }

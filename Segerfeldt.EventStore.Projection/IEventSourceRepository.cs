@@ -29,7 +29,7 @@ public sealed class DefaultEventSourceRepository : IEventSourceRepository
                     SELECT Events.*, Entities.type AS entity_type FROM Events
                     JOIN Entities ON Entities.id = Events.entity_id
                         WHERE position > @position
-                        ORDER BY position, version
+                        ORDER BY position, ordinal
                     """);
                 command.AddParameter("@position", afterPosition);
                 return command.ExecuteReader().AllRowsAs(ReadEvent);

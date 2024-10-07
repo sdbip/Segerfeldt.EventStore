@@ -55,14 +55,14 @@ public class PostgreSQLPublishingTests
             Entity = reader["entity_id"],
             Name = reader["name"],
             Details = reader["details"],
-            Version = reader["version"],
+            Ordinal = reader["ordinal"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Version = (object) 0,
+            Ordinal = (object) 0,
             Position = (object) 0L
         }));
         connection.Close();
@@ -87,14 +87,14 @@ public class PostgreSQLPublishingTests
             Entity = reader["entity_id"],
             Name = reader["name"],
             Details = reader["details"],
-            Version = reader["version"],
+            Ordinal = reader["ordinal"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Version = (object) 0,
+            Ordinal = (object) 0,
             Position = (object) 0L
         }));
         connection.Close();
@@ -124,14 +124,14 @@ public class PostgreSQLPublishingTests
             Entity = reader["entity_id"],
             Name = reader["name"],
             Details = reader["details"],
-            Version = reader["version"],
+            Ordinal = reader["ordinal"],
             Position = reader["position"]
         }, Is.EqualTo(new
         {
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Version = (object) 1,
+            Ordinal = (object) 1,
             Position = (object) 0L
         }));
         connection.Close();

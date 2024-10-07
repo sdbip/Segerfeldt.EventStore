@@ -11,8 +11,8 @@ CREATE TABLE Events (
     name NVARCHAR(MAX) NOT NULL,
     details NVARCHAR(MAX) NOT NULL,
     actor NVARCHAR(MAX) NOT NULL,
-    -- SQL Server epoch is midnight Jan 1, 1900, which is 25567 days before the Unix epoch
+    -- SQL Server epoch is midnight Jan 1, 1900, which is 25,567 days before the Unix epoch
     timestamp DECIMAL(12,7) NOT NULL DEFAULT (CAST(CURRENT_TIMESTAMP AS DECIMAL(14,7)) - 25567),
-    version INT NOT NULL,
+    ordinal INT NOT NULL,
     position BIGINT NOT NULL
 );

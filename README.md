@@ -119,12 +119,12 @@ The `Events` table:
 "details" TEXT
 "actor" TEXT
 "timestamp" DECIMAL(12,7)
-"version" INT
+"ordinal" INT
 "position" BIGINT
 ```
 
 The events table is the main storage space for entity state. The `entity_id` column must match the `id` column for a row in the `Entities` table. This is the entity that changed with this event.
 
-The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
+The `name` and `details` (JSON) columns define what changed for the entity. The `ordinal` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
 
 The `actor` and `timestamp` columns are metadata that can be used for auditing. The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
