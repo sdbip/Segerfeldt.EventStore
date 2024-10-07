@@ -58,6 +58,7 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 using Domain;
 namespace Commands;
 
+// The “command” is just a DTO. Execution is done by the associated CommandHandler.
 public record IncrementCounter(int amount);
 
 // Implement one of the ICommandHandler interfaces to declare a command handler. The
@@ -74,12 +75,15 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
 
         // Return status 401 UNAUTHORIZED if authentication fails.
         if (actor is null) return CommandResult.Unauthorized();
-        // Return 403 FORBIDDEN if user doesn't have access to this command.
+
+        // Return 403 FORBIDDEN if the (authenticated) user doesn't have access to run this command.
+        // You might use context.HttpContext.User.IsInRole() to determine access.
+        // Or you might make authorisation a part of your domain model.
         if (!IsAuthorized(actor)) return CommandResult.Forbidden();
 
         // See http://httpstatuses.com/ for details about response status codes.
 
-        // The path of the request contains the id when modifying an existing entity.
+        // The path of the request will contain the id when modifying an existing entity.
         var id = new EntityId(context.GetRouteParameter("entityid"));
         // Retrieve the referenced entity from the EntityStore.
         var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
@@ -87,29 +91,43 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
         // Convert command properties to domain value objects.
-        var amount = new Amount(command.Amount);
+        Amount amount = new Amount(command.Amount);
+
+        try
+        {
+            amount = new Amount(command.Amount);
+        }
+        catch (ArgumentOutOfRangeException exception)
+        {
+            return CommandResult.BadRequest($"Command DTO is invalid: {exception.Message}")
+        }
 
         // Perform operations on the entity to change its state.
         counter.IncrementBy(amount);
 
-        // The entity will add new events to define its new state. Publish them using the EventPublisher.
-        await context.EventPublisher.PublishChangesAsync(counter, actor);
+        try
+        {
+            // The entity will add new events to define its new state. Publish them using the EventPublisher.
+            await context.EventPublisher.PublishChangesAsync(counter, actor);
+        }
+        catch
+        {
+            return
+        }
 
         // Return 204 NO CONTENT (or 200 OK if there is a payload) if the command was successful.
         return CommandResult.NoContent();
-
-        // It's not necessary to explicitly catch exceptions. They will be caught implicitly
-        // by the CommandAPI infrastructure, and are automatically converted to 500 INTERNAL
-        // SERVER ERROR. If you want to return a different status however, you will of course
-        // have to catch the exceptions.
     }
 }
 ```
 
-> Note: While it is possible to add a general error handler to .Net Web API (and while it would probably be possible to make the CommandAPI system compatible), it is not a recommended practice. An event handler has three big problems:
+It's not necessary to explicitly catch exceptions. They will be caught by the CommandAPI infrastructure, and are automatically converted to a 500 INTERNAL SERVER ERROR response or 409 CONFLICT. You can of course catch exceptions if you want to return other status codes.
+
+> Note: While it is possible to add a general error handler to .Net Web API, it will probably not be compatible with the CommandAPI infrastructure (it has never been a priority). It is not a recommended practice. An event handler comes with three big problems:
 >
 > 1. It applies the same error handling to every single request whether appropriate or not.
-> 2. Middleware is confusing and hard to use, as the order in which it is added (and hence applied) tends to matter to its function.
+> 2. Middleware is confusing and hard to use due to extensive temporal coupling. The order in which it
+     is added (and hence applied) tends to matter to its function.
 > 3. It violates DAMP (Direct And Meaningful Phrases) by hiding away important logic from the developer.
 >    DAMP is a great and useful principle that should probably be heeded more.
 
@@ -161,8 +179,8 @@ public sealed class Counter : EntityBase
     // It is recommended to define a static EntityType constant.
     public static readonly EntityType EntityType = new("Counter");
 
-    // The constructor should usually be empty. Just call the base constructor with a constant
-    // EntityType value.
+    // The constructor should usually be empty. Just call the base constructor with a
+    // consistent (and unique to this entity class) EntityType value.
     // This exact signature is expected by the EntitySource as it will need to instantiate
     // every entity before replaying its history.
     public Counter(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
