@@ -5,6 +5,8 @@ using NUnit.Framework;
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
+using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Tests.CommandAPI;
@@ -33,10 +35,19 @@ public sealed class CommandHandlerExecuterTests
     [Test]
     public async Task Returns500InternalServerErrorIfCommandHandlerThrows()
     {
-        var executer = new CommandHandlerExecuter(new ThrowingCommandHandler());
+        var executer = new CommandHandlerExecuter(new ThrowingCommandHandler(new Exception()));
         var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null!, Request = null! };
         var response = (ObjectResult)await executer.ExecuteHandlerAsync(new EmptyCommand(), context);
-        Assert.That(response.StatusCode, Is.EqualTo(500));
+        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+    }
+
+    [Test]
+    public async Task Returns409ConflictIfCommandHandlerThrowsConcurrentUpdateException()
+    {
+        var executer = new CommandHandlerExecuter(new ThrowingCommandHandler(new ConcurrentUpdateException(EntityVersion.New, EntityVersion.Of(3))));
+        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null!, Request = null! };
+        var response = (ObjectResult)await executer.ExecuteHandlerAsync(new EmptyCommand(), context);
+        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.Conflict));
     }
 
     private class CommandHandler : ICommandHandler<EmptyCommand>
@@ -47,9 +58,16 @@ public sealed class CommandHandlerExecuterTests
 
     private class ThrowingCommandHandler : ICommandHandler<EmptyCommand>
     {
+        private readonly Exception exception;
+
+        public ThrowingCommandHandler(Exception exception)
+        {
+            this.exception = exception;
+        }
+
         public Task<CommandResult> Handle(EmptyCommand command, CommandContext context)
         {
-            throw new System.NotImplementedException();
+            throw exception;
         }
     }
 

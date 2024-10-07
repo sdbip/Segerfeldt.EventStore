@@ -48,13 +48,16 @@ public class CommandResult : ICommandResult
     private CommandResult(int statusCode, object? content)
     {
         StatusCode = statusCode;
-        Content = content;
+        Content = content is Exception exception
+            ? new { error = exception.Message }
+            : content;
     }
 
     public static CommandResult NoContent() => new(StatusCodes.Status204NoContent, null);
     public static CommandResult<T> Ok<T>(T value) => new(StatusCodes.Status200OK, value, value);
 
     public static CommandResult BadRequest(object error) => new(StatusCodes.Status400BadRequest, error);
+    public static CommandResult Conflict(object error) => new(StatusCodes.Status409Conflict, error);
     public static CommandResult NotFound(object error) => new(StatusCodes.Status404NotFound, error);
 
     public static CommandResult Unauthorized() => new(StatusCodes.Status401Unauthorized, null);
@@ -66,6 +69,7 @@ public class CommandResult : ICommandResult
         new(CommandResultExtension.GuardIsError(statusCode), content);
 
     public static CommandResult<T> BadRequest<T>(object error) => Error(StatusCodes.Status400BadRequest, error);
+    public static CommandResult<T> Conflict<T>(object error) => Error(StatusCodes.Status409Conflict, error);
     public static CommandResult<T> NotFound<T>(object error) => Error(StatusCodes.Status404NotFound, error);
 
     public static CommandResult<T> Unauthorized<T>() => Error(StatusCodes.Status401Unauthorized);

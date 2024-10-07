@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
@@ -23,9 +24,12 @@ public class CommandHandlerExecuter
             task = InvokeHandler(handler, command, context);
             await task;
         }
-        catch (Exception e)
+        catch (TargetInvocationException exception)
         {
-            return new ObjectResult(new { error = e.Message }) { StatusCode = StatusCodes.Status500InternalServerError };
+            if (exception.InnerException is ConcurrentUpdateException inner)
+                return new ObjectResult(new { error = inner.Message }) { StatusCode = StatusCodes.Status409Conflict };
+            else
+                return new ObjectResult(new { error = (exception.InnerException ?? exception).Message }) { StatusCode = StatusCodes.Status500InternalServerError };
         }
 
         // The correct type is Task<T> (where T: ICommandResult), but since we do not know T at this point,
