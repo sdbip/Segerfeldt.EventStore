@@ -57,7 +57,7 @@ public class SQLServerProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         Task.Yield();
 
         Assert.That(notifiedEvents, Is.Not.Empty);
@@ -76,7 +76,7 @@ public class SQLServerProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
 
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
@@ -93,7 +93,7 @@ public class SQLServerProjectionTests
 
         GivenEvent("an-entity", "an-event", ordinal: 1, position: 1);
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         notifiedEvents.Clear();
 
         GivenEvent("an-entity", "an-event", ordinal: 2, position: 2);
@@ -113,7 +113,7 @@ public class SQLServerProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         Task.Yield();
 
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
@@ -128,7 +128,7 @@ public class SQLServerProjectionTests
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         Task.Yield();
 
         Assert.That(startingPosition.Value, Is.EqualTo(1));

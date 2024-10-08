@@ -44,13 +44,13 @@ public sealed class EventSource
     }
 
     /// <summary>Start projecting the source state</summary>
-    public void StartReceiving()
+    public void BeginProjecting()
     {
         lastReadPosition = tracker?.GetLastFinishedProjectionId() ?? -1;
-        NotifyNewEvents();
+        PollEventsTable();
     }
 
-    public void NotifyNewEvents()
+    private void PollEventsTable()
     {
         currentDelay?.Cancel();
         var readEvents = repository.GetEvents(lastReadPosition);
@@ -59,7 +59,7 @@ public sealed class EventSource
         var nextDelay = pollingStrategy.NextDelay(numNotified);
         currentDelay = new CancellationTokenSource();
         Task.Delay(nextDelay, currentDelay.Token).ContinueWith(t => {
-            if (!t.IsCanceled) NotifyNewEvents();
+            if (!t.IsCanceled) PollEventsTable();
         });
     }
 

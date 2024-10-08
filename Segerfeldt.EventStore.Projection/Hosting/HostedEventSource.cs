@@ -16,7 +16,7 @@ internal sealed class HostedEventSource : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         return Task.CompletedTask;
     }
 

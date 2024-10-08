@@ -38,7 +38,7 @@ public class SQLiteProjectionTests
 
         var receivedEvents = CaptureReceivedEvents("first-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
 
         Assert.That(receivedEvents, Is.Not.Empty);
         Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
@@ -56,7 +56,7 @@ public class SQLiteProjectionTests
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event", "third-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
 
         Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
         Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
@@ -72,7 +72,7 @@ public class SQLiteProjectionTests
         GivenEntity("an-entity");
         var receivedEvents = CaptureReceivedEvents("early-event", "late-event");
         GivenEvent("an-entity", "early-event", ordinal: 1, position: 1);
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         receivedEvents.Clear();
 
         GivenEvent("an-entity", "late-event", ordinal: 2, position: 2);
@@ -93,7 +93,7 @@ public class SQLiteProjectionTests
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
 
         Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
     }
@@ -106,7 +106,7 @@ public class SQLiteProjectionTests
 
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
 
         Assert.That(startingPosition.Value, Is.EqualTo(1));
         Assert.That(finishedPosition.Value, Is.EqualTo(1));

@@ -57,7 +57,7 @@ public class PostgreSQLProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         Task.Yield();
 
         Assert.That(notifiedEvents, Is.Not.Empty);
@@ -76,7 +76,7 @@ public class PostgreSQLProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
 
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
         Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
@@ -95,7 +95,7 @@ public class PostgreSQLProjectionTests
 
         GivenEvent("an-entity", "an-event", ordinal: 1, position: 1);
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         notifiedEvents.Clear();
 
         GivenEvent("an-entity", "an-event", ordinal: 2, position: 2);
@@ -115,7 +115,7 @@ public class PostgreSQLProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         Task.Yield();
 
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
@@ -130,7 +130,7 @@ public class PostgreSQLProjectionTests
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
 
-        eventSource.StartReceiving();
+        eventSource.BeginProjecting();
         Task.Yield();
 
         Assert.That(startingPosition.Value, Is.EqualTo(1));
