@@ -56,9 +56,13 @@ To reference the NuGet packages in another solution, you will first need to conf
 If you have the option, you should probably use your Visual Studio IDE to set it up. But you might not have that option, or you might prefer to set it up as a config file in your Git repository so that all developers have the same configuration automatically. The configuration file looks like this:
 
 ```xml
-<packageSources>
-    <add key="local" value="file:///path/to/nuget/packages/" /> <!-- Not tested -->
-</packageSources>
+<configuration>
+    ...
+    <packageSources>
+        ...
+        <add key="local" value="file:///path/to/nuget-packages/" />
+    </packageSources>
+</configuration>
 ```
 
 You can place this configuration in any of the files described in this S/O answer: <https://stackoverflow.com/a/51381519>.
@@ -70,7 +74,7 @@ Once you have set up the repository link correctly, you can reference it in your
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <PackageReference Include="Segerfeldt.EventStore.Source.NUnit" Version="0.0.1" />
+        <PackageReference Include="Segerfeldt.EventStore.Source" Version="0.0.12" />
     </ItemGroup>
 </Project>
 ```
