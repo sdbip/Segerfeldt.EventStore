@@ -1,12 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using NUnit.Framework;
-
-using Segerfeldt.EventStore.Source;
-using Segerfeldt.EventStore.Source.NUnit;
-
-using SourceWebApplication.Commands;
-
 using System;
 using System.Data.Common;
 using System.Net;

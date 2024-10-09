@@ -1,5 +1,3 @@
-using NUnit.Framework.Constraints;
-
 using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.NUnit;

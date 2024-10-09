@@ -31,4 +31,9 @@
       <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="Moq" />
+        <Using Include="NUnit.Framework" />
+    </ItemGroup>
+
 </Project>

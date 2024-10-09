@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public sealed class IdentifiablesAreSameTests

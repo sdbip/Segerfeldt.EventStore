@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Tests;

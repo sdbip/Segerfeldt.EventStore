@@ -1,7 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using NUnit.Framework;
-
 using ProjectionWebApplication;
 
 using Segerfeldt.EventStore.Projection;

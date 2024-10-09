@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 
-using NUnit.Framework;
-
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 

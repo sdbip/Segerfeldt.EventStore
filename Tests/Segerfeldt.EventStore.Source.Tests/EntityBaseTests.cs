@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 using System;
 
 using Require = NUnit.Framework.Assert;
@@ -13,7 +11,7 @@ public class EntityBaseTests
     {
         var entity = new TestEntity(new EntityId("entity"), EntityVersion.New);
         var @event = PublishedEvent(TestEntity.ReplayAsEvent, "{}");
-        entity.ReplayEvents(new[] {@event});
+        entity.ReplayEvents([@event]);
 
         Require.That(entity.ReplayedEvent, Is.SameAs(@event));
     }

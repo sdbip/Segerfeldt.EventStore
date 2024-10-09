@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
-using NUnit.Framework;
-
-using Segerfeldt.EventStore.Source.Tests;
-
 namespace Segerfeldt.EventStore.Source.NUnit.Tests;
 
 public sealed class EntityExtensionTests

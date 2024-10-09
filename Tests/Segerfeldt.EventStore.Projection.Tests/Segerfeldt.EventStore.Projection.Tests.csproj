@@ -32,4 +32,9 @@
       <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="Moq" />
+        <Using Include="NUnit.Framework" />
+    </ItemGroup>
+
 </Project>

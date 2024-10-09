@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 using Segerfeldt.EventStore.Source.Snapshots;
 
 using System.Collections.Generic;

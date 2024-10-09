@@ -26,4 +26,8 @@
       </Compile>
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="NUnit.Framework.Constraints" />
+    </ItemGroup>
+
 </Project>

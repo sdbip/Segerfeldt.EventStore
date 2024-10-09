@@ -1,7 +1,3 @@
-using Moq;
-
-using NUnit.Framework;
-
 using System;
 
 using Segerfeldt.EventStore.Tests.Shared;

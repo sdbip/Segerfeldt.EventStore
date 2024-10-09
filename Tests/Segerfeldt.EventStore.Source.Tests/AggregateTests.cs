@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 using Segerfeldt.EventStore.Source.NUnit;
 
 using System;
@@ -19,27 +17,16 @@ public class AggregateTests
     }
 }
 
-internal class Aggregate : EntityBase
+internal class Aggregate(EntityId id, EntityVersion version) : EntityBase(id, new EntityType("Aggregate"), version)
 {
-    public Aggregate(EntityId id, EntityVersion version) : base(id, new EntityType("Aggregate"), version) { }
-
     public record ChildModifiedDetails(string id);
 
-    public ChildEntity AddChild(string id)
-    {
-        return new ChildEntity(id, Add);
-    }
+    public ChildEntity AddChild(string id) => new(id, Add);
 
-    public class ChildEntity
+    public class ChildEntity(string id, Action<UnpublishedEvent> addEvent)
     {
-        private readonly string id;
-        private readonly Action<UnpublishedEvent> addEvent;
-
-        public ChildEntity(string id, Action<UnpublishedEvent> addEvent)
-        {
-            this.id = id;
-            this.addEvent = addEvent;
-        }
+        private readonly string id = id;
+        private readonly Action<UnpublishedEvent> addEvent = addEvent;
 
         public void Modify()
         {

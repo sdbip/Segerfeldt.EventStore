@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 
-using NUnit.Framework;
-
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 using Swashbuckle.AspNetCore.SwaggerGen;

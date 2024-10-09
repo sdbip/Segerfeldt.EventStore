@@ -22,4 +22,8 @@
       <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="NUnit.Framework" />
+    </ItemGroup>
+
 </Project>

@@ -1,6 +1,3 @@
-using NUnit.Framework.Constraints;
-
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.NUnit;

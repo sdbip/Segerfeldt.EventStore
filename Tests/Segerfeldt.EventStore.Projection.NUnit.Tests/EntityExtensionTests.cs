@@ -1,7 +1,3 @@
-using Moq;
-
-using NUnit.Framework;
-
 using Segerfeldt.EventStore.Tests.Shared;
 
 namespace Segerfeldt.EventStore.Projection.NUnit.Tests;

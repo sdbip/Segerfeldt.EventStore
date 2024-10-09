@@ -9,7 +9,7 @@ namespace Segerfeldt.EventStore.Source.NUnit;
 
 public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup> where TStartup : class
 {
-    protected override sealed void ConfigureWebHost(IWebHostBuilder builder)
+    protected sealed override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {

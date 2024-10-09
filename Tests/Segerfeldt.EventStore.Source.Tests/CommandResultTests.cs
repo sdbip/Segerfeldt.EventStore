@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 
-using NUnit.Framework;
-
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 namespace Segerfeldt.EventStore.Source.Tests;

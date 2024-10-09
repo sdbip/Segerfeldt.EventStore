@@ -20,16 +20,18 @@
         <PackageReference Include="Npgsql" Version="8.0.4" />
         <PackageReference Include="NUnit" Version="4.2.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.2">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="6.0.2" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
       <ProjectReference Include="..\..\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Moq" />
+        <Using Include="NUnit.Framework" />
     </ItemGroup>
 
 </Project>
