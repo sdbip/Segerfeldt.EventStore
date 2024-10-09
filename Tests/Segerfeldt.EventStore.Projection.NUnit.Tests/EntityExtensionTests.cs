@@ -2,11 +2,9 @@ using Moq;
 
 using NUnit.Framework;
 
-using Segerfeldt.EventStore.Projection;
-using Segerfeldt.EventStore.Projection.NUnit;
-using Segerfeldt.EventStore.Projection.Tests;
+using Segerfeldt.EventStore.Tests.Shared;
 
-namespace Segerfeldt.EventStore.Source.NUnit.Tests;
+namespace Segerfeldt.EventStore.Projection.NUnit.Tests;
 
 public sealed class EventSourceExtensionTests
 {
@@ -17,7 +15,7 @@ public sealed class EventSourceExtensionTests
     public void SetUp()
     {
         var connectionPool = new Mock<IConnectionPool>();
-        connectionPool.Setup(pool => pool.CreateConnection()).Returns(InMemoryConnectionFactory.OpenNew());
+        connectionPool.Setup(pool => pool.CreateConnection()).Returns(new InMemoryConnection());
         eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), Mock.Of<IProjectionTracker>(), Mock.Of<IPollingStrategy>());
 
         receptacle = new TestReceptacle();

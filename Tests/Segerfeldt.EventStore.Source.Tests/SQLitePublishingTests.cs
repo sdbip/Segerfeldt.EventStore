@@ -4,6 +4,8 @@ using NUnit.Framework;
 
 using System;
 
+using Segerfeldt.EventStore.Tests.Shared;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 // ReSharper disable once InconsistentNaming

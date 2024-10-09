@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
+using Segerfeldt.EventStore.Tests.Shared;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 // ReSharper disable once InconsistentNaming

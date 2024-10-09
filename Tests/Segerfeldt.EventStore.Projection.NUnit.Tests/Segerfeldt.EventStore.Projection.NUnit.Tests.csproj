@@ -6,6 +6,13 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
+
+    <ItemGroup>
+      <Compile Include="..\Segerfeldt.EventStore.Tests.Shared\InMemoryConnection.cs">
+        <Link>InMemoryConnection.cs</Link>
+      </Compile>
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />

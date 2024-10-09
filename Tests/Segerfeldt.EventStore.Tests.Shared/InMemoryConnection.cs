@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Tests.Shared;
 
 internal class InMemoryConnection : DbConnection
 {
