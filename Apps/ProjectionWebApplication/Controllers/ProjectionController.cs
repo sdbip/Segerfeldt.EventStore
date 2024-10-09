@@ -6,9 +6,9 @@ namespace ProjectionWebApplication.Controllers;
 [Route("[controller]")]
 public class ProjectionController : ControllerBase
 {
-    private readonly PositionTracker tracker;
+    private readonly ProjectionTracker tracker;
 
-    public ProjectionController(PositionTracker tracker) => this.tracker = tracker;
+    public ProjectionController(ProjectionTracker tracker) => this.tracker = tracker;
 
     [HttpGet]
     public ActionResult<long> GetPosition() => Ok(tracker.Position);

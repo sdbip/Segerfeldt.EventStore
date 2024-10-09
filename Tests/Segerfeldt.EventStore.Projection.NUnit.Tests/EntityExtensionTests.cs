@@ -18,7 +18,7 @@ public sealed class EventSourceExtensionTests
     {
         var connectionPool = new Mock<IConnectionPool>();
         connectionPool.Setup(pool => pool.CreateConnection()).Returns(InMemoryConnectionFactory.OpenNew());
-        eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), Mock.Of<IPositionTracker>(), Mock.Of<IPollingStrategy>());
+        eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), Mock.Of<IProjectionTracker>(), Mock.Of<IPollingStrategy>());
 
         receptacle = new TestReceptacle();
         eventSource.Register(receptacle);

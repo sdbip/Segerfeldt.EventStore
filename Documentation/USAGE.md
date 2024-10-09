@@ -242,10 +242,10 @@ Set up Projection for ASP.Net in Program.cs:
 ```c#
 using Segerfeldt.EventStore.Projection;
 
-builder.Services.AddSingleton<PositionTracker>();
+builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("source_database")!), "source1")
     .AddReceptacles(Assembly.GetExecutingAssembly())
-    .SetPositionTracker<PositionTracker>();
+    .SetProjectionTracker<ProjectionTracker>();
 
 internal sealed class SqlConnectionPool : IConnectionPool
 {
@@ -297,8 +297,8 @@ public sealed class CounterState : ReceptacleBase
 }
 ```
 
-The `PositionTracker` is used to maintain a persisted memory of your place in the event stream. When the synchronization
-service is restarted it should not restart syncing from the first event. The `PositionTracker` will be notified as the
+The `ProjectionTracker` is used to maintain a persisted memory of your place in the event stream. When the synchronization
+service is restarted it should not restart syncing from the first event. The `ProjectionTracker` will be notified as the
 position changes so that it can update the persisted value.
 
 ```c#
@@ -306,9 +306,9 @@ using Segerfeldt.EventStore.Projection;
 
 namespace ProjectionApp;
 
-public sealed class PositionTracker : IPositionTracker
+public sealed class ProjectionTracker : IProjectionTracker
 {
-    public long? GetLastFinishedProjectionId()
+    public long? GetLastFinishedPosition()
     {
         // This is called at launch (or shortly thereafter)
         // to determine which events to skip in the first update.

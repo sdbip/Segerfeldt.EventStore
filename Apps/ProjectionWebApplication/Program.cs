@@ -19,10 +19,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddSingleton<ScoreBoard>();
-builder.Services.AddSingleton<PositionTracker>();
+builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("events")!), "events")
     .AddReceptacles(Assembly.GetExecutingAssembly())
-    .SetPositionTracker<PositionTracker>();
+    .SetProjectionTracker<ProjectionTracker>();
 
 var app = builder.Build();
 if (builder.Environment.IsDevelopment())

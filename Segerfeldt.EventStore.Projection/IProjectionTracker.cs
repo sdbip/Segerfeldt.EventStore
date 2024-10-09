@@ -1,8 +1,8 @@
 namespace Segerfeldt.EventStore.Projection;
 
-public interface IPositionTracker
+public interface IProjectionTracker
 {
-    long? GetLastFinishedProjectionId();
+    long? GetLastFinishedPosition();
     void OnProjectionStarting(long position);
     void OnProjectionFinished(long position);
 }

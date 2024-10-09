@@ -2,11 +2,11 @@ using Segerfeldt.EventStore.Projection;
 
 namespace ProjectionWebApplication;
 
-public class PositionTracker : IPositionTracker
+public class ProjectionTracker : IProjectionTracker
 {
     public long? Position { get; private set; }
 
-    public long? GetLastFinishedProjectionId() => null;
+    public long? GetLastFinishedPosition() => null;
 
     public void OnProjectionStarting(long position) { }
 

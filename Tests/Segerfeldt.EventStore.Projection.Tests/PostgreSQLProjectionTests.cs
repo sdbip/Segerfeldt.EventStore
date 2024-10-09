@@ -19,7 +19,7 @@ public class PostgreSQLProjectionTests
     private NpgsqlConnection connection = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
-    private Mock<IPositionTracker> positionTracker = null!;
+    private Mock<IProjectionTracker> positionTracker = null!;
 
     [SetUp]
     public void Setup()
@@ -29,7 +29,7 @@ public class PostgreSQLProjectionTests
 
         connection = new NpgsqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
-        positionTracker = new Mock<IPositionTracker>();
+        positionTracker = new Mock<IProjectionTracker>();
 
         var connectionPool = new Mock<IConnectionPool>();
         connectionPool.Setup(pool => pool.CreateConnection()).Returns(new NpgsqlConnection(connectionString));
@@ -111,7 +111,7 @@ public class PostgreSQLProjectionTests
         GivenEntity("an-entity");
         GivenEvent("an-entity", "first-event", position: 32);
         GivenEvent("an-entity", "second-event", position: 33);
-        positionTracker.Setup(t => t.GetLastFinishedProjectionId()).Returns(32);
+        positionTracker.Setup(t => t.GetLastFinishedPosition()).Returns(32);
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 

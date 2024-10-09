@@ -11,7 +11,7 @@ namespace Segerfeldt.EventStore.Projection;
 public sealed class EventSource
 {
     private readonly IEventSourceRepository repository;
-    private readonly IPositionTracker? tracker;
+    private readonly IProjectionTracker? tracker;
     private readonly IPollingStrategy pollingStrategy;
     private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = new();
     private long lastReadPosition;
@@ -21,7 +21,7 @@ public sealed class EventSource
     /// <param name="connectionPool">opens connections to the database that stores your entities and events</param>
     /// <param name="tracker"></param>
     /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-    public EventSource(IEventSourceRepository repository, IPositionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+    public EventSource(IEventSourceRepository repository, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
     {
         this.repository = repository;
         this.tracker = tracker;
@@ -46,7 +46,7 @@ public sealed class EventSource
     /// <summary>Start projecting the source state</summary>
     public void BeginProjecting()
     {
-        lastReadPosition = tracker?.GetLastFinishedProjectionId() ?? -1;
+        lastReadPosition = tracker?.GetLastFinishedPosition() ?? -1;
         PollEventsTable();
     }
 

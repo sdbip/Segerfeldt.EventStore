@@ -10,7 +10,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 public sealed class EventSourceBuilder
 {
     private readonly List<Func<IServiceProvider, IReceptacle>> receptacles = new();
-    private Func<IServiceProvider, IPositionTracker>? positionTracker;
+    private Func<IServiceProvider, IProjectionTracker>? positionTracker;
     private readonly Func<IServiceProvider, IEventSourceRepository> getRepository;
 
     public EventSourceBuilder(Func<IServiceProvider, IEventSourceRepository> getRepository)
@@ -38,14 +38,14 @@ public sealed class EventSourceBuilder
         return this;
     }
 
-    public EventSourceBuilder SetPositionTracker<TPositionTracker>() where TPositionTracker : IPositionTracker =>
-        SetPositionTracker(provider => provider.GetRequiredService<TPositionTracker>());
+    public EventSourceBuilder SetProjectionTracker<TPositionTracker>() where TPositionTracker : IProjectionTracker =>
+        SetProjectionTracker(provider => provider.GetRequiredService<TPositionTracker>());
 
     // ReSharper disable once ParameterHidesMember
-    public EventSourceBuilder SetPositionTracker(IPositionTracker positionTracker) =>
-        SetPositionTracker(_ => positionTracker);
+    public EventSourceBuilder SetProjectionTracker(IProjectionTracker positionTracker) =>
+        SetProjectionTracker(_ => positionTracker);
 
-    public EventSourceBuilder SetPositionTracker(Func<IServiceProvider, IPositionTracker> positionTrackerFunc)
+    public EventSourceBuilder SetProjectionTracker(Func<IServiceProvider, IProjectionTracker> positionTrackerFunc)
     {
         positionTracker = positionTrackerFunc;
         return this;
@@ -60,5 +60,5 @@ public sealed class EventSourceBuilder
         return eventSource;
     }
 
-    private IPositionTracker? GetPositionTracker(IServiceProvider provider) => positionTracker?.Invoke(provider);
+    private IProjectionTracker? GetPositionTracker(IServiceProvider provider) => positionTracker?.Invoke(provider);
 }

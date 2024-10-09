@@ -15,7 +15,7 @@ public class SQLiteProjectionTests
     private InMemoryConnection connection = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
-    private Mock<IPositionTracker> positionTracker = null!;
+    private Mock<IProjectionTracker> positionTracker = null!;
 
     [SetUp]
     public void Setup()
@@ -24,7 +24,7 @@ public class SQLiteProjectionTests
         var connectionPool = new Mock<IConnectionPool>();
         connectionPool.Setup(pool => pool.CreateConnection()).Returns(connection);
         delayConfiguration = new Mock<IPollingStrategy>();
-        positionTracker = new Mock<IPositionTracker>();
+        positionTracker = new Mock<IProjectionTracker>();
         eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), positionTracker.Object, delayConfiguration.Object);
 
         Source.SQLite.Schema.CreateIfMissing(connection);
@@ -89,7 +89,7 @@ public class SQLiteProjectionTests
         GivenEntity("an-entity");
         GivenEvent("an-entity", "first-event", position: 32);
         GivenEvent("an-entity", "second-event", position: 33);
-        positionTracker.Setup(t => t.GetLastFinishedProjectionId()).Returns(32);
+        positionTracker.Setup(t => t.GetLastFinishedPosition()).Returns(32);
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event");
 
