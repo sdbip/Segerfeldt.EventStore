@@ -4,7 +4,7 @@ using System;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class PostgreSQLPublishingTests
+public sealed class PostgreSQLPublishingTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
 

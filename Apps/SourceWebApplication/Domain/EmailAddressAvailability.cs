@@ -2,7 +2,7 @@ using Segerfeldt.EventStore.Source;
 
 namespace SourceWebApplication.Domaim;
 
-internal class EmailAddressAvailability : EntityBase
+internal sealed class EmailAddressAvailability(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
     public static readonly EntityType EntityType = new("EmailAddressAvailability");
     private static readonly EntityId SingletonEntityId = new("usernames");
@@ -11,8 +11,6 @@ internal class EmailAddressAvailability : EntityBase
     private const string EmailAddressReleased = "EmailAddressReleased";
 
     private readonly HashSet<string> usedEmailAddresses = new();
-
-    public EmailAddressAvailability(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
 
     internal static async Task<EmailAddressAvailability> GetAsync(IEntityStore entityStore)
     {

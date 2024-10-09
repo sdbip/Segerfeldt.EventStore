@@ -5,7 +5,7 @@ using Segerfeldt.EventStore.Tests.Shared;
 namespace Segerfeldt.EventStore.Source.Tests;
 
 // ReSharper disable once InconsistentNaming
-public class SQLitePublishingTests
+public sealed class SQLitePublishingTests
 {
     private InMemoryConnection connection = null!;
     private EventPublisher publisher = null!;

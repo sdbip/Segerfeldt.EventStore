@@ -7,16 +7,11 @@ using System.Reflection;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-public sealed class EventSourceBuilder
+public sealed class EventSourceBuilder(Func<IServiceProvider, IEventSourceRepository> getRepository)
 {
     private readonly List<Func<IServiceProvider, IReceptacle>> receptacles = new();
     private Func<IServiceProvider, IProjectionTracker>? positionTracker;
-    private readonly Func<IServiceProvider, IEventSourceRepository> getRepository;
-
-    public EventSourceBuilder(Func<IServiceProvider, IEventSourceRepository> getRepository)
-    {
-        this.getRepository = getRepository;
-    }
+    private readonly Func<IServiceProvider, IEventSourceRepository> getRepository = getRepository;
 
     public EventSourceBuilder AddReceptacles(Assembly assembly)
     {

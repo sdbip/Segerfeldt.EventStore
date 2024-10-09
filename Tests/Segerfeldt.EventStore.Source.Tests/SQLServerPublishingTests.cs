@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class SQLServerPublishingTests
+public sealed class SQLServerPublishingTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
 

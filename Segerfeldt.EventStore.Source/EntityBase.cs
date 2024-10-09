@@ -14,29 +14,22 @@ namespace Segerfeldt.EventStore.Source;
 /// Entities are the carriers of system state.
 /// <seealso cref="IEntity"/>
 /// </summary>
-public abstract class EntityBase : IEntity
+/// <remarks>Initializes a new entity</remarks>
+/// <param name="id">the unique identifier for this entity</param>
+/// <param name="type">a type name that uniquely identifies the implementing class for compatibility checks</param>
+/// <param name="version">the current version of a reconstituted entity, or <c cref="EntityVersion.New">New</c> for a not yet persisted entity</param>
+public abstract class EntityBase(EntityId id, EntityType type, EntityVersion version) : IEntity
 {
-    private readonly List<UnpublishedEvent> unpublishedEvents = new();
+    private readonly List<UnpublishedEvent> unpublishedEvents = [];
 
     /// <inheritdoc/>
-    public EntityId Id { get; }
+    public EntityId Id { get; } = id;
     /// <inheritdoc/>
-    public EntityType Type { get; }
+    public EntityType Type { get; } = type;
     /// <inheritdoc/>
-    public EntityVersion Version { get; }
+    public EntityVersion Version { get; } = version;
     /// <inheritdoc/>
-    public IEnumerable<UnpublishedEvent> UnpublishedEvents => unpublishedEvents.ToImmutableList();
-
-    /// <summary>Initializes a new entity</summary>
-    /// <param name="id">the unique identifier for this entity</param>
-    /// <param name="type">a type name that uniquely identifies the implementing class for compatibility checks</param>
-    /// <param name="version">the current version of a reconstituted entity, or <c cref="EntityVersion.New">New</c> for a not yet persisted entity</param>
-    protected EntityBase(EntityId id, EntityType type, EntityVersion version)
-    {
-        Id = id;
-        Type = type;
-        Version = version;
-    }
+    public IEnumerable<UnpublishedEvent> UnpublishedEvents => [.. unpublishedEvents];
 
     /// <summary>Adds a new event to the state</summary>
     /// <param name="event">the event to add</param>
@@ -91,13 +84,8 @@ public abstract class EntityBase : IEntity
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     [MeansImplicitUse]
-    protected class ReplaysEventAttribute : Attribute
+    protected class ReplaysEventAttribute(string @event) : Attribute
     {
-        public string Event { get; }
-
-        public ReplaysEventAttribute(string @event)
-        {
-            Event = @event;
-        }
+        public string Event { get; } = @event;
     }
 }

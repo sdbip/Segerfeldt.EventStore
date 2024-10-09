@@ -10,11 +10,9 @@ using System.Reflection;
 namespace Segerfeldt.EventStore.Source.CommandAPI;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal sealed class CommandsDocumentFilter : IDocumentFilter
+internal sealed class CommandsDocumentFilter(IEnumerable<Assembly> assemblies) : IDocumentFilter
 {
-    private readonly IEnumerable<Assembly> assemblies;
-
-    public CommandsDocumentFilter(IEnumerable<Assembly> assemblies) => this.assemblies = assemblies;
+    private readonly IEnumerable<Assembly> assemblies = assemblies;
 
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {

@@ -2,7 +2,7 @@ using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class SingletonConnectionPool : IConnectionPool
+public sealed class SingletonConnectionPool : IConnectionPool
 {
     private readonly DbConnection connection;
 

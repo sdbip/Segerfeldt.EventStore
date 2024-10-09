@@ -7,7 +7,7 @@ using Segerfeldt.EventStore.Tests.Shared;
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 // ReSharper disable once InconsistentNaming
-public class SQLiteProjectionTests
+public sealed class SQLiteProjectionTests
 {
     private InMemoryConnection connection = null!;
     private EventSource eventSource = null!;

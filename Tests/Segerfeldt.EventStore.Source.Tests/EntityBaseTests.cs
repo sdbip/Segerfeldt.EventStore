@@ -4,7 +4,7 @@ using Require = NUnit.Framework.Assert;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class EntityBaseTests
+public sealed class EntityBaseTests
 {
     [Test]
     public void ReplaysEvent()
@@ -27,15 +27,13 @@ public class EntityBaseTests
 
     private static PublishedEvent PublishedEvent(string name, string details) => new(name, details, "actor", DateTimeOffset.UtcNow);
 
-    private class TestEntity : EntityBase
+    private class TestEntity(EntityId id, EntityVersion version) : EntityBase(id, new EntityType("Test"), version)
     {
         internal const string ReplayAsEvent = "as-event";
         internal const string ReplayAsData = "as-test-data";
 
         internal PublishedEvent? ReplayedEvent { get; private set; }
         internal TestData? ReplayedData { get; private set; }
-
-        public TestEntity(EntityId id, EntityVersion version) : base(id, new EntityType("Test"), version) { }
 
         [ReplaysEvent(ReplayAsEvent)]
         public void ReplayEvent(PublishedEvent @event)

@@ -7,14 +7,9 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-public class CommandHandlerExecuter
+public class CommandHandlerExecuter(ICommandHandler handler)
 {
-    private readonly ICommandHandler handler;
-
-    public CommandHandlerExecuter(ICommandHandler handler)
-    {
-        this.handler = handler;
-    }
+    private readonly ICommandHandler handler = handler;
 
     public async Task<ActionResult> ExecuteHandlerAsync(object? command, CommandContext context)
     {

@@ -6,12 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
 
-/// <summary>
-/// An entity type for namespacing events and verifying the type.
-/// 
-/// An EntityType is essentially a <c cref="string">String</c> with validation rules.
-/// You can use it wherever strings are accepted.
-/// </summary>
+/// <summary>An entity type for namespacing events and verifying the type.</summary>
 public sealed class EntityType : ValueObject<EntityType>
 {
     private readonly string name;

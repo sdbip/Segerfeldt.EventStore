@@ -2,7 +2,7 @@ using System;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
 
-public class EventTests
+public sealed class EventTests
 {
     [Test]
     public void DetailsAsType()

@@ -10,12 +10,9 @@ public sealed class EntityExtensionTests
         Assert.That(entity.Details, Is.EqualTo(new EventDetails(A: "B")));
     }
 
-    private class TestEntity : EntityBase
+    private class TestEntity(EntityId id, EntityVersion version) : EntityBase(id, new EntityType("test_entity"), version)
     {
         public EventDetails? Details { get; private set; }
-
-        public TestEntity(EntityId id, EntityVersion version) : base(id, new EntityType("test_entity"), version) { }
-
 
         [ReplaysEvent("EventName")]
         public void OnEvent(EventDetails details)

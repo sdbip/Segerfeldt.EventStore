@@ -1,23 +1,14 @@
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal sealed class InsertSingleEventOperation
+internal sealed class InsertSingleEventOperation(UnpublishedEvent @event, EntityId entityId, EntityType type, string actor)
 {
-    private readonly UnpublishedEvent @event;
-    private readonly EntityId entityId;
-    private readonly EntityType type;
-    private readonly string actor;
-
-    public InsertSingleEventOperation(UnpublishedEvent @event, EntityId entityId, EntityType type, string actor)
-    {
-        this.@event = @event;
-        this.entityId = entityId;
-        this.type = type;
-        this.actor = actor;
-    }
+    private readonly UnpublishedEvent @event = @event;
+    private readonly EntityId entityId = entityId;
+    private readonly EntityType type = type;
+    private readonly string actor = actor;
 
     public async Task<UpdatedStorePosition> ExecuteAsync(DbConnection connection)
     {
@@ -40,23 +31,18 @@ internal sealed class InsertSingleEventOperation
         }
     }
 
-    private sealed class MyActiveOperation : ActiveOperation
+    private sealed class MyActiveOperation(DbTransaction transaction, InsertSingleEventOperation operation)
+        : ActiveOperation(transaction, operation.actor)
     {
-        private readonly DbTransaction transaction;
-        private readonly InsertSingleEventOperation operation;
-
-        public MyActiveOperation(DbTransaction transaction, InsertSingleEventOperation operation) : base(transaction, operation.actor)
-        {
-            this.transaction = transaction;
-            this.operation = operation;
-        }
+        private readonly DbTransaction transaction = transaction;
+        private readonly InsertSingleEventOperation operation = operation;
 
         public async Task<UpdatedStorePosition> RunAsync()
         {
             var currentVersion = await GetCurrentVersionAsync();
             if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Of(1));
 
-            return await InsertEventsForEntities(new[] { new EntityData(operation.entityId, operation.type, currentVersion, new[] { operation.@event }.AsEnumerable()) });
+            return await InsertEventsForEntities([new EntityData(operation.entityId, operation.type, currentVersion, [operation.@event])]);
         }
 
         private async Task<EntityVersion> GetCurrentVersionAsync()

@@ -4,7 +4,7 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class CommandResultTests
+public sealed class CommandResultTests
 {
     [TestCase(199)]
     [TestCase(300)]

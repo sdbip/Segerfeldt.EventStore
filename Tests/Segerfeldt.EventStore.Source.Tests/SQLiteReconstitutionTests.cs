@@ -10,7 +10,7 @@ using Segerfeldt.EventStore.Tests.Shared;
 namespace Segerfeldt.EventStore.Source.Tests;
 
 // ReSharper disable once InconsistentNaming
-public class SQLiteReconstitutionTests
+public sealed class SQLiteReconstitutionTests
 {
     private InMemoryConnection connection = null!;
     private EntityStore store = null!;
@@ -188,20 +188,14 @@ public class SQLiteReconstitutionTests
     }
 
     // ReSharper disable once ClassNeverInstantiated.Local
-    private class MyEntity : IEntity
+    private class MyEntity(EntityId id, EntityVersion version) : IEntity
     {
-        public EntityId Id { get; }
-        public EntityVersion Version { get; }
+        public EntityId Id { get; } = id;
+        public EntityVersion Version { get; } = version;
         public EntityType Type => new("MyEntity");
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
         public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }
-
-        public MyEntity(EntityId id, EntityVersion version)
-        {
-            Id = id;
-            Version = version;
-        }
 
         public void ReplayEvents(IEnumerable<PublishedEvent> events)
         {

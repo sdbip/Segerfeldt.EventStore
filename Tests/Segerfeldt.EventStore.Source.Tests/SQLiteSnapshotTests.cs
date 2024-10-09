@@ -9,7 +9,7 @@ using Segerfeldt.EventStore.Tests.Shared;
 namespace Segerfeldt.EventStore.Source.Tests;
 
 // ReSharper disable once InconsistentNaming
-public class SQLiteSnapshotTests
+public sealed class SQLiteSnapshotTests
 {
     private InMemoryConnection connection = null!;
     private EntityStore store = null!;
@@ -72,20 +72,13 @@ public class SQLiteSnapshotTests
         command.ExecuteNonQuery();
     }
 
-    private class Snapshot : ISnapshot<MyEntity>
+    private class Snapshot(EntityId id, EntityType entityType, EntityVersion version) : ISnapshot<MyEntity>
     {
-        public EntityId Id { get; }
-        public EntityType EntityType { get; }
-        public EntityVersion Version { get; }
+        public EntityId Id { get; } = id;
+        public EntityType EntityType { get; } = entityType;
+        public EntityVersion Version { get; } = version;
 
         public int Value { get; init; }
-
-        public Snapshot(EntityId id, EntityType entityType, EntityVersion version)
-        {
-            Id = id;
-            EntityType = entityType;
-            Version = version;
-        }
 
         public void Restore(MyEntity entity)
         {
@@ -94,21 +87,15 @@ public class SQLiteSnapshotTests
     }
 
     // ReSharper disable once ClassNeverInstantiated.Local
-    private class MyEntity : IEntity
+    private class MyEntity(EntityId id, EntityVersion version) : IEntity
     {
-        public EntityId Id { get; }
-        public EntityVersion Version { get; }
+        public EntityId Id { get; } = id;
+        public EntityVersion Version { get; } = version;
         public EntityType Type => new("MyEntity");
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
         public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }
         public int? SnapshotValue { get; set; }
-
-        public MyEntity(EntityId id, EntityVersion version)
-        {
-            Id = id;
-            Version = version;
-        }
 
         public void ReplayEvents(IEnumerable<PublishedEvent> events)
         {

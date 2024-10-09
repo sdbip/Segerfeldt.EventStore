@@ -23,13 +23,11 @@ public interface IEntityStore
 }
 
 /// <inheritdoc />
-public sealed class EntityStore : IEntityStore
+/// <summary>Initialize a new <see cref="EntityStore"/></summary>
+/// <param name="connectionPool">opens connections to the database that stores the state of entities as sequences of events</param>
+public sealed class EntityStore(IConnectionPool connectionPool) : IEntityStore
 {
-    private readonly IConnectionPool connectionPool;
-
-    /// <summary>Initialize a new <see cref="EntityStore"/></summary>
-    /// <param name="connectionPool">opens connections to the database that stores the state of entities as sequences of events</param>
-    public EntityStore(IConnectionPool connectionPool) => this.connectionPool = connectionPool;
+    private readonly IConnectionPool connectionPool = connectionPool;
 
     /// <inheritdoc />
     public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion, CancellationToken cancellationToken) =>

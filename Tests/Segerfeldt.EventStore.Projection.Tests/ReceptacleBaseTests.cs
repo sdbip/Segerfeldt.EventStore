@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
 
-public class ReceptacleBaseTests
+public sealed class ReceptacleBaseTests
 {
     [Test]
     public async Task InvokesMethodWithMatchingEventNameAndType()

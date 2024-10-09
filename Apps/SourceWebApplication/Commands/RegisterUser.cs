@@ -10,7 +10,7 @@ public record RegisterUser(string Username);
 
 /// <inheritdoc/>
 [AddsEntity("User")]
-public class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
+public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
 {
     /// <inheritdoc/>
     public async Task<CommandResult> Handle(RegisterUser command, CommandContext context)

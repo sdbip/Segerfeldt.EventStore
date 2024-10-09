@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ProjectionWebApplicationTests;
 
-public class EndpointTests
+public sealed class EndpointTests
 {
     private HttpClient client = null!;
     private WebApplicationFactory<ScoreBoard> webApplicationFactory = null!;

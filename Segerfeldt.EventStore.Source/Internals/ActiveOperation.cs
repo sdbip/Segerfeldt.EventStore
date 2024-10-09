@@ -8,16 +8,10 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal abstract class ActiveOperation
+internal abstract class ActiveOperation(DbTransaction transaction, string actor)
 {
-    private readonly DbTransaction transaction;
-    private readonly string actor;
-
-    public ActiveOperation(DbTransaction transaction, string actor)
-    {
-        this.transaction = transaction;
-        this.actor = actor;
-    }
+    private readonly DbTransaction transaction = transaction;
+    private readonly string actor = actor;
 
     protected async Task<EntityVersion> GetCurrentVersionAsync(EntityId entityId)
     {
@@ -84,7 +78,7 @@ internal abstract class ActiveOperation
         return new UpdatedStorePosition(position, entityVersions);
 
         // ReSharper disable once IteratorNeverReturns
-        IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
+        static IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
         {
             var next = first;
             while (true)

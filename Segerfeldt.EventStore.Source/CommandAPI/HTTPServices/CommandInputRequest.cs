@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class CommandInputRequest
+internal class CommandInputRequest(Type handlerType, HttpContext context)
 {
-    private readonly HttpContext context;
-    private readonly Type handlerType;
-
-    public CommandInputRequest(Type handlerType, HttpContext context)
-    {
-        this.context = context;
-        this.handlerType = handlerType;
-    }
+    private readonly HttpContext context = context;
+    private readonly Type handlerType = handlerType;
 
     public async Task<ActionResult> Execute()
     {

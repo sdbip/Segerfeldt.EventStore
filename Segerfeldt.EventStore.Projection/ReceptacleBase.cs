@@ -39,9 +39,9 @@ public abstract class ReceptacleBase : IReceptacle
     private object? InvokeMethod(MethodBase method, Event @event)
     {
         var parameters = method.GetParameters();
-        var arguments = parameters.Length == 2
-            ? new[] {@event.EntityId, @event.DetailsAs(parameters[1].ParameterType)}
-            : new object?[]{@event};
+        object?[] arguments = parameters.Length == 2
+            ? [@event.EntityId, @event.DetailsAs(parameters[1].ParameterType)]
+            : [@event];
         return method.Invoke(this, arguments);
     }
 
@@ -49,12 +49,10 @@ public abstract class ReceptacleBase : IReceptacle
 
     [AttributeUsage(AttributeTargets.Method)]
     [MeansImplicitUse]
-    protected class ReceivesEventAttribute : Attribute
+    protected class ReceivesEventAttribute(string name) : Attribute
     {
-        public string Name { get; }
+        public string Name { get; } = name;
         public string? EntityType { get; init; }
-
-        public ReceivesEventAttribute(string @event) => Name = @event;
 
         public bool Accepts(Event @event) => Name == @event.Name && (EntityType is null || EntityType == @event.EntityType);
     }

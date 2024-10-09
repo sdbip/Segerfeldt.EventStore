@@ -4,7 +4,7 @@ using System.Linq;
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 // ReSharper disable once InconsistentNaming
-public class EventSourceTests
+public sealed class EventSourceTests
 {
     private Mock<IEventSourceRepository> repository = null!;
     private EventSource eventSource = null!;

@@ -46,14 +46,9 @@ app.MapCommands(Assembly.GetExecutingAssembly());
 
 app.Run();
 
-internal class MainConnectionPool : IConnectionPool
+internal class MainConnectionPool(IConfiguration configuration) : IConnectionPool
 {
-    private readonly IConfiguration configuration;
-
-    public MainConnectionPool(IConfiguration configuration)
-    {
-        this.configuration = configuration;
-    }
+    private readonly IConfiguration configuration = configuration;
 
     public DbConnection CreateConnection() => new SqliteConnection(configuration.GetConnectionString("main"));
 }

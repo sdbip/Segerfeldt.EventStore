@@ -4,14 +4,9 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal sealed class LookupEntityTypeOperation
+internal sealed class LookupEntityTypeOperation(EntityId entityId)
 {
-    private readonly EntityId entityId;
-
-    public LookupEntityTypeOperation(EntityId entityId)
-    {
-        this.entityId = entityId;
-    }
+    private readonly EntityId entityId = entityId;
 
     public async Task<EntityType?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
     {

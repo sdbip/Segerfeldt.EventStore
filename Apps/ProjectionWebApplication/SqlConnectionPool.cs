@@ -5,14 +5,9 @@ using System.Data.SqlClient;
 
 namespace ProjectionWebApplication;
 
-public class SqlConnectionPool : IConnectionPool
+public sealed class SqlConnectionPool(string connectionString) : IConnectionPool
 {
-    private readonly string connectionString;
-
-    public SqlConnectionPool(string connectionString)
-    {
-        this.connectionString = connectionString;
-    }
+    private readonly string connectionString = connectionString;
 
     public IDbConnection CreateConnection() => new SqlConnection(connectionString);
 }

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ProjectionWebApplication;
 
-public class ScoreBoard : ReceptacleBase
+public sealed class ScoreBoard : ReceptacleBase
 {
     private readonly Dictionary<string, (string name, int score)> playerScores = new();
 

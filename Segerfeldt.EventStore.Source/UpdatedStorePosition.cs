@@ -4,18 +4,12 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Source;
 
-public sealed class UpdatedStorePosition
+public sealed class UpdatedStorePosition(long position, IEnumerable<(EntityId id, EntityVersion version)> entityVersions)
 {
-    public long Position { get; }
+    public long Position { get; } = position;
 
-    private readonly IReadOnlyDictionary<EntityId, EntityVersion> entityVersions;
+    private readonly IReadOnlyDictionary<EntityId, EntityVersion> entityVersions = entityVersions.ToImmutableDictionary(x => x.id, x => x.version);
     public IReadOnlyCollection<EntityId> UpdatedEntityIds => entityVersions.Keys.ToList();
-
-    public UpdatedStorePosition(long position, IEnumerable<(EntityId id, EntityVersion version)> entityVersions)
-    {
-        Position = position;
-        this.entityVersions = entityVersions.ToImmutableDictionary(x => x.id, x => x.version);
-    }
 
     public EntityVersion GetVersion(EntityId entityId) => entityVersions[entityId];
 }

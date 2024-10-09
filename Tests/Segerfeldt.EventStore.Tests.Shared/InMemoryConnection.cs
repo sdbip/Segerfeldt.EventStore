@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Segerfeldt.EventStore.Tests.Shared;
 
-internal class InMemoryConnection : DbConnection
+internal sealed class InMemoryConnection : DbConnection
 {
     private readonly SqliteConnection implementor;
 

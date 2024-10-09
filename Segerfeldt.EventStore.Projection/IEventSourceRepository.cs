@@ -10,14 +10,9 @@ public interface IEventSourceRepository
     IEnumerable<Event> GetEvents(long afterPosition);
 }
 
-public sealed class DefaultEventSourceRepository : IEventSourceRepository
+public sealed class DefaultEventSourceRepository(IConnectionPool connectionPool) : IEventSourceRepository
 {
-    private readonly IDbConnection connection;
-
-    public DefaultEventSourceRepository(IConnectionPool connectionPool)
-    {
-        connection = connectionPool.CreateConnection();
-    }
+    private readonly IDbConnection connection = connectionPool.CreateConnection();
 
     public IEnumerable<Event> GetEvents(long afterPosition)
     {

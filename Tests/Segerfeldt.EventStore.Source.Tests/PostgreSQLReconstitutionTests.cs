@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class PostgreSQLReconstitutionTests
+public sealed class PostgreSQLReconstitutionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
 

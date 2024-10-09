@@ -5,16 +5,10 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal sealed class InsertMultipleEventsOperation
+internal sealed class InsertMultipleEventsOperation(IEnumerable<IEntity> entities, string actor)
 {
-    private readonly IEnumerable<IEntity> entities;
-    private readonly string actor;
-
-    public InsertMultipleEventsOperation(IEnumerable<IEntity> entities, string actor)
-    {
-        this.entities = entities.Where(e => e.UnpublishedEvents.Any());
-        this.actor = actor;
-    }
+    private readonly IEnumerable<IEntity> entities = entities.Where(e => e.UnpublishedEvents.Any());
+    private readonly string actor = actor;
 
     public async Task<UpdatedStorePosition> ExecuteAsync(DbConnection connection)
     {
@@ -37,12 +31,10 @@ internal sealed class InsertMultipleEventsOperation
         }
     }
 
-    private sealed class MyActiveOperation : ActiveOperation
+    private sealed class MyActiveOperation(DbTransaction transaction, InsertMultipleEventsOperation operation)
+        : ActiveOperation(transaction, operation.actor)
     {
-        private readonly InsertMultipleEventsOperation operation;
-
-        public MyActiveOperation(DbTransaction transaction, InsertMultipleEventsOperation operation) :
-            base(transaction, operation.actor) => this.operation = operation;
+        private readonly InsertMultipleEventsOperation operation = operation;
 
         public async Task<UpdatedStorePosition> RunAsync()
         {

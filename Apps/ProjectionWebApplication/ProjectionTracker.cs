@@ -2,7 +2,7 @@ using Segerfeldt.EventStore.Projection;
 
 namespace ProjectionWebApplication;
 
-public class ProjectionTracker : IProjectionTracker
+public sealed class ProjectionTracker : IProjectionTracker
 {
     public long? Position { get; private set; }
 

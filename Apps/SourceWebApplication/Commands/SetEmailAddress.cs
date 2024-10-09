@@ -10,7 +10,7 @@ public record SetEmailAddress(string EmailAddress);
 
 /// <inheritdoc/>
 [ModifiesEntity("User", Property = "emailAddress")]
-public class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddress, string?>
+public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddress, string?>
 {
     /// <inheritdoc/>
     public async Task<CommandResult<string?>> Handle(SetEmailAddress command, CommandContext context)

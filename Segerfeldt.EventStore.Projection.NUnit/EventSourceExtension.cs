@@ -1,5 +1,3 @@
-using System;
-
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.NUnit;

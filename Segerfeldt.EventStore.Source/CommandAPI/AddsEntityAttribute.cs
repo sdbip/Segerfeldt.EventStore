@@ -7,7 +7,4 @@ namespace Segerfeldt.EventStore.Source.CommandAPI;
 /// Typical form: POST /entity
 /// Alternate form: POST /entity/{entityId}/property
 /// </summary>
-public sealed class AddsEntityAttribute : ModifiesEntityAttribute
-{
-    public AddsEntityAttribute(string entity) : base(entity, OperationType.Post) { }
-}
+public sealed class AddsEntityAttribute(string entity) : ModifiesEntityAttribute(entity, OperationType.Post) { }

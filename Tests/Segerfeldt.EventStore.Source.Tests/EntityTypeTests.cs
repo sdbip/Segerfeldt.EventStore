@@ -2,7 +2,7 @@
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class EntityTypeTests
+public sealed class EntityTypeTests
 {
     [Test]
     public void IsValidType(

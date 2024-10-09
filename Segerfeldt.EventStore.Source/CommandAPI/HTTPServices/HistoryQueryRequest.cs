@@ -8,16 +8,10 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class HistoryQueryRequest
+internal class HistoryQueryRequest(HttpContext context)
 {
-    private readonly HttpContext context;
-    private readonly ServiceLocator serviceLocator;
-
-    public HistoryQueryRequest(HttpContext context)
-    {
-        this.context = context;
-        serviceLocator = new ServiceLocator(context.RequestServices);
-    }
+    private readonly HttpContext context = context;
+    private readonly ServiceLocator serviceLocator = new ServiceLocator(context.RequestServices);
 
     public async Task<ActionResult> Get()
     {

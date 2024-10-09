@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SourceConsoleApp;
 
-internal class Player : EntityBase
+internal sealed class Player(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
     public static readonly EntityType EntityType = new("Player");
 
@@ -14,8 +14,6 @@ internal class Player : EntityBase
 
     public string Name { get; private set; } = null!;
     public int Score { get; private set; }
-
-    public Player(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
 
     public static async Task<Player?> ReconstituteAsync(EntityId entityId, EntityStore store) =>
         await store.ReconstituteAsync<Player>(entityId, EntityType);

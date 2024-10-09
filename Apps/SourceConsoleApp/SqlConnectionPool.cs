@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 
 namespace SourceConsoleApp;
 
-internal class SqlConnectionPool : IConnectionPool
+internal sealed class SqlConnectionPool : IConnectionPool
 {
     private readonly string connectionString;
 

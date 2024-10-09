@@ -4,7 +4,7 @@ using System;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class AggregateTests
+public sealed class AggregateTests
 {
     [Test]
     public void ModifyChild_AddsEvent()

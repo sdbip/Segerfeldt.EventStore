@@ -2,7 +2,7 @@ using System;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class EntityIdTests
+public sealed class EntityIdTests
 {
     [Test]
     public void IsValidId(

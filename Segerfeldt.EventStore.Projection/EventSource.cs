@@ -8,25 +8,18 @@ using System.Threading.Tasks;
 namespace Segerfeldt.EventStore.Projection;
 
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
-public sealed class EventSource
+/// <remarks>Initializes a new <see cref="EventSource"/></remarks>
+/// <param name="connectionPool">opens connections to the database that stores your entities and events</param>
+/// <param name="tracker"></param>
+/// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
+public sealed class EventSource(IEventSourceRepository repository, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
 {
-    private readonly IEventSourceRepository repository;
-    private readonly IProjectionTracker? tracker;
-    private readonly IPollingStrategy pollingStrategy;
-    private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = new();
+    private readonly IEventSourceRepository repository = repository;
+    private readonly IProjectionTracker? tracker = tracker;
+    private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
+    private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = [];
     private long lastReadPosition;
     private CancellationTokenSource? currentDelay;
-
-    /// <summary>Initializes a new <see cref="EventSource"/></summary>
-    /// <param name="connectionPool">opens connections to the database that stores your entities and events</param>
-    /// <param name="tracker"></param>
-    /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-    public EventSource(IEventSourceRepository repository, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
-    {
-        this.repository = repository;
-        this.tracker = tracker;
-        this.pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
-    }
 
     /// <summary>
     /// Register a projector that will be notified whenever new events occur

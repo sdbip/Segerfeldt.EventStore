@@ -8,16 +8,10 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal sealed class GetHistoryOperation
+internal sealed class GetHistoryOperation(EntityId entityId, EntityVersion entityVersion)
 {
-    private readonly EntityId entityId;
-    private readonly EntityVersion entityVersion;
-
-    public GetHistoryOperation(EntityId entityId, EntityVersion entityVersion)
-    {
-        this.entityId = entityId;
-        this.entityVersion = entityVersion;
-    }
+    private readonly EntityId entityId = entityId;
+    private readonly EntityVersion entityVersion = entityVersion;
 
     public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
     {

@@ -14,29 +14,23 @@ namespace Segerfeldt.EventStore.Source;
 /// }
 /// </code>
 /// </example>
-public sealed class UnpublishedEvent
+/// <param name="name">what aspect of the entity is changing</param>
+/// <param name="details">details regarding the change</param>
+/// <example><c>
+/// new (
+///   name: "Enrolled",
+///   details: new {CourseId = "CS193p"}
+/// )
+/// </c></example>
+public sealed class UnpublishedEvent(string name, object details)
 {
     /// <summary>In what way the state of entity will change when this event is published.</summary>
     /// Should represent a small, but meaningful change so that it can be reused to model
     /// the effects of multiple commands/activities.
     /// <example><c>"Enrolled"</c></example>
-    public string Name { get; }
+    public string Name { get; } = name;
 
     /// <summary>The details of the change</summary>
     /// <example><c>{"courseId": "CS193p"}</c></example>
-    public object Details { get; }
-
-    /// <param name="name">what aspect of the entity is changing</param>
-    /// <param name="details">details regarding the change</param>
-    /// <example><c>
-    /// new (
-    ///   name: "Enrolled",
-    ///   details: new {CourseId = "CS193p"}
-    /// )
-    /// </c></example>
-    public UnpublishedEvent(string name, object details)
-    {
-        Name = name;
-        Details = details;
-    }
+    public object Details { get; } = details;
 }

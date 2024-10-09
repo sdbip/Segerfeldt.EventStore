@@ -11,14 +11,9 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class CommandParser
+internal class CommandParser(HttpContext context)
 {
-    private readonly HttpContext context;
-
-    public CommandParser(HttpContext context)
-    {
-        this.context = context;
-    }
+    private readonly HttpContext context = context;
 
     public async Task<object> GetCommandDTOAsync(MethodBase handleMethod)
     {

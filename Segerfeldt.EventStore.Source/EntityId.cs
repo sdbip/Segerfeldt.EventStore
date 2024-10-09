@@ -42,8 +42,7 @@ public sealed class EntityId : ValueObject<EntityId>
 
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(value);
 
-    // Implicitly converts an EntityId to a string. An EntityId is essentially a string with validation rules.
-    // Tread
+    // Implicit operator allows EntityId to be used where string is expected.
     public static implicit operator string(EntityId entityId) => entityId.value;
     public override string ToString() => value;
 

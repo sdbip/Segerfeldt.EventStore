@@ -4,14 +4,9 @@ using System;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace Segerfeldt.EventStore.Source;
 
-public sealed class IncorrectTypeException : Exception
+public sealed class IncorrectTypeException(EntityType expectedType, EntityType actualType)
+    : Exception($"Entity has the wrong typ. Actual type is {actualType}, expected {expectedType}")
 {
-    public EntityType ExpectedType { get; }
-    public EntityType ActualType { get; }
-
-    public IncorrectTypeException(EntityType expectedType, EntityType actualType) : base($"Entity has the wrong typ. Actual type is {actualType}, expected {expectedType}")
-    {
-        ExpectedType = expectedType;
-        ActualType = actualType;
-    }
+    public EntityType ExpectedType { get; } = expectedType;
+    public EntityType ActualType { get; } = actualType;
 }

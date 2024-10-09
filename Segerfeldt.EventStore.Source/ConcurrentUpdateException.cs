@@ -4,14 +4,9 @@ using System;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace Segerfeldt.EventStore.Source;
 
-public sealed class ConcurrentUpdateException : Exception
+public sealed class ConcurrentUpdateException(EntityVersion expectedVersion, EntityVersion actualVersion)
+    : Exception($"Entity has been modified. Current version is {actualVersion}, expected {expectedVersion}")
 {
-    public EntityVersion ExpectedVersion { get; }
-    public EntityVersion ActualVersion { get; }
-
-    public ConcurrentUpdateException(EntityVersion expectedVersion, EntityVersion actualVersion) : base($"Entity has been modified. Current version is {actualVersion}, expected {expectedVersion}")
-    {
-        ExpectedVersion = expectedVersion;
-        ActualVersion = actualVersion;
-    }
+    public EntityVersion ExpectedVersion { get; } = expectedVersion;
+    public EntityVersion ActualVersion { get; } = actualVersion;
 }

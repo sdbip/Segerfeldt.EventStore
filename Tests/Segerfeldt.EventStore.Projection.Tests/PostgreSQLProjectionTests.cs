@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
 
-public class PostgreSQLProjectionTests
+public sealed class PostgreSQLProjectionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
 

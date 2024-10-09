@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class SQLServerReconstitutionTests
+public sealed class SQLServerReconstitutionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
 
@@ -227,20 +227,14 @@ public class SQLServerReconstitutionTests
     }
 
     // ReSharper disable once ClassNeverInstantiated.Local
-    private class MyEntity : IEntity
+    private class MyEntity(EntityId id, EntityVersion version) : IEntity
     {
-        public EntityId Id { get; }
-        public EntityVersion Version { get; }
+        public EntityId Id { get; } = id;
+        public EntityVersion Version { get; } = version;
         public EntityType Type => new EntityType("MyEntity");
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
         public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }
-
-        public MyEntity(EntityId id, EntityVersion version)
-        {
-            Id = id;
-            Version = version;
-        }
 
         public void ReplayEvents(IEnumerable<PublishedEvent> events)
         {

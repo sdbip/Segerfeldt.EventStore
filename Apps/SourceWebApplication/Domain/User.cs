@@ -2,11 +2,9 @@ using Segerfeldt.EventStore.Source;
 
 namespace SourceWebApplication.Domaim;
 
-internal class User : EntityBase
+internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
     public static readonly EntityType EntityType = new("User");
-
-    public User(EntityId id, EntityVersion version) : base(id, EntityType, version) { }
 
     internal static User New(EntityId entityId)
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 // ReSharper disable once InconsistentNaming
-public class SQLServerProjectionTests
+public sealed class SQLServerProjectionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
 

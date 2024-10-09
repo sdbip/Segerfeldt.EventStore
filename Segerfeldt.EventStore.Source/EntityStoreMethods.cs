@@ -99,17 +99,11 @@ public static class EntityStoreMethods
 
     /// <summary>An entity snapshot that was never made.</summary>
     /// All events will have to be replayed to reconstitute from this snapshot.
-    private sealed class NeverSnapshot<TEntity> : ISnapshot<TEntity> where TEntity : class, IEntity
+    private sealed class NeverSnapshot<TEntity>(EntityId id, EntityType entityType) : ISnapshot<TEntity> where TEntity : class, IEntity
     {
-        public EntityId Id { get; }
-        public EntityType EntityType { get; }
+        public EntityId Id { get; } = id;
+        public EntityType EntityType { get; } = entityType;
         public EntityVersion Version => EntityVersion.Beginning;
-
-        public NeverSnapshot(EntityId id, EntityType entityType)
-        {
-            Id = id;
-            EntityType = entityType;
-        }
 
         public void Restore(TEntity entity) { } // Intentionally does nothing
     }
