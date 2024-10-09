@@ -8,3 +8,4 @@
 - Explain somewhere that an *entity* is not a code object. It is the actual thing being modelled.
   The `Entity` object represents *a specific version* of the entity and it will not change that.
   When events are published, the entity's version is incremented, but the `Entity` remains as it was.
+- `System.Diagnostics.Debugger.Break()` in `EventSource`.
