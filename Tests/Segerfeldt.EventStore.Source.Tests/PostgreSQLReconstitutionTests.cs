@@ -1,11 +1,12 @@
 using Npgsql;
 
-using Segerfeldt.EventStore.Source.Internals;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+
+using Segerfeldt.EventStore.Shared;
+using Segerfeldt.EventStore.Source.Internals;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 

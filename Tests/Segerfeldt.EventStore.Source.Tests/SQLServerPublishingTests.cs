@@ -1,6 +1,8 @@
 using System;
 using System.Data.SqlClient;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public sealed class SQLServerPublishingTests

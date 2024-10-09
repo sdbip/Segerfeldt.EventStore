@@ -1,7 +1,7 @@
-using Segerfeldt.EventStore.Source.Internals;
-
 using System.Data;
 using System.IO;
+
+using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.SQLite;
 

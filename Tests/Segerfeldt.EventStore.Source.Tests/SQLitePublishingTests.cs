@@ -1,5 +1,6 @@
 using System;
 
+using Segerfeldt.EventStore.Shared;
 using Segerfeldt.EventStore.Tests.Shared;
 
 namespace Segerfeldt.EventStore.Source.Tests;

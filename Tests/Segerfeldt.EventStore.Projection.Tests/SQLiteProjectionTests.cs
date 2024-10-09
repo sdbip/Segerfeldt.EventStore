@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
+using Segerfeldt.EventStore.Shared;
 using Segerfeldt.EventStore.Tests.Shared;
 
 namespace Segerfeldt.EventStore.Projection.Tests;

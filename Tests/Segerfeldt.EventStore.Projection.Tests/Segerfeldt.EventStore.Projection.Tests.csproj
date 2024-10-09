@@ -33,6 +33,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Include="..\..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
+        <Link>ConnectionExtension.cs</Link>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="Moq" />
         <Using Include="NUnit.Framework" />
     </ItemGroup>

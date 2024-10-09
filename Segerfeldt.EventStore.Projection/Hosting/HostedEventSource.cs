@@ -5,14 +5,9 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-internal sealed class HostedEventSource : IHostedService
+internal sealed class HostedEventSource(EventSource eventSource) : IHostedService
 {
-    private readonly EventSource eventSource;
-
-    public HostedEventSource(EventSource eventSource)
-    {
-        this.eventSource = eventSource;
-    }
+    private readonly EventSource eventSource = eventSource;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {

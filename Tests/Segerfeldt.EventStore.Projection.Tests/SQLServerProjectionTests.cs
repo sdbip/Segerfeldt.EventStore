@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Projection.Tests;
 
 // ReSharper disable once InconsistentNaming

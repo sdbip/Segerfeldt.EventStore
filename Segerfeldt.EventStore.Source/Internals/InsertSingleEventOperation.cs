@@ -1,6 +1,8 @@
 using System.Data.Common;
 using System.Threading.Tasks;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source.Internals;
 
 internal sealed class InsertSingleEventOperation(UnpublishedEvent @event, EntityId entityId, EntityType type, string actor)

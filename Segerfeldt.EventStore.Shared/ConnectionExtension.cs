@@ -2,7 +2,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 
-namespace Segerfeldt.EventStore.Source.Internals;
+namespace Segerfeldt.EventStore.Shared;
 
 internal static class ConnectionExtension
 {

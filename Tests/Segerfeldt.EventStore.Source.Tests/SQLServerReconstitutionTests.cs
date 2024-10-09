@@ -6,6 +6,8 @@ using System.Collections.Immutable;
 using System.Data.SqlClient;
 using System.Linq;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public sealed class SQLServerReconstitutionTests

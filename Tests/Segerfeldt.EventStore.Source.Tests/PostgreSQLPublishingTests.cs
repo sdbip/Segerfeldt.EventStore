@@ -2,6 +2,8 @@ using Npgsql;
 
 using System;
 
+using Segerfeldt.EventStore.Shared;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public sealed class PostgreSQLPublishingTests
