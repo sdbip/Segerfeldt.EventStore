@@ -25,7 +25,7 @@ public abstract class ReceptacleBase : IReceptacle
                 .ToDictionary(g => g.Key, g => g.Select(ma => ma.method)));
     }
 
-    public async Task ReceiveAsync(Event @event)
+    public async Task UpdateAsync(Event @event)
     {
         if (!lazyMethods.Value.TryGetValue(@event.Name, out var methods)) return;
 

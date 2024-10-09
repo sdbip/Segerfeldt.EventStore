@@ -116,7 +116,7 @@ public sealed class EventSource
         try
         {
             var tasks = GetReceptacles(@event)
-                .Select(async d => await d.ReceiveAsync(@event));
+                .Select(async d => await d.UpdateAsync(@event));
             Task.WhenAll(tasks).Wait();
         }
         catch

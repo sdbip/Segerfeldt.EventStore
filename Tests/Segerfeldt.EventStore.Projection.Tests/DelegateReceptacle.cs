@@ -42,5 +42,5 @@ public sealed class DelegateReceptacle : IReceptacle
         this.@delegate = @delegate;
     }
 
-    public Task ReceiveAsync(Event @event) => @delegate.DynamicInvoke(@event) as Task ?? Task.CompletedTask;
+    public Task UpdateAsync(Event @event) => @delegate.DynamicInvoke(@event) as Task ?? Task.CompletedTask;
 }
