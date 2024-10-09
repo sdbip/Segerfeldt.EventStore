@@ -15,7 +15,7 @@ public static class ServiceCollectionExtension
     /// <param name="services">the services configuration</param>
     /// <param name="connectionPool">an <see cref="IConnectionPool"/> that accesses the source database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <<returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
+    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
     public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IConnectionPool connectionPool, string? eventSourceName = null) =>
         services.AddHostedEventSource(_ => connectionPool, eventSourceName);
 
@@ -23,7 +23,7 @@ public static class ServiceCollectionExtension
     /// <typeparam name="TConnectionPool">The type of a Singleton <see cref="IConnectionPool"/> that </typeparam>
     /// <param name="services">the services configuration</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <<returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
+    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
     public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services, string? eventSourceName = null) where TConnectionPool : IConnectionPool =>
         services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>(), eventSourceName);
 
@@ -31,7 +31,7 @@ public static class ServiceCollectionExtension
     /// <param name="services">the services configuration</param>
     /// <param name="getConnectionPool">a function that returns an <see cref="IConnectionPool"/> that accesses the source database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <<returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
+    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
     public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool, string? eventSourceName = null)
     {
         // The ProjectionTester is only intended as an aid for testing.
