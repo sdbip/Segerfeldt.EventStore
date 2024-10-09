@@ -63,9 +63,9 @@ public sealed class EventSource
         });
     }
 
-    public int Emit(IEnumerable<Event> readEvents)
+    public int Emit(IEnumerable<Event> unsortedEvents)
     {
-        var eventGroups = GroupByPosition(readEvents);
+        var eventGroups = GroupByPosition(unsortedEvents);
         var batch = new List<(long position, List<Event> events)>();
         var count = 0;
         foreach (var (position, events) in eventGroups)
@@ -108,7 +108,11 @@ public sealed class EventSource
             nextBatch.Add(@event);
         }
 
-        if (nextBatch.Count > 0) yield return (currentPosition, nextBatch.ToImmutableList());
+        if (nextBatch.Count > 0)
+        {
+            nextBatch.Sort((e1, e2) => e1.Ordinal - e2.Ordinal);
+            yield return (currentPosition, nextBatch.ToImmutableList());
+        }
     }
 
     private void Emit(Event @event)

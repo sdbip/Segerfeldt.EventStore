@@ -3,7 +3,6 @@ using Moq;
 using NUnit.Framework;
 
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 
@@ -59,9 +58,7 @@ public class SQLiteProjectionTests
         eventSource.BeginProjecting();
 
         Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-        Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
-        Assert.That(receivedEvents[1].Name, Is.EqualTo("second-event"));
-        Assert.That(receivedEvents[2].Name, Is.EqualTo("third-event"));
+        Assert.That(receivedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
     }
 
     [Test]
