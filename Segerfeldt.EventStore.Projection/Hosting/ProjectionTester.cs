@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-public class ReceptacleTester
+public class ProjectionTester
 {
     private readonly Dictionary<string, EventSource> eventSources = new();
 

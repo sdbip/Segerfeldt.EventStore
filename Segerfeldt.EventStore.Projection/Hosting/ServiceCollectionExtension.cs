@@ -34,8 +34,8 @@ public static class ServiceCollectionExtension
     /// <<returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
     public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool, string? eventSourceName = null)
     {
-        // The ReceptacleTester is only intended for testing.
-        if (eventSourceName != null) services.TryAddSingleton(p => new ReceptacleTester());
+        // The ProjectionTester is only intended as an aid for testing.
+        if (eventSourceName != null) services.TryAddSingleton(p => new ProjectionTester());
 
         var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(getConnectionPool(p)));
 
@@ -55,7 +55,7 @@ public static class ServiceCollectionExtension
             // This is not used outside of testing
             if (eventSourceName != null)
             {
-                var tester = p.GetRequiredService<ReceptacleTester>();
+                var tester = p.GetRequiredService<ProjectionTester>();
                 tester.Add(eventSource, eventSourceName);
             }
 

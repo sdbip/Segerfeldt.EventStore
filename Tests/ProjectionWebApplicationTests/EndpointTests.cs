@@ -80,7 +80,7 @@ public class EndpointTests
 
     private void Receive(params Event[] events)
     {
-        var tester = webApplicationFactory.Services.GetRequiredService<ReceptacleTester>();
+        var tester = webApplicationFactory.Services.GetRequiredService<ProjectionTester>();
         tester.Notify("events", events);
     }
 }
