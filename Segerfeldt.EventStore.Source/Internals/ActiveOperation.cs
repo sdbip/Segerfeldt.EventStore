@@ -15,8 +15,8 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
 
     protected async Task<EntityVersion> GetCurrentVersionAsync(EntityId entityId)
     {
-        var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
-            ("@entityId", entityId.ToString()));
+        using var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId");
+        command.AddParameter("@entityId", entityId.ToString());
         var scalar = await command.ExecuteScalarAsync();
         return scalar is null
             ? EntityVersion.New
@@ -25,34 +25,32 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
 
     protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EntityVersion ordinal, long position)
     {
-        var command = transaction.CreateCommand(
+        using var command = transaction.CreateCommand(
             "INSERT INTO Events (entity_id, name, details, actor, ordinal, position)" +
-            " VALUES (@entityId, @eventName, @details, @actor, @ordinal, @position)",
-            ("@entityId", entityId.ToString()),
-            ("@eventName", @event.Name),
-            ("@details", JSON.Serialize(@event.Details)),
-            ("@actor", actor),
-            ("@ordinal", ordinal.Value),
-            ("@position", position));
+            " VALUES (@entityId, @eventName, @details, @actor, @ordinal, @position)");
+        command.AddParameter("@entityId", entityId.ToString());
+        command.AddParameter("@eventName", @event.Name);
+        command.AddParameter("@details", JSON.Serialize(@event.Details));
+        command.AddParameter("@actor", actor);
+        command.AddParameter("@ordinal", ordinal.Value);
+        command.AddParameter("@position", position);
         await command.ExecuteNonQueryAsync();
     }
 
     protected async Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version)
     {
-        var command = transaction.CreateCommand(
-            "INSERT INTO Entities (id, type, version) VALUES (@id, @type, @version)",
-            ("@id", id.ToString()),
-            ("@type", type.ToString()),
-            ("@version", version.Value));
+        using var command = transaction.CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@id, @type, @version)");
+        command.AddParameter("@id", id.ToString());
+        command.AddParameter("@type", type.ToString());
+        command.AddParameter("@version", version.Value);
         await command.ExecuteNonQueryAsync();
     }
 
     protected async Task UpdateVersionAsync(EntityId id, EntityVersion version)
     {
-        var command = transaction.CreateCommand(
-            "UPDATE Entities SET version = @version WHERE id = @id",
-            ("@id", id.ToString()),
-            ("@version", version.Value));
+        using var command = transaction.CreateCommand("UPDATE Entities SET version = @version WHERE id = @id");
+        command.AddParameter("@id", id.ToString());
+        command.AddParameter("@version", version.Value);
         await command.ExecuteNonQueryAsync();
     }
 

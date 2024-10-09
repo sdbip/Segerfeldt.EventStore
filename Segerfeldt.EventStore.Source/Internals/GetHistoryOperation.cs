@@ -15,11 +15,11 @@ internal sealed class GetHistoryOperation(EntityId entityId, EntityVersion entit
 
     public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
     {
-        var command = connection.CreateCommand(
+        using var command = connection.CreateCommand(
             "SELECT type, version FROM Entities WHERE id = @entityId;" +
-            "SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @entityVersion ORDER BY ordinal",
-            ("@entityId", entityId.ToString()),
-            ("@entityVersion", entityVersion.Value));
+            "SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @entityVersion ORDER BY ordinal");
+        command.AddParameter("@entityId", entityId.ToString());
+        command.AddParameter("@entityVersion", entityVersion.Value);
 
         await connection.OpenAsync(cancellationToken);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);

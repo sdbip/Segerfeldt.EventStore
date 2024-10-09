@@ -47,8 +47,8 @@ internal sealed class InsertSingleEventOperation(UnpublishedEvent @event, Entity
 
         private async Task<EntityVersion> GetCurrentVersionAsync()
         {
-            var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId",
-                ("@entityId", operation.entityId.ToString()));
+            using var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId");
+            command.AddParameter("@entityId", operation.entityId.ToString());
             return await command.ExecuteScalarAsync() is int versionValue
                 ? EntityVersion.Of(versionValue)
                 : EntityVersion.New;

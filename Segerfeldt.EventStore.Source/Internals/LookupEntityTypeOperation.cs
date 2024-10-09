@@ -10,9 +10,8 @@ internal sealed class LookupEntityTypeOperation(EntityId entityId)
 
     public async Task<EntityType?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
     {
-        var command = connection.CreateCommand(
-            "SELECT type FROM Entities WHERE id = @entityId",
-            ("@entityId", entityId.ToString()));
+        using var command = connection.CreateCommand("SELECT type FROM Entities WHERE id = @entityId");
+        command.AddParameter("@entityId", entityId.ToString());
 
         await connection.OpenAsync(cancellationToken);
         return await command.ExecuteScalarAsync(cancellationToken) is string type
