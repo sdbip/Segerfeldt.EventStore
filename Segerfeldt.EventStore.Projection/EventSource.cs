@@ -54,7 +54,7 @@ public sealed class EventSource
     {
         currentDelay?.Cancel();
         var readEvents = repository.GetEvents(lastReadPosition);
-        var numNotified = Notify(readEvents);
+        var numNotified = Emit(readEvents);
 
         var nextDelay = pollingStrategy.NextDelay(numNotified);
         currentDelay = new CancellationTokenSource();
@@ -63,7 +63,7 @@ public sealed class EventSource
         });
     }
 
-    public int Notify(IEnumerable<Event> readEvents)
+    public int Emit(IEnumerable<Event> readEvents)
     {
         var eventGroups = GroupByPosition(readEvents);
         var batch = new List<(long position, List<Event> events)>();
@@ -79,7 +79,7 @@ public sealed class EventSource
         {
             lastReadPosition = position;
             tracker?.OnProjectionStarting(position);
-            foreach (var @event in events) Notify(@event);
+            foreach (var @event in events) Emit(@event);
             tracker?.OnProjectionFinished(position);
         }
 
@@ -106,7 +106,7 @@ public sealed class EventSource
         if (nextBatch.Count > 0) yield return (currentPosition, nextBatch.ToImmutableList());
     }
 
-    private void Notify(Event @event)
+    private void Emit(Event @event)
     {
         try
         {

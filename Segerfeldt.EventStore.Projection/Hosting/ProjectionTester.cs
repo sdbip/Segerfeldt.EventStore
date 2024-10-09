@@ -11,8 +11,8 @@ public class ProjectionTester
         eventSources[eventSourceName] = eventSource;
     }
 
-    public void Notify(string eventSourceName, params Event[] events)
+    public void Emit(string eventSourceName, params Event[] events)
     {
-        eventSources[eventSourceName].Notify(events);
+        eventSources[eventSourceName].Emit(events);
     }
 }
