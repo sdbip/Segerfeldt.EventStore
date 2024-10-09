@@ -79,7 +79,12 @@ public sealed class EventSource
         {
             lastReadPosition = position;
             tracker?.OnProjectionStarting(position);
-            foreach (var @event in events) Emit(@event);
+            try { foreach (var @event in events) Emit(@event); }
+            catch
+            {
+                tracker?.OnProjectionError(position);
+                throw;
+            }
             tracker?.OnProjectionFinished(position);
         }
 

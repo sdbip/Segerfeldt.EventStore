@@ -14,4 +14,9 @@ public class ProjectionTracker : IProjectionTracker
     {
         Position = position;
     }
+
+    public void OnProjectionError(long position)
+    {
+        throw new System.NotImplementedException();
+    }
 }

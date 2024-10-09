@@ -317,13 +317,29 @@ public sealed class ProjectionTracker : IProjectionTracker
 
     public void OnProjectionStarting(long position)
     {
-        // This is called before notifying receptacles
+        // This is called before emitting any events at this position.
+
+        // This might be a good place to call BEGIN TRANSACTION.
+
+        // If an exception is thrown during projection, some receptacles might alredy have been updated.
+        // It is good to be able to undo (ROLLBACK) those changes in that case.
     }
 
     public void OnProjectionFinished(long position)
     {
-        // This is called after notifying receptacles
+        // This is called after notifying receptacles.
         PersistPosition(position);
+
+        // This might be a good place to COMMIT the changes
+    }
+
+    public void OnProjectionError(long position)
+    {
+        // This might be a good place to ROLLBACK the changes
+
+        // The next time the Projection system emits events it will replay from this failed position.
+        // If some of the receptacles did successfully receive their updates before the error, they will be
+        // doubly notified, which might result in corruption.
     }
 }
 ```
