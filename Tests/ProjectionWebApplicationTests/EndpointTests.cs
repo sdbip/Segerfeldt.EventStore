@@ -43,8 +43,8 @@ public class EndpointTests
     [Test]
     public async Task Player_RegisteredAndIncreased_ReturnsTotalScore()
     {
-        Receive(Event("PlayerRegistered", @"{""name"":""Johan""}", 0),
-            Event("ScoreIncreased", @"{""points"":2}", 0));
+        Receive(Event("PlayerRegistered", @"{""name"":""Johan""}", ordinal: 0, position: 0),
+            Event("ScoreIncreased", @"{""points"":2}", ordinal: 1, position: 0));
 
         var response = await client.GetAsync(new Uri("Player", UriKind.Relative));
 
@@ -66,7 +66,7 @@ public class EndpointTests
     [Test]
     public async Task Projection_SingleEvent_ReturnsPosition()
     {
-        Receive(Event("any", @"{}", 50));
+        Receive(Event("any", @"{}", ordinal: 0, position: 50));
 
         var response = await client.GetAsync(new Uri("Projection", UriKind.Relative));
 
@@ -76,7 +76,7 @@ public class EndpointTests
         Assert.That(responseBody, Is.EqualTo("50"));
     }
 
-    private static Event Event(string name, string details, int position) => new("a_player", name, "Player", details, position);
+    private static Event Event(string name, string details, int ordinal, long position) => new("a_player", name, "Player", details, ordinal, position);
 
     private void Receive(params Event[] events)
     {

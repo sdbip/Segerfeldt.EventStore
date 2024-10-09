@@ -15,15 +15,18 @@ public sealed class Event
     public string Name { get; }
     /// <summary>A JSON object specifying the details of the change</summary>
     public string Details { get; }
-    /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
+    /// <summary>The ordinal of this event in the entity stream</summary>
+    public int Ordinal { get; }
+    /// <summary>The position of this event in the global stream. Useful for keeping track after restarting the application</summary>
     public long Position { get; }
 
-    public Event(string entityId, string name, string entityType, string details, long position)
+    public Event(string entityId, string name, string entityType, string details, int ordinal, long position)
     {
         EntityId = entityId;
         Name = name;
         EntityType = entityType;
         Details = details;
+        Ordinal = ordinal;
         Position = position;
     }
 
