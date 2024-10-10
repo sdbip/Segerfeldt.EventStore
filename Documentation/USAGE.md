@@ -249,21 +249,9 @@ Set up Projection for ASP.Net in Program.cs:
 using Segerfeldt.EventStore.Projection;
 
 builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("source_database")!), "source1")
+builder.Services.AddHostedEventSource(new MSSQLEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<ProjectionTracker>();
-
-internal sealed class SqlConnectionPool : IConnectionPool
-{
-    private readonly string connectionString;
-
-    public SqlConnectionPool(string connectionString)
-    {
-        this.connectionString = connectionString;
-    }
-
-    public IDbConnection CreateConnection() => new SqlConnection(connectionString);
-}
 ```
 
 See the [ProjectionWebApplication](../Apps/ProjectionWebApplication/Program.cs) for a functioning example.
