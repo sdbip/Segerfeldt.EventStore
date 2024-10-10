@@ -8,7 +8,6 @@
 
 
     <ItemGroup>
-      <EmbeddedResource Include="SourceDB/SQLServer/schema.sql" />
       <EmbeddedResource Include="SourceDB/SQLite/schema.sql" />
     </ItemGroup>
 

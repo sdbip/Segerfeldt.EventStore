@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-using Segerfeldt.EventStore.Projection.Tests.SourceDB.SQLServer;
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Projection.Tests;
+namespace Segerfeldt.EventStore.Projection.MSSQL.Tests;
 
 // ReSharper disable once InconsistentNaming
-public sealed class SQLServerProjectionTests
+public sealed class ProjectionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
 
@@ -39,7 +33,7 @@ public sealed class SQLServerProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
-        Schema.CreateIfMissing(connection);
+        SourceDB.Schema.CreateIfMissing(connection);
         ClearTables();
     }
 
