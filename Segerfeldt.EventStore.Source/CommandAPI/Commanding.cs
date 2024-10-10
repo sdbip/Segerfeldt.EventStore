@@ -20,6 +20,19 @@ namespace Segerfeldt.EventStore.Source.CommandAPI;
 [PublicAPI]
 public static class Commanding
 {
+    /// <summary>Add a custom EventStore write-model database</summary>
+    /// <param name="services">the Web API builder services</param>
+    /// <param name="provider">an object that knows how to create connections to the write-model database</param>
+    public static IServiceCollection UseEventStore(this IServiceCollection services, IEventStoreProvider provider)
+    {
+        services.AddSingleton<IConnectionFactory>(p =>
+        {
+            provider.PrepareDatabase(p);
+            return new OnDemandConnectionFactory(() => provider.CreateConnection());
+        });
+        return services;
+    }
+
     public static SwaggerGenOptions DocumentCommands(this SwaggerGenOptions swaggerOptions, params Assembly[] assemblies)
     /// <summary>Add Swagger documentation for command handlers from their XML documentation</summary>
     /// <param name="assemblies">assemblies to search for command definitions</param>

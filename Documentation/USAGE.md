@@ -24,6 +24,12 @@ You can optionally define your endpoints in a different assembly (or in several)
 app.MapCommands(assembly1, assembly2);
 ```
 
+You will need to set up a database connection so that the `EntityStore` and `EventPublisher` know where to read/write their data.
+
+```csharp
+builder.Services.UseEventStore(new PostgreSQLEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
+```
+
 Add the following code to your services setup if you want Swagger documentation of your commands:
 
 ```csharp
