@@ -15,7 +15,7 @@ public sealed class CommandHandlerExecuterTests
     public async Task ExecutesCommandHandler()
     {
         var executer = new CommandHandlerExecuter(new CommandHandler());
-        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null!, Request = null! };
+        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null! };
         var response = (StatusCodeResult)await executer.ExecuteHandlerAsync(new EmptyCommand(), context);
         Assert.That(response.StatusCode, Is.EqualTo(204));
     }
@@ -24,7 +24,7 @@ public sealed class CommandHandlerExecuterTests
     public async Task ExecutesCommandHandlerWithResponseDTO()
     {
         var executer = new CommandHandlerExecuter(RespondingCommandHandler.WithResponseValue(42));
-        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null!, Request = null! };
+        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null! };
         var response = (OkObjectResult)await executer.ExecuteHandlerAsync(new EmptyCommand(), context);
         Assert.That(response.StatusCode, Is.EqualTo(200));
         Assert.That(response.Value, Is.EqualTo(new ResponseDTO(42)));
@@ -34,7 +34,7 @@ public sealed class CommandHandlerExecuterTests
     public async Task Returns500InternalServerErrorIfCommandHandlerThrows()
     {
         var executer = new CommandHandlerExecuter(new ThrowingCommandHandler(new Exception()));
-        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null!, Request = null! };
+        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null! };
         var response = (ObjectResult)await executer.ExecuteHandlerAsync(new EmptyCommand(), context);
         Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
     }
@@ -43,7 +43,7 @@ public sealed class CommandHandlerExecuterTests
     public async Task Returns409ConflictIfCommandHandlerThrowsConcurrentUpdateException()
     {
         var executer = new CommandHandlerExecuter(new ThrowingCommandHandler(new ConcurrentUpdateException(EntityVersion.New, EntityVersion.Of(3))));
-        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null!, Request = null! };
+        var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null! };
         var response = (ObjectResult)await executer.ExecuteHandlerAsync(new EmptyCommand(), context);
         Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.Conflict));
     }

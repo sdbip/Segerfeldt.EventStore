@@ -30,7 +30,6 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
         {
             EventPublisher = serviceLocator.GetServiceOrCreateInstance<EventPublisher>(),
             EntityStore = serviceLocator.GetServiceOrCreateInstance<EntityStore>(),
-            Request = new WrappedHttpContext(context),
             HttpContext = context
         };
 

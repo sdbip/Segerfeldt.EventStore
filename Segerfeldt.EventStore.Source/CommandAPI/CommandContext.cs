@@ -1,8 +1,7 @@
 using JetBrains.Annotations;
 
 using Microsoft.AspNetCore.Http;
-
-using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
+using Microsoft.AspNetCore.Routing;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
 
@@ -10,9 +9,8 @@ namespace Segerfeldt.EventStore.Source.CommandAPI;
 public sealed class CommandContext
 {
     public required HttpContext HttpContext { get; init; }
-    public required IRequest Request { get; init; }
     public required IEntityStore EntityStore { get; init; }
     public required IEventPublisher EventPublisher { get; init; }
 
-    public string GetRouteParameter(string name) => (string)Request.GetRouteValue(name)!;
+    public string GetRouteParameter(string name) => (string)HttpContext.GetRouteValue(name)!;
 }
