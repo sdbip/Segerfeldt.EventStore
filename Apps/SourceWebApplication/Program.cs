@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.SQLite;
+using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,12 +23,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
-builder.Services.AddSingleton<IConnectionFactory>(p =>
-{
-    var connection = new SqliteConnection(builder.Configuration.GetConnectionString("main"));
-    Schema.CreateIfMissing(connection);
-    return new MainConnectionFactory(builder.Configuration);
-});
+builder.Services.UseEventStore(new SQLiteEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
 
 var app = builder.Build();
 
@@ -45,10 +41,3 @@ app.UseRouting();
 app.MapCommands(Assembly.GetExecutingAssembly());
 
 app.Run();
-
-internal class MainConnectionFactory(IConfiguration configuration) : IConnectionFactory
-{
-    private readonly IConfiguration configuration = configuration;
-
-    public DbConnection CreateConnection() => new SqliteConnection(configuration.GetConnectionString("main"));
-}
