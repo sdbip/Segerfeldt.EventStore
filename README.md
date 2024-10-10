@@ -46,7 +46,21 @@ Update the `<PackageVersion>` value in the .csproj file(s) and build for Release
 ```shell
 nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
 
+nuget add Segerfeldt.EventStore.Projection.PostgreSQL/bin/Release/Segerfeldt.EventStore.Projection.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Projection.MSSQL/bin/Release/Segerfeldt.EventStore.Projection.MSSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Projection.SQLite/bin/Release/Segerfeldt.EventStore.Projection.SQLite.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Projection.NUnit/bin/Release/Segerfeldt.EventStore.Projection.NUnit.<version>.nupkg -source path/to/nuget-packages
+
 nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Source.PostgreSQL/bin/Release/Segerfeldt.EventStore.Source.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Source.MSSQL/bin/Release/Segerfeldt.EventStore.Source.MSSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add Segerfeldt.EventStore.Source.SQLite/bin/Release/Segerfeldt.EventStore.Source.SQLite.<version>.nupkg -source path/to/nuget-packages
 
 nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
 ```
