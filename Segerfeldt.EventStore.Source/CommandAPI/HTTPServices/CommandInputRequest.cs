@@ -28,8 +28,8 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
         var commandHandlerExecuter = new CommandHandlerExecuter((ICommandHandler)ActivatorUtilities.CreateInstance(context.RequestServices, handlerType));
         var commandContext = new CommandContext
         {
-            EventPublisher = new EventPublisher(context.RequestServices.GetRequiredService<IConnectionPool>()),
-            EntityStore = new EntityStore(context.RequestServices.GetRequiredService<IConnectionPool>()),
+            EventPublisher = new EventPublisher(context.RequestServices.GetRequiredService<IConnectionFactory>()),
+            EntityStore = new EntityStore(context.RequestServices.GetRequiredService<IConnectionFactory>()),
             HttpContext = context
         };
 

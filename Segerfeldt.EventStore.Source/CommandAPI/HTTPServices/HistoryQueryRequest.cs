@@ -16,7 +16,7 @@ internal class HistoryQueryRequest(HttpContext context)
     public async Task<ActionResult> Get()
     {
         var id = (string?)context.GetRouteValue("entityId");
-        var store = new EntityStore(context.RequestServices.GetRequiredService<IConnectionPool>());
+        var store = new EntityStore(context.RequestServices.GetRequiredService<IConnectionFactory>());
 
         var history = await store.GetHistoryAsync(new EntityId(id!));
         if (history is null)

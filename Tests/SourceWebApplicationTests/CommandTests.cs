@@ -30,8 +30,8 @@ public class CommandTests
     [TearDown]
     public void TearDown()
     {
-        var connectionPool = webApplicationFactory.Services.GetRequiredService<IConnectionPool>();
-        var connection = connectionPool.CreateConnection();
+        var connectionFactory = webApplicationFactory.Services.GetRequiredService<IConnectionFactory>();
+        var connection = connectionFactory.CreateConnection();
         connection.Open();
         connection.ExecuteNonQuery("DELETE FROM Events; DELETE FROM Entities");
         connection.Close();

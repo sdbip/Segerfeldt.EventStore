@@ -3,12 +3,12 @@ using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Source;
 
-public interface IConnectionPool
+public interface IConnectionFactory
 {
     DbConnection CreateConnection();
 }
 
-internal class OnDemandConnectionFactory(Func<DbConnection> createConnection) : IConnectionPool
+internal class OnDemandConnectionFactory(Func<DbConnection> createConnection) : IConnectionFactory
 {
     public DbConnection CreateConnection() => createConnection();
 }

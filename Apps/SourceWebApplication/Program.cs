@@ -22,11 +22,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
-builder.Services.AddSingleton<IConnectionPool>(p =>
+builder.Services.AddSingleton<IConnectionFactory>(p =>
 {
     var connection = new SqliteConnection(builder.Configuration.GetConnectionString("main"));
     Schema.CreateIfMissing(connection);
-    return new MainConnectionPool(builder.Configuration);
+    return new MainConnectionFactory(builder.Configuration);
 });
 
 var app = builder.Build();
@@ -46,7 +46,7 @@ app.MapCommands(Assembly.GetExecutingAssembly());
 
 app.Run();
 
-internal class MainConnectionPool(IConfiguration configuration) : IConnectionPool
+internal class MainConnectionFactory(IConfiguration configuration) : IConnectionFactory
 {
     private readonly IConfiguration configuration = configuration;
 

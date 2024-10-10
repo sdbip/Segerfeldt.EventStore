@@ -9,9 +9,9 @@ namespace Segerfeldt.EventStore.Source;
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 public sealed class EntityStore
 {
-    private readonly IConnectionPool connectionPool;
+    private readonly IConnectionFactory connectionFactory;
 
-    internal EntityStore(IConnectionPool connectionPool) => this.connectionPool = connectionPool;
+    internal EntityStore(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory;
 
     public EntityStore(DbConnection connection) : this(new OnDemandConnectionFactory(() => connection)) { }
 
@@ -21,12 +21,12 @@ public sealed class EntityStore
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
     public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EntityVersion afterVersion, CancellationToken cancellationToken = default) =>
-        await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
+        await new GetHistoryOperation(entityId, afterVersion).ExecuteAsync(connectionFactory.CreateConnection(), cancellationToken);
 
     /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
     /// <param name="entityId">the id to verify</param>
     /// <param name="cancellationToken"></param>
     /// <returns>the type of the entity, or null</returns>
     public async Task<EntityType?> GetEntityTypeAsync(EntityId entityId, CancellationToken cancellationToken = default) =>
-        await new LookupEntityTypeOperation(entityId).ExecuteAsync(connectionPool.CreateConnection(), cancellationToken);
+        await new LookupEntityTypeOperation(entityId).ExecuteAsync(connectionFactory.CreateConnection(), cancellationToken);
 }

@@ -9,11 +9,11 @@ namespace Segerfeldt.EventStore.Source;
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 public sealed class EventPublisher
 {
-    private readonly IConnectionPool connectionPool;
+    private readonly IConnectionFactory connectionFactory;
 
-    internal EventPublisher(IConnectionPool connectionPool)
+    internal EventPublisher(IConnectionFactory connectionFactory)
     {
-        this.connectionPool = connectionPool;
+        this.connectionFactory = connectionFactory;
     }
 
     public EventPublisher(DbConnection connection) : this(new OnDemandConnectionFactory(() => connection)) { }
@@ -24,7 +24,7 @@ public sealed class EventPublisher
     public async Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
     {
         var operation = new InsertSingleEventOperation(@event, entityId, type, actor);
-        return await operation.ExecuteAsync(connectionPool.CreateConnection());
+        return await operation.ExecuteAsync(connectionFactory.CreateConnection());
     }
 
     /// <summary>Publish a single event for an entity</summary>
@@ -35,6 +35,6 @@ public sealed class EventPublisher
     public async Task<UpdatedStorePosition> PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
     {
         var operation = new InsertMultipleEventsOperation(entities, actor);
-        return await operation.ExecuteAsync(connectionPool.CreateConnection());
+        return await operation.ExecuteAsync(connectionFactory.CreateConnection());
     }
 }
