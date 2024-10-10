@@ -1,16 +1,10 @@
 using Npgsql;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Projection.Tests;
+namespace Segerfeldt.EventStore.Projection.PostgreSQL.Tests;
 
-public sealed class PostgreSQLProjectionTests
+public sealed class ProjectionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
 
@@ -38,7 +32,7 @@ public sealed class PostgreSQLProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
-        SourceDB.PostgreSQL.Schema.CreateIfMissing(connection);
+        SourceDB.Schema.CreateIfMissing(connection);
         ClearTables();
     }
 
