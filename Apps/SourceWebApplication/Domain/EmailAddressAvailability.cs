@@ -10,7 +10,7 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
     private const string EmailAddressClaimed = "EmailAddressClaimed";
     private const string EmailAddressReleased = "EmailAddressReleased";
 
-    private readonly HashSet<string> usedEmailAddresses = new();
+    private readonly HashSet<string> usedEmailAddresses = [];
 
     internal static async Task<EmailAddressAvailability> GetAsync(EntityStore entityStore)
     {
