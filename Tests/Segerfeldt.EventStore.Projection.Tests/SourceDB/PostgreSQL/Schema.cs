@@ -3,7 +3,7 @@ using System.IO;
 
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Source.PostgreSQL;
+namespace Segerfeldt.EventStore.Projection.Tests.SourceDB.PostgreSQL;
 
 // ReSharper disable once InconsistentNaming
 public static class Schema

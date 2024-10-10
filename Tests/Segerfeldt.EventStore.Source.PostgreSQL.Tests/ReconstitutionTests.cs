@@ -1,16 +1,12 @@
 using Npgsql;
-
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 using Segerfeldt.EventStore.Shared;
 using Segerfeldt.EventStore.Source.Internals;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.PostgreSQL.Tests;
 
-public sealed class PostgreSQLReconstitutionTests
+public sealed class ReconstitutionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
 
@@ -26,7 +22,7 @@ public sealed class PostgreSQLReconstitutionTests
         connection = new NpgsqlConnection(connectionString);
         store = new EntityStore(connection);
 
-        PostgreSQL.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [TearDown]
@@ -82,10 +78,10 @@ public sealed class PostgreSQLReconstitutionTests
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
-            {
-                e.Name,
-                e.Details
-            }),
+        {
+            e.Name,
+            e.Details
+        }),
             Is.EquivalentTo(new[] { new
             {
                 Name = "an-event",
@@ -201,7 +197,7 @@ public sealed class PostgreSQLReconstitutionTests
 
     private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
     {
-        string commandText =
+        var commandText =
             @"INSERT INTO Events (entity_id, name, details, actor, timestamp, ordinal, position)
                     VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);

@@ -41,6 +41,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Proje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceWebApplicationTests", "Tests\SourceWebApplicationTests\SourceWebApplicationTests.csproj", "{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.PostgreSQL", "Segerfeldt.EventStore.Source.PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.csproj", "{3814BBDE-9880-47B9-90A2-2A99C543C290}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.PostgreSQL.Tests", "Tests\Segerfeldt.EventStore.Source.PostgreSQL.Tests\Segerfeldt.EventStore.Source.PostgreSQL.Tests.csproj", "{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +103,14 @@ Global
 		{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3814BBDE-9880-47B9-90A2-2A99C543C290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3814BBDE-9880-47B9-90A2-2A99C543C290}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3814BBDE-9880-47B9-90A2-2A99C543C290}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3814BBDE-9880-47B9-90A2-2A99C543C290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,5 +125,6 @@ Global
 		{0FC836B7-3695-4D41-870B-B2610AFA2C6B} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{9A5494B3-5716-4A04-882E-0822E21DE783} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 	EndGlobalSection
 EndGlobal

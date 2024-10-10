@@ -1,12 +1,10 @@
 using Npgsql;
 
-using System;
-
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.PostgreSQL.Tests;
 
-public sealed class PostgreSQLPublishingTests
+public sealed class PublishingTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
 
@@ -21,7 +19,7 @@ public sealed class PostgreSQLPublishingTests
 
         connection = new NpgsqlConnection(connectionString);
         publisher = new EventPublisher(connection);
-        PostgreSQL.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [TearDown]
@@ -41,7 +39,7 @@ public sealed class PostgreSQLPublishingTests
     [Test]
     public void CanPublishSingleEvent()
     {
-        publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+        publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
 
         connection.Open();
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -56,11 +54,11 @@ public sealed class PostgreSQLPublishingTests
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
-            Name = (object) "an-event",
-            Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 0,
-            Position = (object) 0L
+            Entity = (object)"an-entity",
+            Name = (object)"an-event",
+            Details = (object)@"{""meaning"":42}",
+            Ordinal = (object)0,
+            Position = (object)0L
         }));
         connection.Close();
     }
@@ -72,7 +70,7 @@ public sealed class PostgreSQLPublishingTests
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        entity.Setup(e => e.UnpublishedEvents).Returns(new[] { new UnpublishedEvent("an-event", new { Meaning = 42 }) });
         publisher.PublishChanges(entity.Object, "johan");
 
         connection.Open();
@@ -88,11 +86,11 @@ public sealed class PostgreSQLPublishingTests
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
-            Name = (object) "an-event",
-            Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 0,
-            Position = (object) 0L
+            Entity = (object)"an-entity",
+            Name = (object)"an-event",
+            Details = (object)@"{""meaning"":42}",
+            Ordinal = (object)0,
+            Position = (object)0L
         }));
         connection.Close();
     }
@@ -108,7 +106,7 @@ public sealed class PostgreSQLPublishingTests
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(0));
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        entity.Setup(e => e.UnpublishedEvents).Returns(new[] { new UnpublishedEvent("an-event", new { Meaning = 42 }) });
 
         publisher.PublishChanges(entity.Object, "johan");
 
@@ -125,11 +123,11 @@ public sealed class PostgreSQLPublishingTests
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
-            Name = (object) "an-event",
-            Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 1,
-            Position = (object) 0L
+            Entity = (object)"an-entity",
+            Name = (object)"an-event",
+            Details = (object)@"{""meaning"":42}",
+            Ordinal = (object)1,
+            Position = (object)0L
         }));
         connection.Close();
     }
@@ -142,7 +140,7 @@ public sealed class PostgreSQLPublishingTests
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
+        entity.Setup(e => e.UnpublishedEvents).Returns(new[] { new UnpublishedEvent("an-event", new { }) });
 
         Assert.That(async () => await publisher.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
     }

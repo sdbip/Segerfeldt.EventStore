@@ -38,7 +38,7 @@ public sealed class PostgreSQLProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
-        Source.PostgreSQL.Schema.CreateIfMissing(connection);
+        SourceDB.PostgreSQL.Schema.CreateIfMissing(connection);
         ClearTables();
     }
 
