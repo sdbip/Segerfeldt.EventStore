@@ -25,14 +25,24 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
             return new BadRequestObjectResult(exception.ErrorData ?? new {exception.Message});
         }
 
-        var commandHandlerExecuter = new CommandHandlerExecuter((ICommandHandler)ActivatorUtilities.CreateInstance(context.RequestServices, handlerType));
-        var commandContext = new CommandContext
+        return await HandleAsync(command);
+    }
+
+    private async Task<ActionResult> HandleAsync(object command)
+    {
+        var handler = (ICommandHandler)ActivatorUtilities.CreateInstance(context.RequestServices, handlerType);
+        var commandHandlerExecuter = new CommandHandlerExecuter(handler);
+        return await commandHandlerExecuter.HandleAsync(command, CreateCommandContext());
+    }
+
+    private CommandContext CreateCommandContext()
+    {
+        var factory = context.RequestServices.GetRequiredService<IConnectionFactory>();
+        return new CommandContext
         {
-            EventPublisher = new EventPublisher(context.RequestServices.GetRequiredService<IConnectionFactory>()),
-            EntityStore = new EntityStore(context.RequestServices.GetRequiredService<IConnectionFactory>()),
+            EventPublisher = new EventPublisher(factory),
+            EntityStore = new EntityStore(factory),
             HttpContext = context
         };
-
-        return await commandHandlerExecuter.ExecuteHandlerAsync(command, commandContext);
     }
 }

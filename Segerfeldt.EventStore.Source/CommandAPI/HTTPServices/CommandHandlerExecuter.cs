@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,7 +10,7 @@ public class CommandHandlerExecuter(ICommandHandler handler)
 {
     private readonly ICommandHandler handler = handler;
 
-    public async Task<ActionResult> ExecuteHandlerAsync(object? command, CommandContext context)
+    public async Task<ActionResult> HandleAsync(object? command, CommandContext context)
     {
         Task task;
         try
