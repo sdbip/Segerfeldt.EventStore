@@ -12,9 +12,9 @@ public interface IEventSourceRepository
     IEnumerable<Event> GetEvents(long afterPosition);
 }
 
-public sealed class DefaultEventSourceRepository(IConnectionPool connectionPool) : IEventSourceRepository
+public sealed class DefaultEventSourceRepository(IDbConnection connection) : IEventSourceRepository
 {
-    private readonly IDbConnection connection = connectionPool.CreateConnection();
+    private readonly IDbConnection connection = connection;
 
     public IEnumerable<Event> GetEvents(long afterPosition)
     {
@@ -22,7 +22,7 @@ public sealed class DefaultEventSourceRepository(IConnectionPool connectionPool)
         {
             return connection.OpenAndExecute(_ =>
             {
-                var command = connection.CreateCommand("""
+                using var command = connection.CreateCommand("""
                     SELECT Events.*, Entities.type AS entity_type FROM Events
                     JOIN Entities ON Entities.id = Events.entity_id
                         WHERE position > @position
@@ -34,7 +34,7 @@ public sealed class DefaultEventSourceRepository(IConnectionPool connectionPool)
         catch (DbException)
         {
             // No connection => no events.
-            return Array.Empty<Event>();
+            return [];
         }
     }
 

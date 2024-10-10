@@ -8,6 +8,7 @@ using ProjectionWebApplication;
 
 using Segerfeldt.EventStore.Projection.Hosting;
 
+using System.Data.SqlClient;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddSingleton<ScoreBoard>();
 builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedEventSource(new SqlConnectionPool(builder.Configuration.GetConnectionString("events")!), "events")
+builder.Services.AddHostedEventSource(new SqlConnection(builder.Configuration.GetConnectionString("events")!), "events")
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<ProjectionTracker>();
 

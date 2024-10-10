@@ -19,11 +19,12 @@ public sealed class SQLiteProjectionTests
     public void Setup()
     {
         connection = new InMemoryConnection();
-        var connectionPool = new Mock<IConnectionPool>();
-        connectionPool.Setup(pool => pool.CreateConnection()).Returns(connection);
         delayConfiguration = new Mock<IPollingStrategy>();
         positionTracker = new Mock<IProjectionTracker>();
-        eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), positionTracker.Object, delayConfiguration.Object);
+        eventSource = new EventSource(
+            new DefaultEventSourceRepository(connection),
+            positionTracker.Object,
+            delayConfiguration.Object);
 
         Source.SQLite.Schema.CreateIfMissing(connection);
     }

@@ -29,9 +29,10 @@ public sealed class PostgreSQLProjectionTests
         delayConfiguration = new Mock<IPollingStrategy>();
         positionTracker = new Mock<IProjectionTracker>();
 
-        var connectionPool = new Mock<IConnectionPool>();
-        connectionPool.Setup(pool => pool.CreateConnection()).Returns(new NpgsqlConnection(connectionString));
-        eventSource = new EventSource(new DefaultEventSourceRepository(connectionPool.Object), positionTracker.Object, delayConfiguration.Object);
+        eventSource = new EventSource(
+            new DefaultEventSourceRepository(new NpgsqlConnection(connectionString)),
+            positionTracker.Object,
+            delayConfiguration.Object);
 
         delayConfiguration
             .Setup(c => c.NextDelay(It.IsAny<int>()))

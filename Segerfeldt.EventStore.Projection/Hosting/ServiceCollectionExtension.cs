@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using System;
+using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
@@ -13,31 +14,23 @@ public static class ServiceCollectionExtension
 {
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the services configuration</param>
-    /// <param name="connectionPool">an <see cref="IConnectionPool"/> that accesses the source database</param>
+    /// <param name="connection">a connection object with access to the source database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
     /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IConnectionPool connectionPool, string? eventSourceName = null) =>
-        services.AddHostedEventSource(_ => connectionPool, eventSourceName);
-
-    /// <summary>Add an <see cref="EventSource"/> to project events</summary>
-    /// <typeparam name="TConnectionPool">The type of a Singleton <see cref="IConnectionPool"/> that </typeparam>
-    /// <param name="services">the services configuration</param>
-    /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedEventSource<TConnectionPool>(this IServiceCollection services, string? eventSourceName = null) where TConnectionPool : IConnectionPool =>
-        services.AddHostedEventSource(p => p.GetRequiredService<TConnectionPool>(), eventSourceName);
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IDbConnection connection, string? eventSourceName = null) =>
+        services.AddHostedEventSource(_ => connection, eventSourceName);
 
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the services configuration</param>
-    /// <param name="getConnectionPool">a function that returns an <see cref="IConnectionPool"/> that accesses the source database</param>
+    /// <param name="createConnection">a function that returns an <see cref="IDbConnection"/> with access the source database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
     /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IConnectionPool> getConnectionPool, string? eventSourceName = null)
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, Func<IServiceProvider, IDbConnection> createConnection, string? eventSourceName = null)
     {
         // The ProjectionTester is only intended as an aid for testing.
-        if (eventSourceName != null) services.TryAddSingleton(p => new ProjectionTester());
+        if (eventSourceName != null) services.TryAddSingleton(_ => new ProjectionTester());
 
-        var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(getConnectionPool(p)));
+        var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(createConnection(p)));
 
         // A new hosted service is created for each EventSource.
 
