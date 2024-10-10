@@ -51,7 +51,7 @@ public static class ServiceCollectionExtension
         {
             var eventSource = builder.Build(p);
 
-            // Add the eventSource to EventSources to allow tests to inject events
+            // Add the eventSource to ProjectionTester to allow tests to inject events
             // This is not used outside of testing
             if (eventSourceName != null)
             {
