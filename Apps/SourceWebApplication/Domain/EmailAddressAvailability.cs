@@ -12,7 +12,7 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
 
     private readonly HashSet<string> usedEmailAddresses = new();
 
-    internal static async Task<EmailAddressAvailability> GetAsync(IEntityStore entityStore)
+    internal static async Task<EmailAddressAvailability> GetAsync(EntityStore entityStore)
     {
         var existingAvailability = await entityStore.ReconstituteAsync<EmailAddressAvailability>(SingletonEntityId, EntityType);
         return existingAvailability ?? new EmailAddressAvailability(SingletonEntityId, EntityVersion.New);

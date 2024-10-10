@@ -20,8 +20,7 @@ public sealed class SQLiteReconstitutionTests
     public void Setup()
     {
         connection = new InMemoryConnection();
-        var connectionPool = new SingletonConnectionPool(connection);
-        store = new EntityStore(connectionPool);
+        store = new EntityStore(connection);
 
         SQLite.Schema.CreateIfMissing(connection);
     }

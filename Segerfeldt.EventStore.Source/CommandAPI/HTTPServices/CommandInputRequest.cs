@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
 
     public async Task<ActionResult> Execute()
     {
-        var serviceLocator = new ServiceLocator(context.RequestServices);
         object command;
         try
         {
@@ -25,11 +25,11 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
             return new BadRequestObjectResult(exception.ErrorData ?? new {exception.Message});
         }
 
-        var commandHandlerExecuter = new CommandHandlerExecuter((ICommandHandler)serviceLocator.CreateInstance(handlerType));
+        var commandHandlerExecuter = new CommandHandlerExecuter((ICommandHandler)ActivatorUtilities.CreateInstance(context.RequestServices, handlerType));
         var commandContext = new CommandContext
         {
-            EventPublisher = serviceLocator.GetServiceOrCreateInstance<EventPublisher>(),
-            EntityStore = serviceLocator.GetServiceOrCreateInstance<EntityStore>(),
+            EventPublisher = new EventPublisher(context.RequestServices.GetRequiredService<IConnectionPool>()),
+            EntityStore = new EntityStore(context.RequestServices.GetRequiredService<IConnectionPool>()),
             HttpContext = context
         };
 

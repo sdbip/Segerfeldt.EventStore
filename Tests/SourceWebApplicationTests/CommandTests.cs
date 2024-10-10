@@ -1,4 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Segerfeldt.EventStore.Source.CommandAPI;
 
 using System;
 using System.Data.Common;

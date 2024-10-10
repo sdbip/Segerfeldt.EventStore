@@ -15,8 +15,7 @@ public sealed class SQLitePublishingTests
     public void Setup()
     {
         connection = new InMemoryConnection();
-        var connectionPool = new SingletonConnectionPool(connection);
-        publisher = new EventPublisher(connectionPool);
+        publisher = new EventPublisher(connection);
 
         SQLite.Schema.CreateIfMissing(connection);
     }

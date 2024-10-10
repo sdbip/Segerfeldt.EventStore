@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 using Segerfeldt.EventStore.Source.CommandAPI.DTOs;
 
@@ -11,12 +12,11 @@ namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 internal class HistoryQueryRequest(HttpContext context)
 {
     private readonly HttpContext context = context;
-    private readonly ServiceLocator serviceLocator = new ServiceLocator(context.RequestServices);
 
     public async Task<ActionResult> Get()
     {
         var id = (string?)context.GetRouteValue("entityId");
-        var store = serviceLocator.GetServiceOrCreateInstance<EntityStore>();
+        var store = new EntityStore(context.RequestServices.GetRequiredService<IConnectionPool>());
 
         var history = await store.GetHistoryAsync(new EntityId(id!));
         if (history is null)

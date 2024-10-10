@@ -20,8 +20,7 @@ public sealed class PostgreSQLPublishingTests
             "POSTGRES_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
 
         connection = new NpgsqlConnection(connectionString);
-        var connectionPool = new SingletonConnectionPool(connection);
-        publisher = new EventPublisher(connectionPool);
+        publisher = new EventPublisher(connection);
         PostgreSQL.Schema.CreateIfMissing(connection);
     }
 

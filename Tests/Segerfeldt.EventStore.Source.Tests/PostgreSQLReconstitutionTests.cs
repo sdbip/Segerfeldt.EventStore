@@ -24,8 +24,7 @@ public sealed class PostgreSQLReconstitutionTests
             "POSTGRES_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
 
         connection = new NpgsqlConnection(connectionString);
-        var connectionPool = new SingletonConnectionPool(connection);
-        store = new EntityStore(connectionPool);
+        store = new EntityStore(connection);
 
         PostgreSQL.Schema.CreateIfMissing(connection);
     }

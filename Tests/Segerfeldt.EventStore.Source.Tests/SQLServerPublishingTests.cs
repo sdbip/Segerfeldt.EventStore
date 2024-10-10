@@ -19,8 +19,7 @@ public sealed class SQLServerPublishingTests
             "MSSQL_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
 
         connection = new SqlConnection(connectionString);
-        var connectionPool = new SingletonConnectionPool(connection);
-        publisher = new EventPublisher(connectionPool);
+        publisher = new EventPublisher(connection);
         SQLServer.Schema.CreateIfMissing(connection);
     }
 

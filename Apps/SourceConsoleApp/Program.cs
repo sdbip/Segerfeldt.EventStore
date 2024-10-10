@@ -3,11 +3,12 @@
 using SourceConsoleApp;
 
 using System;
+using System.Data.SqlClient;
 
 const string connectionString = "Server=localhost;Database=test;User Id=sa;Password=S_12345678;";
-var connectionPool = new SqlConnectionPool(connectionString);
-var publisher = new EventPublisher(connectionPool);
-var store = new EntityStore(connectionPool);
+var connection = new SqlConnection(connectionString);
+var publisher = new EventPublisher(connection);
+var store = new EntityStore(connection);
 
 var entityId = new EntityId("player3");
 var player = await Player.ReconstituteAsync(entityId, store) ?? Player.RegisterNew(entityId, "Jones");

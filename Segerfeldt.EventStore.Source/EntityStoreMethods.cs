@@ -13,7 +13,7 @@ public static class EntityStoreMethods
     /// <param name="type"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     /// <returns>the entity with the specified <paramref name="id"/></returns>
-    public static TEntity? Reconstitute<TEntity>(this IEntityStore entityStore, EntityId id, EntityType type) where TEntity : class, IEntity =>
+    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, EntityId id, EntityType type) where TEntity : class, IEntity =>
         entityStore.ReconstituteAsync<TEntity>(id, type).Result;
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
@@ -23,14 +23,14 @@ public static class EntityStoreMethods
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     /// <returns>the entity with the specified <paramref name="id"/></returns>
-    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this IEntityStore entityStore, EntityId id, EntityType type, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, EntityId id, EntityType type, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
         await entityStore.ReconstituteAsync(new NeverSnapshot<TEntity>(id, type), cancellationToken);
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
     /// <param name="entityStore"></param>
     /// <param name="snapshot">the snapshot of the entity</param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
-    public static TEntity? Reconstitute<TEntity>(this IEntityStore entityStore, ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
+    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
         entityStore.ReconstituteAsync(snapshot).Result;
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
@@ -38,7 +38,7 @@ public static class EntityStoreMethods
     /// <param name="snapshot">the snapshot of the entity</param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
-    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this IEntityStore entityStore, ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
+    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
     {
         var history = await entityStore.GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken);
         if (history is null) return snapshot.Version.IsNew ? null : throw new UnknownEntityException(snapshot.Id);
@@ -50,7 +50,7 @@ public static class EntityStoreMethods
     /// <param name="entityStore"></param>
     /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
     /// <returns>the complete history of the entity</returns>
-    public static EntityHistory? GetHistory(this IEntityStore entityStore, EntityId entityId) =>
+    public static EntityHistory? GetHistory(this EntityStore entityStore, EntityId entityId) =>
         entityStore.GetHistoryAsync(entityId).Result;
 
     /// <summary>Get the historical data about an entity</summary>
@@ -58,7 +58,7 @@ public static class EntityStoreMethods
     /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
-    public static async Task<EntityHistory?> GetHistoryAsync(this IEntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
+    public static async Task<EntityHistory?> GetHistoryAsync(this EntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
         await entityStore.GetHistoryAsync(entityId, EntityVersion.Beginning, cancellationToken);
 
 
@@ -66,23 +66,23 @@ public static class EntityStoreMethods
     /// <param name="entityStore"></param>
     /// <param name="entityId">the id to verify</param>
     /// <returns>true if there is an entity with the given id, false otherwise</returns>
-    public static bool ContainsEntity(this IEntityStore entityStore, EntityId entityId) => entityStore.ContainsEntityAsync(entityId).Result;
+    public static bool ContainsEntity(this EntityStore entityStore, EntityId entityId) => entityStore.ContainsEntityAsync(entityId).Result;
 
     /// <summary>Check if an entity id is taken.</summary>
     /// <param name="entityStore"></param>
     /// <param name="entityId">the id to verify</param>
     /// <param name="cancellationToken"></param>
     /// <returns>true if there is an entity with the given id, false otherwise</returns>
-    public static async Task<bool> ContainsEntityAsync(this IEntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
+    public static async Task<bool> ContainsEntityAsync(this EntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
         await entityStore.GetEntityTypeAsync(entityId, cancellationToken) is not null;
 
     /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
     /// <param name="entityStore"></param>
     /// <param name="entityId">the id to verify</param>
     /// <returns>true if there is an entity with the given id, false otherwise</returns>
-    public static EntityType? GetEntityType(this IEntityStore entityStore, EntityId entityId) => entityStore.GetEntityTypeAsync(entityId).Result;
+    public static EntityType? GetEntityType(this EntityStore entityStore, EntityId entityId) => entityStore.GetEntityTypeAsync(entityId).Result;
 
-    private static TEntity RestoreEntity<TEntity>(this IEntityStore entityStore, ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
+    private static TEntity RestoreEntity<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
     {
         var entity = entityStore.Instantiate<TEntity>(snapshot.Id, history.Version);
         snapshot.Restore(entity);
@@ -90,7 +90,7 @@ public static class EntityStoreMethods
         return entity;
     }
 
-    private static TEntity Instantiate<TEntity>(this IEntityStore entityStore, EntityId id, EntityVersion version) where TEntity : IEntity
+    private static TEntity Instantiate<TEntity>(this EntityStore entityStore, EntityId id, EntityVersion version) where TEntity : IEntity
     {
         var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
         if (constructor is null) throw new InvalidEntityException(typeof(TEntity));
