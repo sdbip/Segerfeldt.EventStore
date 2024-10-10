@@ -4,9 +4,9 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Segerfeldt.EventStore.Tests.Shared;
+namespace Segerfeldt.EventStore.Projection.SQLite;
 
-internal sealed class InMemoryConnection : DbConnection
+public sealed class InMemoryConnection : DbConnection
 {
     private readonly SqliteConnection implementor;
 

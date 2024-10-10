@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Tests.Shared;
-
 namespace Segerfeldt.EventStore.Projection.NUnit.Tests;
 
 public sealed class EventSourceExtensionTests
@@ -11,7 +9,7 @@ public sealed class EventSourceExtensionTests
     public void SetUp()
     {
         eventSource = new EventSource(
-            new DefaultEventSourceRepository(new InMemoryConnection()),
+            new DefaultEventSourceRepository(null!),
             Mock.Of<IProjectionTracker>(),
             Mock.Of<IPollingStrategy>());
 

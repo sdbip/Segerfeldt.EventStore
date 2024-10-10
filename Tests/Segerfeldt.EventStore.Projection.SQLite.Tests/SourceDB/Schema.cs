@@ -1,9 +1,8 @@
 using System.Data;
-using System.IO;
 
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Projection.Tests.SourceDB.SQLite;
+namespace Segerfeldt.EventStore.Projection.SQLite.Tests.SourceDB;
 
 // ReSharper disable once InconsistentNaming
 public static class Schema

@@ -1,15 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-
 using Segerfeldt.EventStore.Shared;
-using Segerfeldt.EventStore.Tests.Shared;
 
-namespace Segerfeldt.EventStore.Projection.Tests;
+namespace Segerfeldt.EventStore.Projection.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming
-public sealed class SQLiteProjectionTests
+public sealed class ProjectionTests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Structure", "NUnit1032:An IDisposable field/property should be Disposed in a TearDown method", Justification = "<Pending>")]
     private InMemoryConnection connection = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
@@ -26,7 +22,7 @@ public sealed class SQLiteProjectionTests
             positionTracker.Object,
             delayConfiguration.Object);
 
-        SourceDB.SQLite.Schema.CreateIfMissing(connection);
+        SourceDB.Schema.CreateIfMissing(connection);
     }
 
     [Test]
@@ -77,7 +73,8 @@ public sealed class SQLiteProjectionTests
         Thread.Sleep(100);
 
         Assert.That(receivedEvents, Is.Not.Empty);
-        Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "late-event" }));
+        var expected = new[] { "late-event" };
+        Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(expected));
     }
 
     [Test]
@@ -105,8 +102,12 @@ public sealed class SQLiteProjectionTests
         GivenEvent("an-entity", "an-event", position: 1);
         eventSource.BeginProjecting();
 
-        Assert.That(startingPosition.Value, Is.EqualTo(1));
-        Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(startingPosition.Value, Is.EqualTo(1));
+            Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        });
+
     }
 
     private void GivenEntity(string entityId)
