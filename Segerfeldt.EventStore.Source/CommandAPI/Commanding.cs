@@ -20,16 +20,24 @@ namespace Segerfeldt.EventStore.Source.CommandAPI;
 [PublicAPI]
 public static class Commanding
 {
-    public static void DocumentCommands(this SwaggerGenOptions swaggerOptions, params Assembly[] assemblies)
+    public static SwaggerGenOptions DocumentCommands(this SwaggerGenOptions swaggerOptions, params Assembly[] assemblies)
+    /// <summary>Add Swagger documentation for command handlers from their XML documentation</summary>
+    /// <param name="assemblies">assemblies to search for command definitions</param>
+    /// <param name="swaggerOptions">the Swagger configuration to modify</param>
     {
         swaggerOptions.DocumentFilter<HistoryDocumentFilter>();
         swaggerOptions.DocumentFilter<CommandsDocumentFilter>(assemblies.AsEnumerable());
+        return swaggerOptions;
     }
 
-    public static void MapCommands(this IEndpointRouteBuilder builder, params Assembly[] assemblies)
+    /// <summary>Map endpoints to command handlers</summary>
+    /// <param name="builder">the web-app configuration to modify</param>
+    /// <param name="assemblies">assemblies to search for command definitions</param>
+    public static IEndpointRouteBuilder MapCommands(this IEndpointRouteBuilder builder, params Assembly[] assemblies)
     {
         builder.MapHistory();
         builder.MapCommandHandlers(assemblies);
+        return builder;
     }
 
     private static void MapHistory(this IEndpointRouteBuilder endpoints)
@@ -40,7 +48,7 @@ public static class Commanding
     private static async Task GetHistory(HttpContext context)
     {
         var result = await new HistoryQueryRequest(context).Get();
-        await context.SendResponse(result);
+        await SendResponse(context, result);
     }
 
     private static void MapCommandHandlers(this IEndpointRouteBuilder endpoints, Assembly[] assemblies)
@@ -52,20 +60,17 @@ public static class Commanding
             .Select(type => (type, type.GetCustomAttribute<ModifiesEntityAttribute>(false)!));
 
         foreach (var (handlerClass, attribute) in attributedClasses)
-            endpoints.MapMethods(attribute.Pattern, new[] { attribute.Method.ToString() }, context => HandleCommand(context, handlerClass));
+            endpoints.MapMethods(attribute.Pattern, [attribute.Method.ToString()], context => HandleCommand(context, handlerClass));
     }
 
     private static async Task HandleCommand(HttpContext context, TypeInfo handlerClass)
     {
         var result = await new CommandInputRequest(handlerClass, context).Execute();
-        await context.SendResponse(result);
+        await SendResponse(context, result);
     }
-}
 
-internal static class HttpContextResponse
-{
-    public static async Task SendResponse(this HttpContext context, IActionResult actionResult)
+    private static async Task SendResponse(HttpContext context, ActionResult response)
     {
-        await actionResult.ExecuteResultAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()));
+        await response.ExecuteResultAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()));
     }
 }
