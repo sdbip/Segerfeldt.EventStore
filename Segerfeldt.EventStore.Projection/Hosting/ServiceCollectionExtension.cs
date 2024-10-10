@@ -13,7 +13,23 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 public static class ServiceCollectionExtension
 {
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
-    /// <param name="services">the services configuration</param>
+    /// <param name="services">the Web API builder services</param>
+    /// <param name="provider">an object that knows how to create connections to the write-model database</param>
+    /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
+    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IEventSourceProvider provider, string? eventSourceName = null)
+    {
+        return services.AddHostedEventSource(p =>
+        {
+            // TODO: Fix this coupling somehow.
+            // It is assumed that there is only one connection ever created (but it might be opened and closed many times)
+            provider.PrepareDatabase(p);
+            return provider.CreateConnection();
+        }, eventSourceName);
+    }
+
+    /// <summary>Add an <see cref="EventSource"/> to project events</summary>
+    /// <param name="services">the Web API builder services</param>
     /// <param name="connection">a connection object with access to the source database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
     /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
@@ -21,7 +37,7 @@ public static class ServiceCollectionExtension
         services.AddHostedEventSource(_ => connection, eventSourceName);
 
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
-    /// <param name="services">the services configuration</param>
+    /// <param name="services">the Web API builder services</param>
     /// <param name="createConnection">a function that returns an <see cref="IDbConnection"/> with access the source database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
     /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
