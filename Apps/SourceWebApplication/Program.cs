@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
-builder.Services.UseEventStore(new SQLiteEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
+builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!);
 
 var app = builder.Build();
 

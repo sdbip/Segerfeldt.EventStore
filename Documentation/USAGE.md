@@ -35,10 +35,33 @@ You will need to set up a database connection so that the `EntityStore` and `Eve
 
 If you add either of the above packages Segerfeldt.EventStore.Source will be added implicitly.
 
-Call the extensinon method `IServiceCollection.UseEventStore(IEventStoreProvider)` to enable the provider of you have selected:
+Call the extension method `IServiceCollection.UseEventStore(IEventStoreProvider)` to enable the provider of you have selected:
 
 ```csharp
-builder.Services.UseEventStore(new PostgreSQLEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
+builder.Services.UseEventStore(new MyCustomEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
+
+internal class MyCustomEventStoreProvider(string connectionString) : IEventStoreProvider
+{
+    // This method is called once only. At startup.
+    public void PrepareDatabase(IServiceProvider p)
+    {
+        // If the EventStore schema isn't already added, this would be a good opportunity do do so.
+        Schema.CreateIfMissing(CreateConnection());
+    }
+
+    // This method creates a connection to your database.
+    public DbConnection CreateConnection() => new MyCustomConnection(connectionString);
+}
+```
+
+The existing database packages each define their own simpler API that you could call instead:
+
+```csharp
+builder.Services.UsePostgreSQLEventStore(builder.Configuration.GetConnectionString("main")!);
+
+builder.Services.UseSQLServerEventStore(builder.Configuration.GetConnectionString("main")!);
+
+builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!);
 ```
 
 Add the following code to your services setup if you want Swagger documentation of your commands:
@@ -260,18 +283,46 @@ You will need to set up a database connection for each write-model database (a.k
 - Segerfeldt.EventStore.Projection.MSSQL
 - Segerfeldt.EventStore.Projection.SQLite
 
-If you add either of the above packages Segerfeldt.EventStore.Source will be added implicitly.
+If you add either of the above packages Segerfeldt.EventStore.Projection will be added implicitly.
 
-Call the extensinon method `IServiceCollection.AddHostedEventSource(IEventSourceProvider)` to enable the provider of you have selected:
+Call the extension method `IServiceCollection.AddHostedEventSource(IEventSourceProvider)` to enable the provider of you have selected:
 
 ```c#
 using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
 builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedEventSource(new MSSQLEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
+builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<ProjectionTracker>();
+
+internal class MyCustomEventSourceProvider : IEventSourceProvider
+{
+    // This method is called once only. At startup.
+    public void PrepareDatabase(IServiceProvider p)
+    {
+        // You might want to add your own schema to the database.
+        // Specifically, you might want to add a table for storing your current position in the stream(s).
+        Schema.CreateIfMissing(CreateConnection());
+    }
+
+    // This method creates a connection to your database.
+    public DbConnection CreateConnection() => new MyCustomConnection(connectionString);
+}
+```
+
+The existing database packages each define their own simpler API that you could call instead:
+
+```csharp
+builder.Services.AddHostedPostgreSQLEventSource(builder.Configuration.GetConnectionString("events")!, "events");
+
+builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnectionString("events")!, "events");
+
+builder.Services.AddHostedSQLiteEventSource(builder.Configuration.GetConnectionString("events")!, "events");
+
+// You will still need to add receptacles and (optinally) a position tracker
+//    .AddReceptacles(Assembly.GetExecutingAssembly())
+//    .SetProjectionTracker<ProjectionTracker>();
 ```
 
 See the [ProjectionWebApplication](../Apps/ProjectionWebApplication/Program.cs) for a functioning example.
