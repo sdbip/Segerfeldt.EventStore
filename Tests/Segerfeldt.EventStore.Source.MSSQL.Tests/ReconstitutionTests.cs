@@ -8,9 +8,9 @@ using System.Linq;
 
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.MSSQL.Tests;
 
-public sealed class SQLServerReconstitutionTests
+public sealed class ReconstitutionTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
 
@@ -26,7 +26,7 @@ public sealed class SQLServerReconstitutionTests
         connection = new SqlConnection(connectionString);
         store = new EntityStore(connection);
 
-        SQLServer.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
         connection.Open();
         connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;").ExecuteNonQuery();
         connection.Close();

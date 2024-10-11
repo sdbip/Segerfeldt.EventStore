@@ -1,11 +1,10 @@
-using System;
 using System.Data.SqlClient;
 
 using Segerfeldt.EventStore.Shared;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.MSSQL.Tests;
 
-public sealed class SQLServerPublishingTests
+public sealed class PublishingTests
 {
     private readonly string? connectionString = Environment.GetEnvironmentVariable("MSSQL_TEST_CONNECTION_STRING");
 
@@ -20,7 +19,7 @@ public sealed class SQLServerPublishingTests
 
         connection = new SqlConnection(connectionString);
         publisher = new EventPublisher(connection);
-        SQLServer.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [TearDown]
@@ -40,7 +39,7 @@ public sealed class SQLServerPublishingTests
     [Test]
     public void CanPublishSingleEvent()
     {
-        publisher.Publish(new EntityId("an-entity-1"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+        publisher.Publish(new EntityId("an-entity-1"), new EntityType("a-type"), new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
 
         connection.Open();
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -72,7 +71,7 @@ public sealed class SQLServerPublishingTests
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
         publisher.PublishChanges(entity.Object, "johan");
 
         connection.Open();
@@ -108,7 +107,7 @@ public sealed class SQLServerPublishingTests
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(0));
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
 
         publisher.PublishChanges(entity.Object, "johan");
 
@@ -142,7 +141,7 @@ public sealed class SQLServerPublishingTests
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity-3"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
+        entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
 
         Assert.That(async () => await publisher.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
     }

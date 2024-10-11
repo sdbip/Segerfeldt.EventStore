@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Segerfeldt.EventStore.Projection.Tests.SourceDB.SQLServer;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
@@ -38,7 +39,7 @@ public sealed class SQLServerProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
-        Source.SQLServer.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
         ClearTables();
     }
 

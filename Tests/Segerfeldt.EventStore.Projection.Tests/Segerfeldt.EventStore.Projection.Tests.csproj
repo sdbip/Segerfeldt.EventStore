@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <EmbeddedResource Include="SourceDB/PostgreSQL/schema.sql" />
+      <EmbeddedResource Include="SourceDB/SQLServer/schema.sql" />
       <EmbeddedResource Include="SourceDB/SQLite/schema.sql" />
     </ItemGroup>
 
