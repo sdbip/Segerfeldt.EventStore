@@ -19,3 +19,6 @@
   On the other hand it might be more complicated to separate them? And it is probably not a problem.
 - Can you add nuget.Development.config? Create a default muget.config committed to Git, and allow the
   developer to override some settings (e.g. source locations) in an untracked file?
+- Convert file imports to a shared project import (Segerfeldt.EventStore.Shared.shproj).
+  - Unfortunately this is difficult outside of Visual Studio proper.
+    And VS For Mac has been discontinued, so a Windows machine may be needed.

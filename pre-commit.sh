@@ -10,7 +10,7 @@ reset="\033[0m"
 failure=1
 success=0
 
-function test() {
+function check_for_changes() {
     dir=$1
 	changed=$(git diff --staged --name-only $dir)
 	changed_unstaged=$(git diff --name-only $dir)
@@ -29,9 +29,9 @@ function test() {
 
 proj_files=$(find . -name "*.csproj")
 for path in $proj_files; do
-    test $(dirname $path)
+    check_for_changes $(dirname $path)
 done
-test ./Segerfeldt.EventStore.Shared
+check_for_changes ./Segerfeldt.EventStore.Shared
 
 if [[ -n $staged_changes ]]; then
     dotnet test
