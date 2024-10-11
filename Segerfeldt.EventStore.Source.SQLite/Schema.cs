@@ -13,9 +13,10 @@ public static class Schema
     /// Uses SQLite syntax to create tables
     public static void CreateIfMissing(IDbConnection connection)
     {
-        var schemaSQL = ReadSchemaSQLResource();
+        using var command = connection.CreateCommand();
+        command.CommandText = ReadSchemaSQLResource();
         connection.Open();
-        try { connection.CreateCommand(schemaSQL).ExecuteNonQuery(); }
+        try { command.ExecuteNonQuery(); }
         finally { connection.Close(); }
     }
 

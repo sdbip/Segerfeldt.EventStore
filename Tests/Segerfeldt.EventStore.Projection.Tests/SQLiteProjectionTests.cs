@@ -26,7 +26,7 @@ public sealed class SQLiteProjectionTests
             positionTracker.Object,
             delayConfiguration.Object);
 
-        Source.SQLite.Schema.CreateIfMissing(connection);
+        SourceDB.SQLite.Schema.CreateIfMissing(connection);
     }
 
     [Test]

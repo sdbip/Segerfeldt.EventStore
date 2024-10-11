@@ -1,18 +1,14 @@
 using Segerfeldt.EventStore.Source.Internals;
-
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 using Segerfeldt.EventStore.Shared;
-using Segerfeldt.EventStore.Tests.Shared;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming
-public sealed class SQLiteReconstitutionTests
+public sealed class ReconstitutionTests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Structure", "NUnit1032:An IDisposable field/property should be Disposed in a TearDown method", Justification = "<Pending>")]
     private InMemoryConnection connection = null!;
     private EntityStore store = null!;
 
@@ -22,7 +18,7 @@ public sealed class SQLiteReconstitutionTests
         connection = new InMemoryConnection();
         store = new EntityStore(connection);
 
-        SQLite.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [Test]
@@ -54,10 +50,10 @@ public sealed class SQLiteReconstitutionTests
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
-            {
-                e.Name,
-                e.Details
-            }),
+        {
+            e.Name,
+            e.Details
+        }),
             Is.EquivalentTo(new[] { new
             {
                 Name = "an-event",
@@ -165,7 +161,7 @@ public sealed class SQLiteReconstitutionTests
 
     private void GivenEvent(string entityId, string entityType, string eventName, string actor, DateTimeOffset timestamp)
     {
-        string commandText = @"INSERT INTO Events (entity_id, name, details, actor, timestamp, ordinal, position)
+        var commandText = @"INSERT INTO Events (entity_id, name, details, actor, timestamp, ordinal, position)
                                  VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
         var command = connection.CreateCommand(commandText);
         command.AddParameter("@entityId", entityId);

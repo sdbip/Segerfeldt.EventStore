@@ -9,8 +9,6 @@
 
     <ItemGroup>
       <EmbeddedResource Include="SQLServer\schema.sql" />
-      <None Remove="SQLite\schema.sql" />
-      <EmbeddedResource Include="SQLite\schema.sql" />
     </ItemGroup>
 
     <ItemGroup>

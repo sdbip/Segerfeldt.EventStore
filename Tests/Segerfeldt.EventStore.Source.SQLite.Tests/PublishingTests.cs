@@ -1,13 +1,11 @@
-using System;
-
 using Segerfeldt.EventStore.Shared;
-using Segerfeldt.EventStore.Tests.Shared;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming
-public sealed class SQLitePublishingTests
+public sealed class PublishingTests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Structure", "NUnit1032:An IDisposable field/property should be Disposed in a TearDown method", Justification = "<Pending>")]
     private InMemoryConnection connection = null!;
     private EventPublisher publisher = null!;
 
@@ -17,19 +15,19 @@ public sealed class SQLitePublishingTests
         connection = new InMemoryConnection();
         publisher = new EventPublisher(connection);
 
-        SQLite.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [Test]
     public void DoesNotCrashIfSchemaExists()
     {
-        SQLite.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [Test]
     public void CanPublishSingleEvent()
     {
-        publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new{Meaning = 42}), "johan");
+        publisher.Publish(new EntityId("an-entity"), new EntityType("a-type"), new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
 
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
         reader.Read();
@@ -43,11 +41,11 @@ public sealed class SQLitePublishingTests
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
-            Name = (object) "an-event",
-            Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 0L,
-            Position = (object) 0L
+            Entity = (object)"an-entity",
+            Name = (object)"an-event",
+            Details = (object)@"{""meaning"":42}",
+            Ordinal = (object)0L,
+            Position = (object)0L
         }));
     }
 
@@ -58,7 +56,7 @@ public sealed class SQLitePublishingTests
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        entity.Setup(e => e.UnpublishedEvents).Returns(new[] { new UnpublishedEvent("an-event", new { Meaning = 42 }) });
         publisher.PublishChanges(entity.Object, "johan");
 
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -73,11 +71,11 @@ public sealed class SQLitePublishingTests
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
-            Name = (object) "an-event",
-            Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 0L,
-            Position = (object) 0L
+            Entity = (object)"an-entity",
+            Name = (object)"an-event",
+            Details = (object)@"{""meaning"":42}",
+            Ordinal = (object)0L,
+            Position = (object)0L
         }));
     }
 
@@ -90,7 +88,7 @@ public sealed class SQLitePublishingTests
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(0));
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{Meaning = 42})});
+        entity.Setup(e => e.UnpublishedEvents).Returns(new[] { new UnpublishedEvent("an-event", new { Meaning = 42 }) });
 
         publisher.PublishChanges(entity.Object, "johan");
 
@@ -106,11 +104,11 @@ public sealed class SQLitePublishingTests
             Position = reader["position"]
         }, Is.EqualTo(new
         {
-            Entity = (object) "an-entity",
-            Name = (object) "an-event",
-            Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 1L,
-            Position = (object) 0L
+            Entity = (object)"an-entity",
+            Name = (object)"an-event",
+            Details = (object)@"{""meaning"":42}",
+            Ordinal = (object)1L,
+            Position = (object)0L
         }));
     }
 
@@ -141,7 +139,7 @@ public sealed class SQLitePublishingTests
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
-        entity.Setup(e => e.UnpublishedEvents).Returns(new []{new UnpublishedEvent("an-event", new{})});
+        entity.Setup(e => e.UnpublishedEvents).Returns(new[] { new UnpublishedEvent("an-event", new { }) });
 
         Assert.That(() => publisher.PublishChanges(entity.Object, "johan"), Throws.Exception);
     }

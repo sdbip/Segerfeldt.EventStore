@@ -16,10 +16,9 @@
 
     <ItemGroup>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
+      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source.SQLite\Segerfeldt.EventStore.Source.SQLite.csproj" />
     </ItemGroup>
 </Project>

@@ -1,17 +1,14 @@
 using Segerfeldt.EventStore.Source.Snapshots;
-
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 using Segerfeldt.EventStore.Shared;
-using Segerfeldt.EventStore.Tests.Shared;
 
-namespace Segerfeldt.EventStore.Source.Tests;
+namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming
-public sealed class SQLiteSnapshotTests
+public sealed class SnapshotTests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Structure", "NUnit1032:An IDisposable field/property should be Disposed in a TearDown method", Justification = "<Pending>")]
     private InMemoryConnection connection = null!;
     private EntityStore store = null!;
 
@@ -21,7 +18,7 @@ public sealed class SQLiteSnapshotTests
         connection = new InMemoryConnection();
         store = new EntityStore(connection);
 
-        SQLite.Schema.CreateIfMissing(connection);
+        Schema.CreateIfMissing(connection);
     }
 
     [Test]
@@ -29,11 +26,11 @@ public sealed class SQLiteSnapshotTests
     {
         GivenEntity("an-entity-1", "a-type", 42);
 
-        var snapshot = new Snapshot(new EntityId("an-entity-1"), new EntityType("a-type"), EntityVersion.Of(13)) {Value = 19};
+        var snapshot = new Snapshot(new EntityId("an-entity-1"), new EntityType("a-type"), EntityVersion.Of(13)) { Value = 19 };
         var entity = store.Reconstitute(snapshot);
 
-        Assert.That(new {entity?.Id, entity?.Version, entity?.SnapshotValue},
-            Is.EqualTo(new {Id = new EntityId("an-entity-1"), Version = EntityVersion.Of(42), SnapshotValue = (int?)19}));
+        Assert.That(new { entity?.Id, entity?.Version, entity?.SnapshotValue },
+            Is.EqualTo(new { Id = new EntityId("an-entity-1"), Version = EntityVersion.Of(42), SnapshotValue = (int?)19 }));
     }
 
     [Test]
@@ -46,8 +43,8 @@ public sealed class SQLiteSnapshotTests
         var snapshot = new Snapshot(new EntityId("an-entity-2"), new EntityType("a-type"), EntityVersion.Of(42));
         var entity = store.Reconstitute(snapshot);
 
-        Assert.That(entity?.ReplayedEvents?.Select(e => e.Name),
-            Is.EquivalentTo(new[] { "after-snapshot-event" }));
+        var expected = new[] { "after-snapshot-event" };
+        Assert.That(entity?.ReplayedEvents?.Select(e => e.Name), Is.EqualTo(expected));
     }
 
     private void GivenEntity(string entityId, string entityType, int version = 1)
