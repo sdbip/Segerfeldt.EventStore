@@ -1,11 +1,6 @@
-using System.Data.Common;
 using System.Reflection;
 
-using Microsoft.Data.Sqlite;
-
-using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
-using Segerfeldt.EventStore.Source.SQLite;
 using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 
 var builder = WebApplication.CreateBuilder(args);
