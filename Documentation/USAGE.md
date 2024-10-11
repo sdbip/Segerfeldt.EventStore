@@ -10,11 +10,14 @@ See the Apps/ directory for example applications.
 
 ## Source Setup
 
-The Source library is meant to implement the Command side (a.k.a. the write model) of a CQRS system. Import this in your web service code to start manipulating entities and publishing events.
+The Source packages are meant to implement the Command side (a.k.a. the write model) of a CQRS system. Add Segerfeldt.EventStore.Source to your web service code to start manipulating entities and publishing events.
 
 Add the following line to your Program.cs to automatically find and map endpoints for the command handlers you have defined in your main assembly.
 
 ```csharp
+using Segerfeldt.EventStore.Source.CommandAPI;
+using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
+
 app.MapCommands(Assembly.GetExecutingAssembly());
 ```
 
@@ -24,7 +27,15 @@ You can optionally define your endpoints in a different assembly (or in several)
 app.MapCommands(assembly1, assembly2);
 ```
 
-You will need to set up a database connection so that the `EntityStore` and `EventPublisher` know where to read/write their data.
+You will need to set up a database connection so that the `EntityStore` and `EventPublisher` know where to read/write their data. If you don't want to define your own provider there are three packages too choose from for built-in database support.
+
+- Segerfeldt.EventStore.Source.PostgreSQL
+- Segerfeldt.EventStore.Source.MSSQL
+- Segerfeldt.EventStore.Source.SQLite
+
+If you add either of the above packages Segerfeldt.EventStore.Source will be added implicitly.
+
+Call the extensinon method `IServiceCollection.UseEventStore(IEventStoreProvider)` to enable the provider of you have selected:
 
 ```csharp
 builder.Services.UseEventStore(new PostgreSQLEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
@@ -243,10 +254,19 @@ public sealed class Counter : EntityBase
 
 The Projection library is meant to implement the Command-to-Query side synchronisation for a CQRS system.
 
-Set up Projection for ASP.Net in Program.cs:
+You will need to set up a database connection for each write-model database (a.k.a. `EventSource`) you want to project state from. If you don't want to define your own provider there are three packages too choose from for built-in database support.
+
+- Segerfeldt.EventStore.Projection.PostgreSQL
+- Segerfeldt.EventStore.Projection.MSSQL
+- Segerfeldt.EventStore.Projection.SQLite
+
+If you add either of the above packages Segerfeldt.EventStore.Source will be added implicitly.
+
+Call the extensinon method `IServiceCollection.AddHostedEventSource(IEventSourceProvider)` to enable the provider of you have selected:
 
 ```c#
-using Segerfeldt.EventStore.Projection;
+using Segerfeldt.EventStore.Projection.Hosting;
+using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
 builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.AddHostedEventSource(new MSSQLEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
