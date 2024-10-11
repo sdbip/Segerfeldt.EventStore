@@ -107,7 +107,7 @@ public sealed class PublishingTests
             Entity = (object)"an-entity",
             Name = (object)"an-event",
             Details = (object)@"{""meaning"":42}",
-            Ordinal = (object)1L,
+            Ordinal = (object)0L,
             Position = (object)0L
         }));
     }

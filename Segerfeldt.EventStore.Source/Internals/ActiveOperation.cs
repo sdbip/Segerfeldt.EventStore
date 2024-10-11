@@ -23,7 +23,7 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
             : EntityVersion.Of(Convert.ToInt32(scalar));
     }
 
-    protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EntityVersion ordinal, long position)
+    protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EventOrdinal ordinal, long position)
     {
         using var command = transaction.CreateCommand(
             "INSERT INTO Events (entity_id, name, details, actor, ordinal, position)" +
@@ -62,21 +62,22 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
             entities.Select(async entity =>
             {
                 var (id, _, currentVersion, events) = entity;
-                var incrementingVersions = InfiniteVersionsFrom(currentVersion.Next());
-                var tuples = events.Zip(incrementingVersions).ToList();
-                foreach (var (@event, version) in tuples)
-                    await InsertEventAsync(id, @event, version, position);
+                var currentOrdinal = await GetNextOrdinalAsync(entity);
+                var incrementingOrdinals = InfiniteOrdinalsFrom(currentOrdinal);
+                var tuples = events.Zip(incrementingOrdinals).ToList();
+                foreach (var (@event, ordinal) in tuples)
+                    await InsertEventAsync(id, @event, ordinal, position);
 
-                var (_, lastInsertedVersion) = tuples.Last();
-                await UpdateVersionAsync(id, lastInsertedVersion);
-                return (id, lastInsertedVersion);
+                var (_, lastInsertedOrdinal) = tuples.Last();
+                await UpdateVersionAsync(id, currentVersion.Next());
+                return (id, currentVersion.Next());
             })
         );
 
         return new UpdatedStorePosition(position, entityVersions);
 
         // ReSharper disable once IteratorNeverReturns
-        static IEnumerable<EntityVersion> InfiniteVersionsFrom(EntityVersion first)
+        static IEnumerable<EventOrdinal> InfiniteOrdinalsFrom(EventOrdinal first)
         {
             var next = first;
             while (true)
@@ -85,6 +86,16 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
                 next = next.Next();
             }
         }
+    }
+
+    private async Task<EventOrdinal> GetNextOrdinalAsync(EntityData entity)
+    {
+        var command = transaction.CreateCommand("SELECT max(ordinal) + 1 FROM Events WHERE entity_id = @entityId");
+        command.AddParameter("@entityId", entity.Id.ToString());
+        var result = await command.ExecuteScalarAsync();
+        return result is int ordinalValue
+            ? new EventOrdinal(ordinalValue)
+            : EventOrdinal.Zero;
     }
 
     private async Task<long> GetNextPositionAsync()

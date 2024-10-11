@@ -15,8 +15,6 @@
   - It may be possible to analyse all the commands and find discrepancies
     among them, but it is probably impossible to know if there are conflicting
     endpoints that were setup through other means.
-- The Entity.version is updated to the last added Event.ordinal. This seems unnecessary.
-  On the other hand it might be more complicated to separate them? And it is probably not a problem.
 - Can you add nuget.Development.config? Create a default muget.config committed to Git, and allow the
   developer to override some settings (e.g. source locations) in an untracked file?
 - Convert file imports to a shared project import (Segerfeldt.EventStore.Shared.shproj).

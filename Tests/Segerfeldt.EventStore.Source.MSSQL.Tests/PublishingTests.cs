@@ -67,10 +67,12 @@ public sealed class PublishingTests
     [Test]
     public void CanPublishNewEntity()
     {
+        GivenEntity("an-entity", version: EntityVersion.Of(0));
+
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
         entity.Setup(e => e.Type).Returns(new EntityType("a-type"));
-        entity.Setup(e => e.Version).Returns(EntityVersion.New);
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(0));
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
         publisher.PublishChanges(entity.Object, "johan");
 
@@ -99,9 +101,7 @@ public sealed class PublishingTests
     [Test]
     public void CanPublishChanges()
     {
-        connection.Open();
-        connection.CreateCommand("INSERT INTO Entities (id, type, version) VALUES ('an-entity', 'a-type', 0)").ExecuteNonQuery();
-        connection.Close();
+        GivenEntity("an-entity", version: EntityVersion.Of(0));
 
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity"));
@@ -127,7 +127,7 @@ public sealed class PublishingTests
             Entity = (object) "an-entity",
             Name = (object) "an-event",
             Details = (object) @"{""meaning"":42}",
-            Ordinal = (object) 1,
+            Ordinal = (object) 0,
             Position = (object) 0L
         }));
         connection.Close();
@@ -136,24 +136,29 @@ public sealed class PublishingTests
     [Test]
     public void CannotPublishChangesIfRemoteUpdated()
     {
-        GivenEntity();
+        GivenEntity("an-entity-3", version: EntityVersion.Of(1));
 
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(new EntityId("an-entity-3"));
-        entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(0));
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
 
         Assert.That(async () => await publisher.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
     }
 
-    private void GivenEntity()
+    private void GivenEntity(string id, EntityVersion version)
     {
         connection.Open();
         try
         {
-            connection
-                .CreateCommand("INSERT INTO Entities (id, type, version) VALUES ('an-entity-3', 'a-type', 3)")
-                .ExecuteNonQuery();
+            using var command = connection.CreateCommand(
+                """
+                INSERT INTO Entities (id, type, version)
+                VALUES (@entityId, 'a-type', @version)
+                """);
+            command.AddParameter("@entityId", id);
+            command.AddParameter("@version", version.Value);
+            command.ExecuteNonQuery();
         }
         finally
         {
