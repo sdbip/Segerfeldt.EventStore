@@ -94,7 +94,7 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
         command.AddParameter("@entityId", entity.Id.ToString());
         var result = await command.ExecuteScalarAsync();
         return result is int ordinalValue
-            ? new EventOrdinal(ordinalValue)
+            ? EventOrdinal.Of(ordinalValue)
             : EventOrdinal.Zero;
     }
 

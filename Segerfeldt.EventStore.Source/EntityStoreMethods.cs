@@ -40,8 +40,8 @@ public static class EntityStoreMethods
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
     {
-        var history = await entityStore.GetHistoryAsync(snapshot.Id, snapshot.Version, cancellationToken);
-        if (history is null) return snapshot.Version.IsNew ? null : throw new UnknownEntityException(snapshot.Id);
+        var history = await entityStore.GetHistoryAsync(snapshot.Id, snapshot.Ordinal, cancellationToken);
+        if (history is null) return snapshot.Ordinal == EventOrdinal.Never ? null : throw new UnknownEntityException(snapshot.Id);
         if (history.Type != snapshot.EntityType) throw new IncorrectTypeException(snapshot.EntityType, history.Type);
         return entityStore.RestoreEntity(snapshot, history);
     }
@@ -59,7 +59,7 @@ public static class EntityStoreMethods
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
     public static async Task<EntityHistory?> GetHistoryAsync(this EntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
-        await entityStore.GetHistoryAsync(entityId, EntityVersion.Beginning, cancellationToken);
+        await entityStore.GetHistoryAsync(entityId, EventOrdinal.Never, cancellationToken);
 
 
     /// <summary>Check if an entity id is taken.</summary>
@@ -105,7 +105,7 @@ public static class EntityStoreMethods
     {
         public EntityId Id { get; } = id;
         public EntityType EntityType { get; } = entityType;
-        public EntityVersion Version => EntityVersion.Beginning;
+        public EventOrdinal Ordinal => EventOrdinal.Never;
 
         public void Restore(TEntity entity) { } // Intentionally does nothing
     }

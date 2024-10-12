@@ -26,7 +26,7 @@ public sealed class SnapshotTests
     {
         GivenEntity("an-entity-1", "a-type", 42);
 
-        var snapshot = new Snapshot(new EntityId("an-entity-1"), new EntityType("a-type"), EntityVersion.Of(13)) { Value = 19 };
+        var snapshot = new Snapshot(new EntityId("an-entity-1"), new EntityType("a-type"), EventOrdinal.Of(13)) { Value = 19 };
         var entity = store.Reconstitute(snapshot);
 
         Assert.That(new { entity?.Id, entity?.Version, entity?.SnapshotValue },
@@ -40,7 +40,7 @@ public sealed class SnapshotTests
         GivenEvent("an-entity-2", "at-snapshot-event", ordinal: 42);
         GivenEvent("an-entity-2", "after-snapshot-event", ordinal: 43);
 
-        var snapshot = new Snapshot(new EntityId("an-entity-2"), new EntityType("a-type"), EntityVersion.Of(42));
+        var snapshot = new Snapshot(new EntityId("an-entity-2"), new EntityType("a-type"), EventOrdinal.Of(42));
         var entity = store.Reconstitute(snapshot);
 
         var expected = new[] { "after-snapshot-event" };
@@ -69,11 +69,11 @@ public sealed class SnapshotTests
         command.ExecuteNonQuery();
     }
 
-    private class Snapshot(EntityId id, EntityType entityType, EntityVersion version) : ISnapshot<MyEntity>
+    private class Snapshot(EntityId id, EntityType entityType, EventOrdinal ordinal) : ISnapshot<MyEntity>
     {
         public EntityId Id { get; } = id;
         public EntityType EntityType { get; } = entityType;
-        public EntityVersion Version { get; } = version;
+        public EventOrdinal Ordinal { get; } = ordinal;
 
         public int Value { get; init; }
 

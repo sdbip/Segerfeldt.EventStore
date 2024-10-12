@@ -3,16 +3,19 @@ using System.Collections.Generic;
 
 namespace Segerfeldt.EventStore.Source;
 
-internal sealed class EventOrdinal : ValueObject<EventOrdinal>
+public sealed class EventOrdinal : ValueObject<EventOrdinal>
 {
+    public static EventOrdinal Never => new(-1);
     public static EventOrdinal Zero => new(0);
 
     public int Value { get; }
 
-    public EventOrdinal(int value)
+    private EventOrdinal(int value) => Value = value;
+
+    public static EventOrdinal Of(int value)
     {
         if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), "Must be positive");
-        Value = value;
+        return new(value);
     }
 
     protected override IEnumerable<object> GetEqualityComponents() => [Value];
