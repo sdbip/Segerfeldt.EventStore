@@ -21,7 +21,9 @@ A value object is (as the term implies) an object that represents a specific val
 
 Value objects typically have two functions: they can be compared for structural equality, and they can be validated for correct user input.
 
-It should not be possible to instantiate an invalid value object. The constructor (or factory) should prevent such, typically by throwing an exception or returning a failure result when invalid data is encountered. (See Vlad Khorikov's [CSharpFunctionalExtensions](https://github.com/vkhorikov/CSharpFunctionalExtensions/blob/master/CSharpFunctionalExtensions/Result/Result.cs) for a `Result` type that can be used for this.) If the programmer can trust that all instances are valid, they will not need to validate the data again in their code; it is enough to declare that a variable must be of the correct type (and not `null`).
+It should not be possible to instantiate an invalid value object. The constructor (or factory) should prevent such, typically by throwing an exception or returning a failure result when invalid data is encountered. (The Source package includes a `Result<T>` [^vkhorikov] type that can be used for this.) If the programmer can trust that all instances are valid, they will not need to validate the data again in their code; it is enough to declare that a variable must be of the correct type (and not `null`).
+
+[^vkhorikov]: Influenced by Vlad Khorikov's [CSharpFunctionalExtensions](https://github.com/vkhorikov/CSharpFunctionalExtensions/blob/master/CSharpFunctionalExtensions/Result/Result.cs)
 
 Value objects can also be used in calculations. You might for example `Add()` (or `+`) two numeric value objects to get their sum. Or you might multiply a value object with a scalar (e.g. a `Money` amount and an interest rate). The result of a calculation is typically an object of the same type as the input, but it could be otherwise. `Ingredient1` combined with `Ingredient2` might for example produce a `Cake`.
 
