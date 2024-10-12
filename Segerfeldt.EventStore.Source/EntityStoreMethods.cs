@@ -92,9 +92,11 @@ public static class EntityStoreMethods
 
     private static TEntity Instantiate<TEntity>(this EntityStore entityStore, EntityId id, EntityVersion version) where TEntity : IEntity
     {
-        var constructor = typeof(TEntity).GetConstructor(new[] { typeof(EntityId), typeof(EntityVersion) });
-        if (constructor is null) throw new InvalidEntityException(typeof(TEntity));
-        return (TEntity)constructor.Invoke(constructor.GetParameters().Length == 2 ? new object[] { id, version } : new object[] { id, version, entityStore });
+        var constructor = typeof(TEntity).GetConstructor([typeof(EntityId), typeof(EntityVersion)])
+            ?? throw new InvalidEntityException(typeof(TEntity));
+        return (TEntity)constructor.Invoke(constructor.GetParameters().Length == 2
+            ? [id, version]
+            : [id, version, entityStore]);
     }
 
     /// <summary>An entity snapshot that was never made.</summary>

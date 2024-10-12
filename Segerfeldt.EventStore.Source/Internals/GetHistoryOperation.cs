@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,9 +31,7 @@ internal sealed class GetHistoryOperation(EntityId entityId, EntityVersion entit
             return null;
         }
 
-        var events = await reader.NextResultAsync(cancellationToken)
-            ? ReadEvents(reader).ToImmutableList()
-            : ImmutableList<PublishedEvent>.Empty;
+        var events = await reader.NextResultAsync(cancellationToken) ? ReadEvents(reader).ToImmutableList() : [];
 
         await connection.CloseAsync();
 
@@ -42,7 +39,7 @@ internal sealed class GetHistoryOperation(EntityId entityId, EntityVersion entit
         return new EntityHistory(type, version, events);
     }
 
-    private static (EntityType, EntityVersion)? ReadEntityData(IDataReader reader)
+    private static (EntityType, EntityVersion)? ReadEntityData(DbDataReader reader)
     {
         if (reader.Read())
             return (new EntityType(reader.GetString(0)), EntityVersion.Of(reader.GetInt32(1)));
@@ -50,7 +47,7 @@ internal sealed class GetHistoryOperation(EntityId entityId, EntityVersion entit
             return null;
     }
 
-    private static IEnumerable<PublishedEvent> ReadEvents(IDataReader reader)
+    private static IEnumerable<PublishedEvent> ReadEvents(DbDataReader reader)
     {
         while (reader.Read())
         {
