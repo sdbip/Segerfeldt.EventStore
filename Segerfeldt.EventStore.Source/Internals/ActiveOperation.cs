@@ -20,7 +20,7 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
         var scalar = await command.ExecuteScalarAsync();
         return scalar is null
             ? EntityVersion.New
-            : EntityVersion.Of(Convert.ToInt32(scalar));
+            : EntityVersion.Safe(Convert.ToInt32(scalar));
     }
 
     protected async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, EventOrdinal ordinal, long position)
@@ -94,7 +94,7 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
         command.AddParameter("@entityId", entity.Id.ToString());
         var result = await command.ExecuteScalarAsync();
         return result is int ordinalValue
-            ? EventOrdinal.Of(ordinalValue)
+            ? EventOrdinal.Safe(ordinalValue)
             : EventOrdinal.Zero;
     }
 

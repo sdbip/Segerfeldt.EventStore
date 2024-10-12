@@ -17,6 +17,6 @@ internal sealed class LookupEntityTypeOperation(EntityId entityId)
 
         await connection.OpenAsync(cancellationToken);
         return await command.ExecuteScalarAsync(cancellationToken) is string type
-            ? new EntityType(type) : null;
+            ? EntityType.Safe(type) : null;
     }
 }

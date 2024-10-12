@@ -15,7 +15,10 @@ public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
     /// <inheritdoc/>
     public async Task<CommandResult> Handle(RegisterUser command, CommandContext context)
     {
-        var entityId = new EntityId(command.Username);
+        EntityId entityId;
+        try { entityId = entityId = EntityId.Value(command.Username).OrThrow(); }
+        catch { return CommandResult.BadRequest($"Invalid username [{command.Username}]"); }
+
         if (context.EntityStore.ContainsEntity(entityId))
             return CommandResult.Forbidden($"The username [{entityId}] is already in use");
 

@@ -18,7 +18,7 @@ internal class HistoryQueryRequest(HttpContext context)
         var id = (string?)context.GetRouteValue("entityId");
         var store = new EntityStore(context.RequestServices.GetRequiredService<IConnectionFactory>());
 
-        var history = await store.GetHistoryAsync(new EntityId(id!));
+        var history = await store.GetHistoryAsync(EntityId.Safe(id!));
         if (history is null)
             return new NotFoundObjectResult($"There is no entity with the id '{id}'");
         else

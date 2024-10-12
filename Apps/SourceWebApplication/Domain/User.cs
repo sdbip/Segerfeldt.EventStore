@@ -4,7 +4,7 @@ namespace SourceWebApplication.Domaim;
 
 internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
-    public static readonly EntityType EntityType = new("User");
+    public static readonly EntityType EntityType = EntityType.Name("User").OrThrow();
 
     internal static User New(EntityId entityId)
     {
@@ -13,11 +13,15 @@ internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, 
         return user;
     }
 
-    internal static User New(string username, string emailAddress)
+    internal static Result<User> New(string username, string emailAddress)
     {
-        var user = new User(new EntityId(username), EntityVersion.New);
-        user.SetEmailAddress(emailAddress);
-        return user;
+        var entityId = EntityId.Value(username);
+
+        return entityId.IfSuccess<User>(entityId => {
+            var user = new User(entityId, EntityVersion.New);
+            user.SetEmailAddress(emailAddress);
+            return user;
+        });
     }
 
     internal void SetEmailAddress(string emailAddress)

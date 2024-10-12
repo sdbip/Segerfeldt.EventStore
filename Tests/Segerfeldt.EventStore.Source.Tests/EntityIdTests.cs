@@ -15,7 +15,7 @@ public sealed class EntityIdTests
         )]
     string id)
     {
-        Assert.That(() => new EntityId(id), Throws.Nothing);
+        Assert.That(() => EntityId.Value(id).OrThrow(), Throws.Nothing);
     }
 
     [Test]
@@ -27,13 +27,13 @@ public sealed class EntityIdTests
             ""
         )] string id)
     {
-        Assert.That(() => new EntityId(id), Throws.InstanceOf<ArgumentOutOfRangeException>());
+        Assert.That(() => EntityId.Value(id).OrThrow(), Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
     [Test]
     public void IsImplicitlyConvertedToString()
     {
-        Assert.That(() => IsValidId(new EntityId("id")), Throws.Nothing);
+        Assert.That(() => IsValidId(EntityId.Value("id").OrThrow()), Throws.Nothing);
     }
 
     [Test]
@@ -43,7 +43,7 @@ public sealed class EntityIdTests
             "a5fa1cd1-3c46-45f4-a2b7-6fae3b5ce0c1"
         )] string guid)
     {
-        Assert.That(() => IsValidId(new EntityId(guid)), Throws.Nothing);
+        Assert.That(() => IsValidId(EntityId.Value(guid).OrThrow()), Throws.Nothing);
     }
 
     [Test]
@@ -54,7 +54,7 @@ public sealed class EntityIdTests
             "a9UE_UYuLE63M7MwiPNHrg=="
         )] string encoded)
     {
-        Assert.That(() => IsValidId(new EntityId(encoded)), Throws.Nothing);
+        Assert.That(() => IsValidId(EntityId.Value(encoded).OrThrow()), Throws.Nothing);
     }
 
     [Test]

@@ -26,16 +26,16 @@ public sealed class ReconstitutionTests
     {
         GivenEntity("an-entity", "a-type", 3);
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity").OrThrow(), EntityType.Name("a-type").OrThrow());
 
         Assert.That(entity, Is.Not.Null);
-        Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
+        Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3).OrThrow()));
     }
 
     [Test]
     public void ReturnsNullIfNoEntity()
     {
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity").OrThrow(), EntityType.Name("a-type").OrThrow());
 
         Assert.That(entity, Is.Null);
     }
@@ -46,7 +46,7 @@ public sealed class ReconstitutionTests
         GivenEntity("an-entity", "a-type");
         GivenEvent("an-entity", "a-type", "an-event", @"{""meaning"":42}");
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity").OrThrow(), EntityType.Name("a-type").OrThrow());
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -69,7 +69,7 @@ public sealed class ReconstitutionTests
         GivenEvent("an-entity", "a-type", "third-event", ordinal: 3);
         GivenEvent("an-entity", "a-type", "second-event", ordinal: 2);
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity").OrThrow(), EntityType.Name("a-type").OrThrow());
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -87,7 +87,7 @@ public sealed class ReconstitutionTests
         GivenEntity("an-entity", "a-type");
         GivenEvent("an-entity", "a-type", "first-event", "johan", timestamp);
 
-        var history = store.GetHistory(new EntityId("an-entity"));
+        var history = store.GetHistory(EntityId.Value("an-entity").OrThrow());
 
         Assert.That(history, Is.Not.Null);
 
@@ -104,7 +104,7 @@ public sealed class ReconstitutionTests
         GivenEvent("an-entity", "a-type", "third-event", ordinal: 3);
         GivenEvent("an-entity", "a-type", "second-event", ordinal: 2);
 
-        var history = store.GetHistory(new EntityId("an-entity"));
+        var history = store.GetHistory(EntityId.Value("an-entity").OrThrow());
 
         Assert.That(history, Is.Not.Null);
 
@@ -119,13 +119,13 @@ public sealed class ReconstitutionTests
     {
         GivenEntity("an-entity", "a-type");
 
-        Assert.That(store.ContainsEntity(new EntityId("an-entity")), Is.True);
+        Assert.That(store.ContainsEntity(EntityId.Value("an-entity").OrThrow()), Is.True);
     }
 
     [Test]
     public void CanDetectNonExistence()
     {
-        Assert.That(store.ContainsEntity(new EntityId("an-entity")), Is.False);
+        Assert.That(store.ContainsEntity(EntityId.Value("an-entity").OrThrow()), Is.False);
     }
 
     [Test]
@@ -142,7 +142,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(new EntityId("an-entity"), new EntityType("a-type"));
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity").OrThrow(), EntityType.Name("a-type").OrThrow());
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTimeOffset.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));
@@ -188,7 +188,7 @@ public sealed class ReconstitutionTests
     {
         public EntityId Id { get; } = id;
         public EntityVersion Version { get; } = version;
-        public EntityType Type => new("MyEntity");
+        public EntityType Type => EntityType.Name("MyEntity").OrThrow();
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
         public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }

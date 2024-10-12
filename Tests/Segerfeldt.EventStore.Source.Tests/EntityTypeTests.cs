@@ -15,7 +15,7 @@ public sealed class EntityTypeTests
             "dots.are.allowed"
         )] string name)
     {
-        Assert.That(() => new EntityType(name), Throws.Nothing);
+        Assert.That(() => EntityType.Name(name).OrThrow(), Throws.Nothing);
     }
 
     [Test]
@@ -26,12 +26,12 @@ public sealed class EntityTypeTests
             ""
         )] string name)
     {
-        Assert.That(() => new EntityType(name), Throws.InstanceOf<ArgumentOutOfRangeException>());
+        Assert.That(() => EntityType.Name(name).OrThrow(), Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
     [Test]
     public void IsImplicitlyConvertedToString()
     {
-        Assert.That(() => IsValidType(new EntityType("name")), Throws.Nothing);
+        Assert.That(() => IsValidType(EntityType.Name("name").OrThrow()), Throws.Nothing);
     }
 }

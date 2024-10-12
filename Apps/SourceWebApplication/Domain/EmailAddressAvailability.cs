@@ -4,8 +4,8 @@ namespace SourceWebApplication.Domaim;
 
 internal sealed class EmailAddressAvailability(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
-    public static readonly EntityType EntityType = new("EmailAddressAvailability");
-    private static readonly EntityId SingletonEntityId = new("usernames");
+    public static readonly EntityType EntityType = EntityType.Name("EmailAddressAvailability").OrThrow();
+    private static readonly EntityId SingletonEntityId = EntityId.Value("usernames").OrThrow();
 
     private const string EmailAddressClaimed = "EmailAddressClaimed";
     private const string EmailAddressReleased = "EmailAddressReleased";

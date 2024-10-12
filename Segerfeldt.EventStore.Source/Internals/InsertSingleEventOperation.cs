@@ -42,7 +42,7 @@ internal sealed class InsertSingleEventOperation(UnpublishedEvent @event, Entity
         public async Task<UpdatedStorePosition> RunAsync()
         {
             var currentVersion = await GetCurrentVersionAsync();
-            if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Of(1));
+            if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Zero);
 
             return await InsertEventsForEntities([new EntityData(operation.entityId, operation.type, currentVersion, [operation.@event])]);
         }
@@ -52,7 +52,7 @@ internal sealed class InsertSingleEventOperation(UnpublishedEvent @event, Entity
             using var command = transaction.CreateCommand("SELECT version FROM Entities WHERE id = @entityId");
             command.AddParameter("@entityId", operation.entityId.ToString());
             return await command.ExecuteScalarAsync() is int versionValue
-                ? EntityVersion.Of(versionValue)
+                ? EntityVersion.Safe(versionValue)
                 : EntityVersion.New;
         }
     }

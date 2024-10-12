@@ -9,7 +9,7 @@ public sealed class EntityBaseTests
     [Test]
     public void ReplaysEvent()
     {
-        var entity = new TestEntity(new EntityId("entity"), EntityVersion.New);
+        var entity = new TestEntity(EntityId.Value("entity").OrThrow(), EntityVersion.New);
         var @event = PublishedEvent(TestEntity.ReplayAsEvent, "{}");
         entity.ReplayEvents([@event]);
 
@@ -19,7 +19,7 @@ public sealed class EntityBaseTests
     [Test]
     public void ReplaysEventData()
     {
-        var entity = new TestEntity(new EntityId("entity"), EntityVersion.New);
+        var entity = new TestEntity(EntityId.Value("entity").OrThrow(), EntityVersion.New);
         entity.ReplayEvents(new[] {PublishedEvent(TestEntity.ReplayAsData, @"{""string"":""string"", ""int"":42}")});
 
         Require.That(entity.ReplayedData, Is.EqualTo(new TestData("string", 42)));
@@ -27,7 +27,7 @@ public sealed class EntityBaseTests
 
     private static PublishedEvent PublishedEvent(string name, string details) => new(name, details, "actor", DateTimeOffset.UtcNow);
 
-    private class TestEntity(EntityId id, EntityVersion version) : EntityBase(id, new EntityType("Test"), version)
+    private class TestEntity(EntityId id, EntityVersion version) : EntityBase(id, EntityType.Name("Test").OrThrow(), version)
     {
         internal const string ReplayAsEvent = "as-event";
         internal const string ReplayAsData = "as-test-data";

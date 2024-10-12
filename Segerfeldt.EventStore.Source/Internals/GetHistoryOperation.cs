@@ -42,7 +42,7 @@ internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal after)
     private static (EntityType, EntityVersion)? ReadEntityData(DbDataReader reader)
     {
         if (reader.Read())
-            return (new EntityType(reader.GetString(0)), EntityVersion.Of(reader.GetInt32(1)));
+            return (EntityType.Safe(reader.GetString(0)), EntityVersion.Safe(reader.GetInt32(1)));
         else
             return null;
     }

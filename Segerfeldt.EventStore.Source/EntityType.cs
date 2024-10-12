@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
@@ -11,25 +10,24 @@ public sealed class EntityType : ValueObject<EntityType>
 {
     private readonly string name;
 
+    private EntityType(string name) => this.name = name;
+
     /// <summary>Initialize a type</summary>
     /// <param name="name">The string value that uniquely identifies the type (and its events)</param>
-    public EntityType(string name)
+    public static Result<EntityType> Name(string name)
     {
-        GuardIsValid(name);
-        this.name = name;
+        return IsValidTypeName(name)
+            ? Safe(name)
+            : new Result<EntityType>(null, new ArgumentOutOfRangeException(nameof(name), $"'{name}' is not a valid entity-id"));
     }
+
+    internal static EntityType Safe(string name) => new(name);
 
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(name);
 
     public static implicit operator string(EntityType type) => type.name;
     public override string ToString() => name;
 
-    private static void GuardIsValid(string name, [CallerArgumentExpression(nameof(name))] string? parameterName = null)
-    {
-        if (!IsValidTypeName(name))
-            throw new ArgumentOutOfRangeException(parameterName, $"'{name}' is not a valid entity-type name");
-    }
-
-    #pragma warning disable SYSLIB1045 // Avoid partial classes
+#pragma warning disable SYSLIB1045 // Avoid partial classes
     private static bool IsValidTypeName(string name) => Regex.IsMatch(name, "^[a-zA-Z0-9._-]+$");
 }

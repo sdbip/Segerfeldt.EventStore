@@ -42,7 +42,7 @@ public sealed class CommandHandlerExecuterTests
     [Test]
     public async Task Returns409ConflictIfCommandHandlerThrowsConcurrentUpdateException()
     {
-        var executer = new CommandHandlerExecuter(new ThrowingCommandHandler(new ConcurrentUpdateException(EntityVersion.New, EntityVersion.Of(3))));
+        var executer = new CommandHandlerExecuter(new ThrowingCommandHandler(new ConcurrentUpdateException(EntityVersion.New, EntityVersion.Of(3).OrThrow())));
         var context = new CommandContext { HttpContext = null!, EntityStore = null!, EventPublisher = null! };
         var response = (ObjectResult)await executer.HandleAsync(new EmptyCommand(), context);
         Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.Conflict));

@@ -27,9 +27,8 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
             return CommandResult.Forbidden(exception.Message);
         }
 
-        var id = new EntityId(context.GetRouteParameter("entityid"));
-        var entity = await context.EntityStore.ReconstituteAsync<User>(id, User.EntityType);
-        if (entity is null) return CommandResult.NotFound($"There is no user with username [{id}]");
+        var entity = await context.EntityStore.ReconstituteAsync<User>(context.GetEntityId(), User.EntityType);
+        if (entity is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
 
         entity.SetEmailAddress(emailAddress);
 

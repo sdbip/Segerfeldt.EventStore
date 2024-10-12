@@ -9,7 +9,7 @@ public sealed class AggregateTests
     [Test]
     public void ModifyChild_AddsEvent()
     {
-        var aggregate = new Aggregate(new EntityId("test-entity"), EntityVersion.New);
+        var aggregate = new Aggregate(EntityId.Value("test-entity").OrThrow(), EntityVersion.New);
         var child = aggregate.AddChild("child1");
         child.Modify();
 
@@ -17,7 +17,7 @@ public sealed class AggregateTests
     }
 }
 
-internal class Aggregate(EntityId id, EntityVersion version) : EntityBase(id, new EntityType("Aggregate"), version)
+internal class Aggregate(EntityId id, EntityVersion version) : EntityBase(id, EntityType.Name("Aggregate").OrThrow(), version)
 {
     public record ChildModifiedDetails(string id);
 
