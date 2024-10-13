@@ -21,9 +21,8 @@ public sealed class EntityId : ValueObject<EntityId>
     /// <param name="value">The string value that uniquely identifies the identity (and its events)</param>
     public static Result<EntityId> Value(string value)
     {
-        return IsValidId(value)
-            ? Safe(value)
-            : new Result<EntityId>(null, new ArgumentOutOfRangeException(nameof(value), $"'{value}' is not a valid entity-id"));
+        if (!IsValidId(value)) return Failure.Error(new ArgumentOutOfRangeException(nameof(value), $"'{value}' is not a valid entity-id"));
+        return Safe(value);
     }
 
     internal static EntityId Safe(string value) => new(value);

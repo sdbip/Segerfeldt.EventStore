@@ -21,9 +21,8 @@ public sealed class EventOrdinal : ValueObject<EventOrdinal>
     /// <returns></returns>
     public static Result<EventOrdinal> Of(int value)
     {
-        return value >= 0
-            ? (Result<EventOrdinal>)Safe(value)
-            : new Result<EventOrdinal>(null, new ArgumentOutOfRangeException(nameof(value), "Must be positive"));
+        if (value < 0) return Failure.Error(new ArgumentOutOfRangeException(nameof(value), "Must be positive"));
+        return Safe(value);
     }
 
     internal static EventOrdinal Safe(int value) => new(value);

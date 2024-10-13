@@ -26,7 +26,7 @@ public sealed class EntityVersion : ValueObject<EntityVersion>
     /// <exception cref="ArgumentOutOfRangeException">if the value is negative</exception>
     public static Result<EntityVersion> Of(int value)
     {
-        if (value < 0) return new Result<EntityVersion>(new ArgumentOutOfRangeException(nameof(value), "Must be positive"));
+        if (value < 0) return Failure.Error(new ArgumentOutOfRangeException(nameof(value), "Must be positive"));
         return new EntityVersion(value);
     }
 

@@ -2,18 +2,33 @@ using System;
 
 namespace Segerfeldt.EventStore.Source;
 
-public readonly struct Result<T>(T? value, Exception? error)
+/// <summary>The result of an operation that may succeed or fail</summary>
+/// <typeparam name="T">The type of the value if successful</typeparam>
+public readonly struct Result<T>
 {
-    private readonly T? value = value;
-    private readonly Exception? error = error;
+    private readonly T? value;
+    private readonly Exception? error;
 
+    /// <summary>Whether this result is a failur</summary>
     public readonly bool IsFailure => value == null;
+    /// <summary>Whether this result is successful</summary>
     public readonly bool IsSuccess => !IsFailure;
 
-    public Result(T value) : this(value, null) { }
-    public Result(Exception error) : this(default, error) { }
+    private Result(T? value, Exception? error)
+    {
+        this.value = value;
+        this.error = error;
+    }
 
     public static implicit operator Result<T>(T value) => new(value, null);
+    public static implicit operator Result<T>(Failure failure) => new(default, failure.error);
+
+    /// <summary>A successful result</summary>
+    /// <param name="value">The resulting value</param>
+    public static Result<T> Success(T value) => new(value, null);
+    /// <summary>A failed result</summary>
+    /// <param name="error">An exception that explains the error</param>
+    public static Result<T> Failure(Exception error) => new(default, error);
 
     public Result<U> IfSuccess<U>(Func<T, Result<U>> conversion)
     {
@@ -26,4 +41,16 @@ public readonly struct Result<T>(T? value, Exception? error)
         if (value != null) return value;
         throw error ?? new Exception("Operation Failed");
     }
+}
+
+/// <summary>A result which is always a failure</summary>
+public readonly struct Failure
+{
+    internal readonly Exception error;
+
+    private Failure(Exception error) => this.error = error;
+
+    /// <summary>A failure</summary>
+    /// <param name="error">An exception that explains the error</param>
+    public static Failure Error(Exception error) => new(error);
 }
