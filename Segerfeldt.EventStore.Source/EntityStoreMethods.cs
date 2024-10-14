@@ -51,10 +51,13 @@ public static class EntityStoreMethods
     /// <param name="snapshot">the snapshot of the entity</param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
-    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
+    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+        await ReconstituteAsync(entityStore, SnapshotRestorer<TEntity>.Applying(snapshot), cancellationToken);
+
+    private static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, SnapshotRestorer<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
     {
         var history = await entityStore.GetHistoryAsync(snapshot.Id, snapshot.Ordinal, cancellationToken);
-        if (history is null) return snapshot.Ordinal == EventOrdinal.Never ? null : throw new UnknownEntityException(snapshot.Id);
+        if (history is null) return snapshot.Ordinal is null ? null : throw new UnknownEntityException(snapshot.Id);
         if (history.Type != snapshot.EntityType) throw new IncorrectTypeException(snapshot.EntityType, history.Type);
         return entityStore.RestoreEntity(snapshot, history);
     }
@@ -72,7 +75,7 @@ public static class EntityStoreMethods
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
     public static async Task<EntityHistory?> GetHistoryAsync(this EntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
-        await entityStore.GetHistoryAsync(entityId, EventOrdinal.Never, cancellationToken);
+        await entityStore.GetHistoryAsync(entityId, null, cancellationToken);
 
 
     /// <summary>Check if an entity id is taken.</summary>
@@ -95,7 +98,7 @@ public static class EntityStoreMethods
     /// <returns>true if there is an entity with the given id, false otherwise</returns>
     public static EntityType? GetEntityType(this EntityStore entityStore, EntityId entityId) => entityStore.GetEntityTypeAsync(entityId).Result;
 
-    private static TEntity RestoreEntity<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
+    private static TEntity RestoreEntity<TEntity>(this EntityStore entityStore, SnapshotRestorer<TEntity> snapshot, EntityHistory history) where TEntity : class, IEntity
     {
         var entity = entityStore.Instantiate<TEntity>(snapshot.Id, history.Version);
         snapshot.Restore(entity);
@@ -112,14 +115,19 @@ public static class EntityStoreMethods
             : [id, version, entityStore]);
     }
 
-    /// <summary>An entity snapshot that was never made.</summary>
-    /// All events will have to be replayed to reconstitute from this snapshot.
-    private sealed class NeverSnapshot<TEntity>(EntityId id, EntityType entityType) : ISnapshot<TEntity> where TEntity : class, IEntity
+    private class SnapshotRestorer<TEntity>(EntityId id, EntityType entityType, EventOrdinal? ordinal, Action<TEntity> restore) where TEntity : class, IEntity
     {
         public EntityId Id { get; } = id;
         public EntityType EntityType { get; } = entityType;
-        public EventOrdinal Ordinal => EventOrdinal.Never;
+        public EventOrdinal? Ordinal => ordinal;
 
-        public void Restore(TEntity entity) { } // Intentionally does nothing
+        public static SnapshotRestorer<TEntity> Applying(ISnapshot<TEntity> snapshot) => new(snapshot.Id, snapshot.EntityType, snapshot.Ordinal, snapshot.Restore);
+
+        internal void Restore(TEntity entity) { restore(entity); }
     }
+
+    /// <summary>An entity snapshot that was never made.</summary>
+    /// All events will have to be replayed to reconstitute from this snapshot.
+    private sealed class NeverSnapshot<TEntity>(EntityId id, EntityType entityType)
+        : SnapshotRestorer<TEntity>(id, entityType, null, _ => {}) where TEntity : class, IEntity { }
 }

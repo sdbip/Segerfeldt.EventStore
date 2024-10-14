@@ -20,7 +20,7 @@ public sealed class EntityStore
     /// <param name="afterVersion">only events that occurred after this version (and excluding this version)  will be returned. useful if you have a snapshot.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
-    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal after, CancellationToken cancellationToken = default) =>
+    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, CancellationToken cancellationToken = default) =>
         await new GetHistoryOperation(entityId, after).ExecuteAsync(connectionFactory.CreateConnection(), cancellationToken);
 
     /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>

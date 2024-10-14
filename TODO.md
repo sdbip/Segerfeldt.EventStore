@@ -1,6 +1,5 @@
 # TODO
 
-- Remove `EventOrdinal.Never`?
 - Add readmes to the NuGet packages. <https://aka.ms/nuget/authoring-best-practices/readme>
 - Command-line `dotnet test` fails sporadically (even habitually?)
   - It is always the `SQLServer*` tests that fail.

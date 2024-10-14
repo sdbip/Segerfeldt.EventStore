@@ -9,10 +9,10 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal after)
+internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal? after)
 {
     private readonly EntityId entityId = entityId;
-    private readonly EventOrdinal after = after;
+    private readonly EventOrdinal? after = after;
 
     public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
     {
@@ -20,7 +20,7 @@ internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal after)
             "SELECT type, version FROM Entities WHERE id = @entityId;" +
             "SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @after ORDER BY ordinal");
         command.AddParameter("@entityId", entityId.ToString());
-        command.AddParameter("@after", after.Value);
+        command.AddParameter("@after", after?.Value ?? -1);
 
         await connection.OpenAsync(cancellationToken);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
