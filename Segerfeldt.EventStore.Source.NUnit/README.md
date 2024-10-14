@@ -39,7 +39,7 @@ using Segerfeldt.EventStore.Source.NUnit;
 
 namespace SourceWebApplicationTests;
 
-public class CommandTests
+public sealed class CommandTests
 {
     private HttpClient client = null!;
     private WebApplicationFactory<SourceWebApplication.AnyClass> webApplicationFactory = null!;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SourceWebApplicationTests;
 
-public class CommandTests
+public sealed class CommandTests
 {
     private HttpClient client = null!;
     private WebApplicationFactory<SourceWebApplication.TestMarker> webApplicationFactory = null!;
