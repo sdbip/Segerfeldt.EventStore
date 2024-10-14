@@ -46,8 +46,8 @@ public sealed class DefaultEventSourceRepository(IDbConnection connection) : IEv
 
     private static Event ReadEvent(IDataRecord record) => new(
         record.GetString(record.GetOrdinal("entity_id")),
-        record.GetString(record.GetOrdinal("name")),
         record.GetString(record.GetOrdinal("entity_type")),
+        record.GetString(record.GetOrdinal("name")),
         record.GetString(record.GetOrdinal("details")),
         Convert.ToInt16(record.GetValue(record.GetOrdinal("ordinal"))),
         record.GetInt64(record.GetOrdinal("position")));

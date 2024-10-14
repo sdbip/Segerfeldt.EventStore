@@ -12,6 +12,6 @@ public static class EventSourceExtension
     /// <param name="details">The details of the <see cref="Event"/></param>
     public static void MockEmittedEvent(this EventSource eventSource, string entityId, string entityType, string name, object details)
     {
-        eventSource.Emit([new Event(entityId, name, entityType, JSON.Serialize(details), 0, 0)]);
+        eventSource.Emit([new Event(entityId, entityType, name, JSON.Serialize(details), 0, 0)]);
     }
 }

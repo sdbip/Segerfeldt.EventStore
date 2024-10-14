@@ -74,7 +74,7 @@ public sealed class EndpointTests
         Assert.That(responseBody, Is.EqualTo("50"));
     }
 
-    private static Event Event(string name, string details, int ordinal, long position) => new("a_player", name, "Player", details, ordinal, position);
+    private static Event Event(string name, string details, int ordinal, long position) => new("a_player", "Player", name, details, ordinal, position);
 
     private void Receive(params Event[] events)
     {

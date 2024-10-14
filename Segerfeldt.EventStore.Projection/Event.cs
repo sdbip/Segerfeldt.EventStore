@@ -5,7 +5,7 @@ using Segerfeldt.EventStore.Shared;
 namespace Segerfeldt.EventStore.Projection;
 
 /// <summary>An event notifying that the state of an entity has changed at the source</summary>
-public sealed class Event(string entityId, string name, string entityType, string details, int ordinal, long position)
+public sealed class Event(string entityId, string entityType, string name, string details, int ordinal, long position)
 {
     /// <summary>The id of the entity that changed</summary>
     public string EntityId { get; } = entityId;

@@ -24,7 +24,7 @@ public sealed class EventSourceTests
     public void ReportsEventsWithEntityIdAndDetails()
     {
         repository.Setup(r => r.GetEvents(It.IsAny<long>()))
-            .Returns([new Event("an-entity", "first-event", "some-entity", @"{""value"":42}", ordinal: 0, position: 1)]);
+            .Returns([new Event("an-entity", "some-entity", "first-event", @"{""value"":42}", ordinal: 0, position: 1)]);
 
         var receivedEvents = CaptureReceivedEvents("first-event");
 
@@ -41,9 +41,9 @@ public sealed class EventSourceTests
     {
         repository.Setup(r => r.GetEvents(-1))
             .Returns([
-                new Event("an-entity", "first-event", "some-entity", @"{""value"":42}", ordinal: 0, position: 0),
-                new Event("an-entity", "third-event", "some-entity", @"{""value"":42}", ordinal: 2, position: 0),
-                new Event("an-entity", "second-event", "some-entity", @"{""value"":42}", ordinal: 1, position: 0),
+                new Event("an-entity", "some-entity", "first-event", @"{""value"":42}", ordinal: 0, position: 0),
+                new Event("an-entity", "some-entity", "third-event", @"{""value"":42}", ordinal: 2, position: 0),
+                new Event("an-entity", "some-entity", "second-event", @"{""value"":42}", ordinal: 1, position: 0),
             ]);
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event", "third-event");
@@ -58,7 +58,7 @@ public sealed class EventSourceTests
     public void ReportsNewPosition()
     {
         repository.Setup(r => r.GetEvents(It.IsAny<long>()))
-            .Returns([new Event("an-entity", "first-event", "some-entity", @"{""value"":42}", ordinal: 0, position: 1)]);
+            .Returns([new Event("an-entity", "some-entity", "first-event", @"{""value"":42}", ordinal: 0, position: 1)]);
 
         var startingPosition = CaptureStartingPosition();
         var finishedPosition = CaptureFinishedPosition();
