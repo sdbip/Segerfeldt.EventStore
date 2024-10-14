@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
+using Segerfeldt.EventStore.Projection.Hosting;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -33,8 +35,15 @@ public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup
         base.ConfigureWebHost(builder);
     }
 
-    protected virtual void ConfigureServices(IServiceCollection services)
+    protected virtual void ConfigureServices(IServiceCollection services) { }
+
+    /// <summary>Mock events emitted from an <see cref="EventSource"/></summary>
+    /// <param name="eventSourceName">The name used when registering the <see cref="EventSource"/></param>
+    /// <param name="events">The events to emit</param>
+    public void EmitMockEvents(string eventSourceName, params Event[] events)
     {
+        var tester = Services.GetRequiredService<ProjectionTester>();
+        tester.Emit(eventSourceName, events);
     }
 
     private class InsipidService : IHostedService

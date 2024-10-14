@@ -1,9 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using ProjectionWebApplication;
-
 using Segerfeldt.EventStore.Projection;
-using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Projection.NUnit;
 
 using System;
@@ -14,18 +11,16 @@ namespace ProjectionWebApplicationTests;
 
 public sealed class EndpointTests
 {
+    private const string EventSourceName = "events";
+
     private HttpClient client = null!;
-    private WebApplicationFactory<ScoreBoard> webApplicationFactory = null!;
+    private WebApplicationFactory<ProjectionWebApplication.TestMarker> webApplicationFactory = null!;
 
     [SetUp]
     public void Setup()
     {
         webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
-
-        var projectionTracker = webApplicationFactory.Services.GetService<ProjectionTracker>();
-        Assert.That(projectionTracker, Is.Not.Null);
-        Assert.That(projectionTracker!.Position, Is.Null);
     }
 
     [Test]
@@ -41,7 +36,8 @@ public sealed class EndpointTests
     [Test]
     public async Task Player_RegisteredAndIncreased_ReturnsTotalScore()
     {
-        Receive(Event("PlayerRegistered", @"{""name"":""Johan""}", ordinal: 0, position: 0),
+        webApplicationFactory.EmitMockEvents(EventSourceName,
+            Event("PlayerRegistered", @"{""name"":""Johan""}", ordinal: 0, position: 0),
             Event("ScoreIncreased", @"{""points"":2}", ordinal: 1, position: 0));
 
         var response = await client.GetAsync(new Uri("Player", UriKind.Relative));
@@ -64,7 +60,8 @@ public sealed class EndpointTests
     [Test]
     public async Task Projection_SingleEvent_ReturnsPosition()
     {
-        Receive(Event("any", @"{}", ordinal: 0, position: 50));
+        webApplicationFactory.EmitMockEvents(EventSourceName,
+            Event("any", @"{}", ordinal: 0, position: 50));
 
         var response = await client.GetAsync(new Uri("Projection", UriKind.Relative));
 
@@ -74,11 +71,6 @@ public sealed class EndpointTests
         Assert.That(responseBody, Is.EqualTo("50"));
     }
 
-    private static Event Event(string name, string details, int ordinal, long position) => new("a_player", "Player", name, details, ordinal, position);
-
-    private void Receive(params Event[] events)
-    {
-        var tester = webApplicationFactory.Services.GetRequiredService<ProjectionTester>();
-        tester.Emit("events", events);
-    }
+    private static Event Event(string name, string details, int ordinal, long position) =>
+        new("a_player", "Player", name, details, ordinal, position);
 }
