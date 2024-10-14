@@ -58,11 +58,20 @@ public sealed class CommandTests
     }
 
     [Test]
-    public async Task RegisterUser_Returns204NoContent()
+    public async Task RegisterUser_Authenticated_Returns204NoContent()
+    {
+        var response = await client.SendPostCommand("User/", new { username = "user4" },
+            h => h.Authorization = new("Username", "test-user"));
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+    }
+
+    [Test]
+    public async Task RegisterUser_NotAuthenticated_Returns401Unauthorized()
     {
         var response = await client.SendPostCommand("User/", new { username = "user4" });
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 }
 ```

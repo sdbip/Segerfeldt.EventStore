@@ -15,6 +15,9 @@ public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
     /// <inheritdoc/>
     public async Task<CommandResult> Handle(RegisterUser command, CommandContext context)
     {
+        var actor = context.HttpContext.User.Identity?.Name;
+        if (actor is null) return CommandResult.Unauthorized();
+
         EntityId entityId;
         try { entityId = entityId = EntityId.Value(command.Username).OrThrow(); }
         catch { return CommandResult.BadRequest($"Invalid username [{command.Username}]"); }
@@ -23,7 +26,7 @@ public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
             return CommandResult.Forbidden($"The username [{entityId}] is already in use");
 
         var user = User.New(entityId);
-        await context.EventPublisher.PublishChangesAsync(user, "test_user");
+        await context.EventPublisher.PublishChangesAsync(user, actor);
         return CommandResult.NoContent();
     }
 }

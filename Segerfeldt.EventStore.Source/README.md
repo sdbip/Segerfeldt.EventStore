@@ -61,6 +61,15 @@ services.AddSwaggerGen(options =>
 });
 ```
 
+You will also need to add an authentication handler to be able to identify the actor when publishing events.
+
+```csharp
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(options => {
+    options.AddScheme<MyCustomAuthenticationHandler>("", "");
+});
+```
+
 The `IncludeXmlComments` call is optional. If you do use it, you will need to also turn on XML documentation in your .csproj file:
 
 ```xml

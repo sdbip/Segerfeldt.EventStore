@@ -1,7 +1,11 @@
 using System.Reflection;
 
+using Microsoft.AspNetCore.Authentication;
+
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
+
+using SourceWebApplication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,11 @@ builder.Services.AddSwaggerGen(options =>
     // EventStore: Add Commands to Swagger documentation
     options.DocumentCommands(Assembly.GetExecutingAssembly());
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "SourceWebApplication.xml"));
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(options => {
+    options.AddScheme<NaiveAuthenticationHandler>("", "");
 });
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
