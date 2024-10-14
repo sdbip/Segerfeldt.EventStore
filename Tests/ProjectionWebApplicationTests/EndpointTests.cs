@@ -23,9 +23,9 @@ public sealed class EndpointTests
         webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
 
-        var positionTracker = webApplicationFactory.Services.GetService<ProjectionTracker>();
-        Assert.That(positionTracker, Is.Not.Null);
-        Assert.That(positionTracker!.Position, Is.Null);
+        var projectionTracker = webApplicationFactory.Services.GetService<ProjectionTracker>();
+        Assert.That(projectionTracker, Is.Not.Null);
+        Assert.That(projectionTracker!.Position, Is.Null);
     }
 
     [Test]

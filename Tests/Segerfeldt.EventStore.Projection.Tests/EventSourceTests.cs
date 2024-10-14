@@ -9,15 +9,15 @@ public sealed class EventSourceTests
     private Mock<IEventSourceRepository> repository = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
-    private Mock<IProjectionTracker> positionTracker = null!;
+    private Mock<IProjectionTracker> projectionTracker = null!;
 
     [SetUp]
     public void Setup()
     {
         repository = new Mock<IEventSourceRepository>();
         delayConfiguration = new Mock<IPollingStrategy>();
-        positionTracker = new Mock<IProjectionTracker>();
-        eventSource = new EventSource(repository.Object, positionTracker.Object, delayConfiguration.Object);
+        projectionTracker = new Mock<IProjectionTracker>();
+        eventSource = new EventSource(repository.Object, projectionTracker.Object, delayConfiguration.Object);
     }
 
     [Test]
@@ -80,7 +80,7 @@ public sealed class EventSourceTests
     private Trap<long> CaptureFinishedPosition()
     {
         var finishedPosition = new Trap<long>();
-        positionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
+        projectionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
             .Callback<long>(l => finishedPosition.Value = l);
         return finishedPosition;
     }
@@ -88,7 +88,7 @@ public sealed class EventSourceTests
     private Trap<long> CaptureStartingPosition()
     {
         var startingPosition = new Trap<long>();
-        positionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
+        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
             .Callback<long>(l => startingPosition.Value = l);
         return startingPosition;
     }

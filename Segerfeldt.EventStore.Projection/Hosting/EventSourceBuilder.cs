@@ -11,7 +11,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 public sealed class EventSourceBuilder
 {
     private readonly List<Func<IServiceProvider, IReceptacle>> receptacles = [];
-    private Func<IServiceProvider, IProjectionTracker>? positionTracker;
+    private Func<IServiceProvider, IProjectionTracker>? projectionTrackerFunc;
     private readonly Func<IServiceProvider, IEventSourceRepository> getRepository;
 
     /// <param name="getRepository">A function to </param>
@@ -56,35 +56,35 @@ public sealed class EventSourceBuilder
     }
 
     /// <summary>Set the <see cref="IProjectionTracker"/> used to persist the position</summary>
-    /// <typeparam name="TPositionTracker">The type of the projection tracker</typeparam>
+    /// <typeparam name="TProjectionTracker">The type of the projection tracker</typeparam>
     /// <returns>This <see cref="EventSourceBuilder"/> for further configuration</returns>
-    public EventSourceBuilder SetPositionTracker<TPositionTracker>() where TPositionTracker : IProjectionTracker =>
-        SetPositionTracker(provider => provider.GetRequiredService<TPositionTracker>());
+    public EventSourceBuilder SetProjectionTracker<TProjectionTracker>() where TProjectionTracker : IProjectionTracker =>
+        SetProjectionTracker(provider => provider.GetRequiredService<TProjectionTracker>());
 
     /// <summary>Set the <see cref="IProjectionTracker"/> used to persist the position</summary>
-    /// <param name="positionTracker">The object used for tracking</param>
+    /// <param name="projectionTracker">The object used for tracking</param>
     /// <returns>This <see cref="EventSourceBuilder"/> for further configuration</returns>
     // ReSharper disable once ParameterHidesMember
-    public EventSourceBuilder SetPositionTracker(IProjectionTracker positionTracker) =>
-        SetPositionTracker(_ => positionTracker);
+    public EventSourceBuilder SetProjectionTracker(IProjectionTracker projectionTracker) =>
+        SetProjectionTracker(_ => projectionTracker);
 
     /// <summary>Set the <see cref="IProjectionTracker"/> used to persist the position</summary>
-    /// <param name="positionTrackerFunc">Function to call to instantiate the position tracker</param>
+    /// <param name="projectionTrackerFunc">Function to call to instantiate the position tracker</param>
     /// <returns>This <see cref="EventSourceBuilder"/> for further configuration</returns>
-    public EventSourceBuilder SetPositionTracker(Func<IServiceProvider, IProjectionTracker> positionTrackerFunc)
+    public EventSourceBuilder SetProjectionTracker(Func<IServiceProvider, IProjectionTracker> projectionTrackerFunc)
     {
-        positionTracker = positionTrackerFunc;
+        this.projectionTrackerFunc = projectionTrackerFunc;
         return this;
     }
 
     internal EventSource Build(IServiceProvider provider)
     {
-        var eventSource = new EventSource(getRepository(provider), GetPositionTracker(provider));
+        var eventSource = new EventSource(getRepository(provider), GetProjectionTracker(provider));
         foreach (var receptacle in receptacles)
             eventSource.Register(receptacle(provider));
 
         return eventSource;
     }
 
-    private IProjectionTracker? GetPositionTracker(IServiceProvider provider) => positionTracker?.Invoke(provider);
+    private IProjectionTracker? GetProjectionTracker(IServiceProvider provider) => projectionTrackerFunc?.Invoke(provider);
 }
