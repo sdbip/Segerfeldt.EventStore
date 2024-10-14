@@ -8,12 +8,12 @@ namespace SourceWebApplicationTests;
 public class CommandTests
 {
     private HttpClient client = null!;
-    private WebApplicationFactory<RegisterUser> webApplicationFactory = null!;
+    private WebApplicationFactory<SourceWebApplication.TestMarker> webApplicationFactory = null!;
 
     [SetUp]
     public void Setup()
     {
-        webApplicationFactory = new WebApplicationFactory<RegisterUser>();
+        webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
     }
 

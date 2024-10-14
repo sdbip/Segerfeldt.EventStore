@@ -8,7 +8,7 @@ using MS = Microsoft.AspNetCore.Mvc.Testing;
 namespace Segerfeldt.EventStore.Source.NUnit;
 
 /// <inheritdoc/>
-public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup> where TStartup : class
+public class WebApplicationFactory<TEntryPoint> : MS.WebApplicationFactory<TEntryPoint> where TEntryPoint : class
 {
     protected sealed override void ConfigureWebHost(IWebHostBuilder builder)
     {
