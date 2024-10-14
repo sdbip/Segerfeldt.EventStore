@@ -26,7 +26,7 @@ public class CommandTests
     [Test]
     public async Task RegisterUser_Returns204NoContent()
     {
-        var response = await client.PostCommand("User/", new { username = "user4" });
+        var response = await client.SendPostCommand("User/", new { username = "user4" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
     }
