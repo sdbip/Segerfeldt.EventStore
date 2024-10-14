@@ -8,6 +8,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Tests.CommandAPI;
@@ -139,8 +140,8 @@ public sealed class DocumentationTests
 
     [TestCase(typeof(CommandHandler), "Command", OperationType.Post, "/entity", "POST /entity")]
     [TestCase(typeof(CommandHandlerWithDTO), "Command", OperationType.Post, "/entity", "POST /entity")]
-    [TestCase(typeof(CommandlessHandler), "CommandlessHandler", OperationType.Delete, "/entity/{id1}/property/{id2}", "DELETE /entity/{id1}/property/{id2}")]
-    [TestCase(typeof(CommandlessHandlerWithDTO), "CommandlessHandlerWithDTO", OperationType.Delete, "/entity/{id1}/property/{id2}", "DELETE /entity/{id1}/property/{id2}")]
+    [TestCase(typeof(CommandlessHandler), "EmptyCommand", OperationType.Delete, "/entity/{id1}/property/{id2}", "DELETE /entity/{id1}/property/{id2}")]
+    [TestCase(typeof(CommandlessHandlerWithDTO), "EmptyCommand", OperationType.Delete, "/entity/{id1}/property/{id2}", "DELETE /entity/{id1}/property/{id2}")]
     public void DocumentsOperations(Type commandHandlerType, string name, OperationType method, string pattern, string operationId)
     {
         GivenCommandHandler(commandHandlerType);
@@ -237,18 +238,18 @@ public sealed class DocumentationTests
     }
 
     [DeletesEntity("Entity", EntityId = "id1", Property = "property", PropertyId = "id2")]
-    private class CommandlessHandler : ICommandlessHandler
+    private class CommandlessHandler : ICommandHandler<EmptyCommand>
     {
-        public Task<CommandResult> Handle(CommandContext context)
+        public Task<CommandResult> Handle(EmptyCommand command, CommandContext context)
         {
             throw new NotImplementedException();
         }
     }
 
     [DeletesEntity("Entity", EntityId = "id1", Property = "property", PropertyId = "id2")]
-    private class CommandlessHandlerWithDTO : ICommandlessHandler<Result>
+    private class CommandlessHandlerWithDTO : ICommandHandler<EmptyCommand, Result>
     {
-        public Task<CommandResult<Result>> Handle(CommandContext context)
+        public Task<CommandResult<Result>> Handle(EmptyCommand command, CommandContext context)
         {
             throw new NotImplementedException();
         }

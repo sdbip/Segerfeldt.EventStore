@@ -12,7 +12,7 @@ public class CommandHandlerExecuter(ICommandHandler handler)
 {
     private readonly ICommandHandler handler = handler;
 
-    public async Task<ActionResult> HandleAsync(object? command, CommandContext context)
+    public async Task<ActionResult> HandleAsync(object command, CommandContext context)
     {
         Task task;
         try
@@ -35,16 +35,14 @@ public class CommandHandlerExecuter(ICommandHandler handler)
         return handlerResult.ActionResult();
     }
 
-    private static Task InvokeHandler(ICommandHandler handler, object? command, CommandContext context)
+    private static Task InvokeHandler(ICommandHandler handler, object command, CommandContext context)
     {
-        // The handler might be any of ICommandHandler<in TCommand>, ICommandHandler<in TCommand, TResponseDTO>,
-        // ICommandlessHandler or ICommandlessHandler<TResponseDTO>. The exact type cannot be known. It is
-        // therefore impossible to access the Handle method in a type-secure manner. It has to be invoked
-        // through reflection.
-        var parameters = command is null ? new[] { context } : new[] { command, context };
+        // The handler might be any of ICommandHandler<in TCommand> or ICommandHandler<in TCommand, TResponseDTO>.
+        // The exact type cannot be known. It is therefore impossible to access the Handle method in a type-secure
+        // manner; it has to be invoked through reflection.
 
         // The response type depends on which interface is implemented. All we can say for sure is that it is
         // a Task<T> (which inherits Task), but we cannot tell what the generic argument T is.
-        return (Task)handler.InvokeMethod(nameof(ICommandHandler<object>.Handle), parameters)!;
+        return (Task)handler.InvokeMethod(nameof(ICommandHandler<object>.Handle), [command, context])!;
     }
 }
