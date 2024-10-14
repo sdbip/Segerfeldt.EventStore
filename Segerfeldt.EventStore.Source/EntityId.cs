@@ -43,10 +43,12 @@ public sealed class EntityId : ValueObject<EntityId>
         return new EntityId(Convert.ToBase64String(guid.ToByteArray()).Replace('+', '-').Replace("/", "_"));
     }
 
+    /// <inheritdoc />
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(value);
 
     // Implicit operator allows EntityId to be used where string is expected.
     public static implicit operator string(EntityId entityId) => entityId.value;
+    /// <inheritdoc />
     public override string ToString() => value;
 
     #pragma warning disable SYSLIB1045 // Don't want partial classes

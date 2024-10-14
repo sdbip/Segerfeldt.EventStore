@@ -20,7 +20,7 @@ public sealed class EventSourceExtensionTests
     [Test]
     public void NotifiesMockedEvent()
     {
-        eventSource.MockNotifiedEvent("entityId", "Entity", "EventName", new { A = "B" });
+        eventSource.MockEmittedEvent("entityId", "Entity", "EventName", new { A = "B" });
         Assert.Multiple(() =>
         {
             Assert.That(receptacle.EntityId, Is.EqualTo("entityId"));

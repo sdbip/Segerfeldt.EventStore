@@ -22,9 +22,11 @@ public sealed class EntityType : ValueObject<EntityType>
 
     internal static EntityType Safe(string name) => new(name);
 
+    /// <inheritdoc />
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(name);
 
     public static implicit operator string(EntityType type) => type.name;
+    /// <inheritdoc />
     public override string ToString() => name;
 
 #pragma warning disable SYSLIB1045 // Avoid partial classes

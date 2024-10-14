@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
+/// <summary>Internal class. Only made public to be accessible by tests.</summary>
 public class CommandHandlerExecuter(ICommandHandler handler)
 {
     private readonly ICommandHandler handler = handler;

@@ -9,9 +9,10 @@ using System.Reflection;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
 
+/// <summary>Internal class. Only made public to be accessible by tests.</summary>
 public sealed class DocumentationGenerator(DocumentFilterContext context)
 {
-    private readonly HashSet<Type> commandHandlers = new();
+    private readonly HashSet<Type> commandHandlers = [];
     private readonly DocumentFilterContext context = context;
 
     public void AddCommandHandler(Type type)

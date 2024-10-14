@@ -8,10 +8,16 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection;
 
+/// <summary>
+/// Base class for creating receptacles without having to explicitly implement all
+/// of the <see cref="IReceptacle"/> interface.
+/// Receptacles are the tools of projection.
+/// </summary>
 public abstract class ReceptacleBase : IReceptacle
 {
     private readonly Lazy<Dictionary<string, IEnumerable<MethodInfo>>> lazyMethods;
 
+    /// <inheritdoc/>
     public IEnumerable<string> AcceptedEvents => lazyMethods.Value.Keys;
 
     protected ReceptacleBase()
@@ -25,6 +31,7 @@ public abstract class ReceptacleBase : IReceptacle
                 .ToDictionary(g => g.Key, g => g.Select(ma => ma.method)));
     }
 
+    /// <inheritdoc/>
     public async Task UpdateAsync(Event @event)
     {
         if (!lazyMethods.Value.TryGetValue(@event.Name, out var methods)) return;

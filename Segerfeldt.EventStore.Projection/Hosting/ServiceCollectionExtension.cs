@@ -21,8 +21,8 @@ public static class ServiceCollectionExtension
     {
         return services.AddHostedEventSource(p =>
         {
-            // TODO: Fix this coupling somehow.
-            // It is assumed that there is only one connection ever created (but it might be opened and closed many times)
+            // TODO: Fix this coupling somehow. PrepareDatabase() will be called everytime the service needs a new connection object.
+            // It is assumed that there is only one connection ever created (but it might be opened and closed many times).
             provider.PrepareDatabase(p);
             return provider.CreateConnection();
         }, eventSourceName);

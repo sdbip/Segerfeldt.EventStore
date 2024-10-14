@@ -50,8 +50,8 @@ public class ModifiesEntityAttribute : Attribute
 
     internal string EntityIdOrDefault => EntityId ?? DefaultEntityId;
     internal bool HasEntityIdParameter => Method == OperationType.Delete || Property is not null;
-    public bool HasPropertyIdParameter => PropertyId is not null;
-    public bool HasSubpropertyParameter => Subproperty is not null;
+    internal bool HasPropertyIdParameter => PropertyId is not null;
+    internal bool HasSubpropertyParameter => Subproperty is not null;
 
     internal string Pattern =>
         Property is not null ? SpecificPropertyPattern :

@@ -7,15 +7,21 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection;
 
+/// <summary>A repository that contains the published events of the entities.</summary>
 public interface IEventSourceRepository
 {
+    /// <summary>Gets new events sorted chronologically</summary>
+    /// <param name="afterPosition">The last position to skip as it has already been processed.</param>
     IEnumerable<Event> GetEvents(long afterPosition);
 }
 
+/// <summary>The default <see cref="IEventSourceRepository"/> implementation</summary>
+/// <param name="connection">A connection to the source database</param>
 public sealed class DefaultEventSourceRepository(IDbConnection connection) : IEventSourceRepository
 {
     private readonly IDbConnection connection = connection;
 
+    /// <inheritdoc/>
     public IEnumerable<Event> GetEvents(long afterPosition)
     {
         try

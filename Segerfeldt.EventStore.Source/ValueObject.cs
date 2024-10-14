@@ -15,10 +15,12 @@ public abstract class ValueObject<TSubclass> where TSubclass : ValueObject<TSubc
     public static bool operator ==(ValueObject<TSubclass>? left, ValueObject<TSubclass>? right) => Equals(left, right);
     public static bool operator !=(ValueObject<TSubclass>? left, ValueObject<TSubclass>? right) => !Equals(left, right);
 
+    /// <inheritdoc />
     public override bool Equals(object? obj) =>
         obj is TSubclass other && other.GetType() == GetType() &&
         other.GetEqualityComponents().SequenceEqual(GetEqualityComponents());
 
+    /// <inheritdoc />
     public override int GetHashCode()
     {
         var hash = new HashCode();

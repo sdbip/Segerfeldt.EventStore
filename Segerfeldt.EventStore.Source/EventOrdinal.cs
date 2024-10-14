@@ -7,7 +7,7 @@ namespace Segerfeldt.EventStore.Source;
 public sealed class EventOrdinal : ValueObject<EventOrdinal>
 {
     /// <summary>No event has been published yet</summary>
-    public static EventOrdinal Never => new(-1);
+    public static EventOrdinal Never => new(-1); // TODO: Remove this?
     /// <summary>The first ever published event</summary>
     public static EventOrdinal Zero => new(0);
 
@@ -27,9 +27,11 @@ public sealed class EventOrdinal : ValueObject<EventOrdinal>
 
     internal static EventOrdinal Safe(int value) => new(value);
 
+    /// <inheritdoc />
     protected override IEnumerable<object> GetEqualityComponents() => [Value];
 
     internal EventOrdinal Next() => new(Value + 1);
 
+    /// <inheritdoc />
     public override string ToString() => Value < 0 ? "[Never]" : $"[{Value}]";
 }

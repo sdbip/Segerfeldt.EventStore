@@ -23,7 +23,7 @@ builder.Services.AddSingleton<ScoreBoard>();
 builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnectionString("events")!, "events")
     .AddReceptacles(Assembly.GetExecutingAssembly())
-    .SetProjectionTracker<ProjectionTracker>();
+    .SetPositionTracker<ProjectionTracker>();
 
 var app = builder.Build();
 if (builder.Environment.IsDevelopment())

@@ -7,6 +7,7 @@ using MS = Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Segerfeldt.EventStore.Source.NUnit;
 
+/// <inheritdoc/>
 public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup> where TStartup : class
 {
     protected sealed override void ConfigureWebHost(IWebHostBuilder builder)
@@ -21,7 +22,7 @@ public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup
         base.ConfigureWebHost(builder);
     }
 
-    protected virtual void ConfigureServices(IServiceCollection services)
-    {
-    }
+    /// <summary>Add optional services used for testing</summary>
+    /// <param name="services">The Web API service configuration</param>
+    protected virtual void ConfigureServices(IServiceCollection services) { }
 }

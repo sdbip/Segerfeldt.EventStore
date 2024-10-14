@@ -30,11 +30,13 @@ public sealed class EntityVersion : ValueObject<EntityVersion>
         return new EntityVersion(value);
     }
 
+    /// <inheritdoc />
     protected override IEnumerable<object> GetEqualityComponents() => [Value];
 
     /// <summary>The next <see cref="EntityVersion"/> after this</summary>
     /// <returns>a new <see cref="EntityVersion"/> with either the value 0 (if this is <see cref="New"/>), or this value + 1</returns>
     internal EntityVersion Next() => new(Value + 1);
 
+    /// <inheritdoc />
     public override string ToString() => Value < 0 ? "[New]" : $"[{Value}]";
 }
