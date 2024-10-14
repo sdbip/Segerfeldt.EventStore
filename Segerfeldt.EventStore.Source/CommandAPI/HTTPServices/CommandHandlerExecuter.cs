@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
+using Segerfeldt.EventStore.Source.Internals;
+
 using System.Reflection;
 using System.Threading.Tasks;
 

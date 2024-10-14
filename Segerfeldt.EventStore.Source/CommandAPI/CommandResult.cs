@@ -5,9 +5,7 @@ using System;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
 
-public class InvalidStatusCodeException(string? message) : Exception(message)
-{
-}
+public class InvalidStatusCodeException(string message) : Exception(message) { }
 
 public interface ICommandResult
 {

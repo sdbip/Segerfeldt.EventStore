@@ -1,9 +1,22 @@
 using Segerfeldt.EventStore.Source.Snapshots;
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source;
+
+public sealed class InvalidEntityException(Type entityType) : Exception($"Invalid entity type {entityType.Name}. Constructor missing.") { }
+public sealed class UnknownEntityException(EntityId entityId) : Exception($"No entity with the id '{entityId}' exists.") { }
+
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+public sealed class IncorrectTypeException(EntityType expectedType, EntityType actualType)
+    : Exception($"Entity has the wrong type. Actual type is {actualType}, expected {expectedType}")
+{
+    public EntityType ExpectedType { get; } = expectedType;
+    public EntityType ActualType { get; } = actualType;
+}
 
 public static class EntityStoreMethods
 {

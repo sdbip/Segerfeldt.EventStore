@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
+using Segerfeldt.EventStore.Source.Internals;
 
 using System;
 using System.Net;
@@ -54,15 +55,8 @@ public sealed class CommandHandlerExecuterTests
             Task.FromResult(CommandResult.NoContent());
     }
 
-    private class ThrowingCommandHandler : ICommandHandler<EmptyCommand>
+    private class ThrowingCommandHandler(Exception exception) : ICommandHandler<EmptyCommand>
     {
-        private readonly Exception exception;
-
-        public ThrowingCommandHandler(Exception exception)
-        {
-            this.exception = exception;
-        }
-
         public Task<CommandResult> Handle(EmptyCommand command, CommandContext context)
         {
             throw exception;
