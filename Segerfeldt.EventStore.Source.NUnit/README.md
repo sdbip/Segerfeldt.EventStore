@@ -47,20 +47,13 @@ public class CommandTests
     [TearDown]
     public void TearDown()
     {
-        var connectionFactory = webApplicationFactory.Services.GetRequiredService<IConnectionFactory>();
-        var connection = connectionFactory.CreateConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = "DELETE FROM Events; DELETE FROM Entities";
-
-        connection.Open();
-        command.ExecuteNonQuery();
-        connection.Close();
+        webApplicationFactory.ClearSourceTables();
     }
 
     [Test]
     public async Task RegisterUser_Returns204NoContent()
     {
-        var response = await PostCommand("User/", @"{""username"":""user4""}");
+        var response = await client.PostCommand("User/", new { username = "user4" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
     }

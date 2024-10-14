@@ -25,4 +25,16 @@ public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup
     /// <summary>Add optional services used for testing</summary>
     /// <param name="services">The Web API service configuration</param>
     protected virtual void ConfigureServices(IServiceCollection services) { }
+
+    public void ClearSourceTables()
+    {
+        var connectionFactory = Services.GetRequiredService<IConnectionFactory>();
+        var connection = connectionFactory.CreateConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "DELETE FROM Events; DELETE FROM Entities";
+
+        connection.Open();
+        try { command.ExecuteNonQuery(); }
+        finally { connection.Close(); }
+    }
 }
