@@ -1,20 +1,27 @@
-<!--
-    This comment only exists to disable the Markdownlint rule
-    MD025/single-title/single-h1: Multiple top-level headings in the same document
-    This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
--->
-
 # Segerfeldt.EventStore.Source.NUnit
 
 A package for assisting tests of Segerfeldt.EventSourcing.Source applications.
 
-It allows for unit tests of entities:
+It allows for unit testing entities. You can verify added events without needing to publish them:
 
 ```csharp
 [Test]
-public void TestEntity()
+public void TestEntityCreationEvent()
 {
-    var entity = new TestEntity()
+    var entity = MyEntity.New("creation data");
+
+    // Assert that an event of the specified name was added
+    Assert.That(entity, Added.Event("Created"));
+
+    // Assert that the event was added with the correct details
+    Assert.That(entity, Added.Event("Created").WithDetails(new CreatedEventDetails("creation data")));
+}
+
+[Test]
+public void TestEntityOperationEvent()
+{
+    var entity = new MyEntity(EntityId.Value("some_id").OrThrow(), EntityVersion.New);
+
     entity.PerformOperation();
 
     // Assert that an event of the specified name was added
