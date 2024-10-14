@@ -5,9 +5,8 @@
         <Nullable>enable</Nullable>
 
         <IsPackable>true</IsPackable>
-
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageVersion>0.0.3</PackageVersion>
     </PropertyGroup>
 
@@ -21,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Include="README.md" Pack="true" PackagePath=""/>
       <Compile Include="..\Segerfeldt.EventStore.Shared\JSON.cs">
         <Link>JSON.cs</Link>
       </Compile>

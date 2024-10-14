@@ -2,7 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <OutputType>Library</OutputType>
+
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageVersion>0.0.12</PackageVersion>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
@@ -12,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Include="README.md" Pack="true" PackagePath=""/>
       <Compile Include="..\Segerfeldt.EventStore.Shared\JSON.cs">
         <Link>Shared/JSON.cs</Link>
       </Compile>
