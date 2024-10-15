@@ -82,7 +82,7 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
     {
         // The actor is the user that executes the command.
         // The name of the current principal is usually a good choice.
-        var actor = context.HttpContext.User?.Name;
+        var actor = context.context.HttpContext.User.Identity?.Name;
 
         // Return status 401 UNAUTHORIZED if authentication fails.
         if (actor is null) return CommandResult.Unauthorized();

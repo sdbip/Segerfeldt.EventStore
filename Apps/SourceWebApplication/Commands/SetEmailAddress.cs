@@ -15,6 +15,9 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
     /// <inheritdoc/>
     public async Task<CommandResult<string?>> Handle(SetEmailAddress command, CommandContext context)
     {
+        var actor = context.HttpContext.User.Identity?.Name;
+        if (actor is null) return CommandResult.Unauthorized();
+
         var emailAddress = command.EmailAddress;
         var availability = await EmailAddressAvailability.GetAsync(context.EntityStore);
 
@@ -32,8 +35,8 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
 
         entity.SetEmailAddress(emailAddress);
 
-        await context.EventPublisher.PublishChangesAsync(entity, "test_user");
-        await context.EventPublisher.PublishChangesAsync(availability, "test_user");
+        await context.EventPublisher.PublishChangesAsync(entity, actor);
+        await context.EventPublisher.PublishChangesAsync(availability, actor);
         return CommandResult.NoContent();
     }
 }
