@@ -109,22 +109,13 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
 
     private void Emit(Event @event)
     {
-        try
-        {
-            var tasks = GetReceptacles(@event)
-                .Select(async d => await d.UpdateAsync(@event));
-            Task.WhenAll(tasks).Wait();
-        }
-        catch
-        {
-            System.Diagnostics.Debugger.Break();
-        }
+        var tasks = GetReceptacles(@event)
+            .Select(async d => await d.UpdateAsync(@event));
+        Task.WhenAll(tasks).Wait();
     }
 
     private IEnumerable<IReceptacle> GetReceptacles(Event @event) =>
-        receptacles.ContainsKey(@event.Name)
-            ? receptacles[@event.Name]
-            : ImmutableList<IReceptacle>.Empty;
+        receptacles.TryGetValue(@event.Name, out var value) ? value : ImmutableList<IReceptacle>.Empty;
 
     private sealed class DefaultPollingStrategy : IPollingStrategy
     {

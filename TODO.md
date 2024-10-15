@@ -6,9 +6,8 @@
 - `SourceWebApplicationTests` deletes all data stored by `SourceWebApplication`.
   This data should however not be important so it might be okay.
 - Explain somewhere that an *entity* is not a code object. It is the actual thing being modelled.
-  The `Entity` object represents *a specific version* of the entity and it will not change that.
-  When events are published, the entity's version is incremented, but the `Entity` remains as it was.
-- `System.Diagnostics.Debugger.Break()` in `EventSource`.
+  The `IEntity` object represents *a specific version* of the entity and it will not change that.
+  When events are published, the entity's version is incremented, but the `IEntity` remains as it was.
 - Rename MSSQL packages to SQLServer.
 - No error when adding two command handlers with the same entry-point.
   - This should be handled by the `MapEndpoints` call, not by `Commanding`.
