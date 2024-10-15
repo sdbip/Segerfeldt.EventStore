@@ -10,7 +10,7 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
     private const string EmailAddressClaimed = "EmailAddressClaimed";
     private const string EmailAddressReleased = "EmailAddressReleased";
 
-    private readonly HashSet<string> usedEmailAddresses = [];
+    private readonly HashSet<EmailAddress> usedEmailAddresses = [];
 
     internal static async Task<EmailAddressAvailability> GetAsync(EntityStore entityStore)
     {
@@ -18,7 +18,7 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
         return existingAvailability ?? new EmailAddressAvailability(SingletonEntityId, EntityVersion.New);
     }
 
-    public Result Claim(string emailAddress)
+    public Result Claim(EmailAddress emailAddress)
     {
         if (usedEmailAddresses.Contains(emailAddress)) return Result.Failure($"The email address [{emailAddress}] is already claimed.");
 
@@ -34,14 +34,31 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
     [ReplaysEvent(EmailAddressClaimed)]
     public void OnEmailAddressClaimed(EmailAddressDetails details)
     {
-        usedEmailAddresses.Add(details.EmailAddress);
+        usedEmailAddresses.Add(EmailAddress.Of(details.EmailAddress).OrThrow());
     }
 
     [ReplaysEvent(EmailAddressReleased)]
     public void OnEmailAddressReleased(EmailAddressDetails details)
     {
-        usedEmailAddresses.Remove(details.EmailAddress);
+        usedEmailAddresses.Remove(EmailAddress.Of(details.EmailAddress).OrThrow());
     }
 
     internal record EmailAddressDetails(string EmailAddress);
+}
+
+internal sealed class EmailAddress : ValueObject<EmailAddress>
+{
+    private readonly string value;
+
+    private EmailAddress(string value) => this.value = value;
+
+    public static Result<EmailAddress> Of(string value)
+    {
+        if (value == null) return Failure.Error($"invalid email address {value}");
+        return new EmailAddress(value);
+    }
+
+    public static implicit operator string(EmailAddress value) => value.value;
+
+    protected override IEnumerable<object> GetEqualityComponents() => [value];
 }

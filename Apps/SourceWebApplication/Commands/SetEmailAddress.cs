@@ -15,22 +15,27 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
     /// <inheritdoc/>
     public async Task<CommandResult<string?>> Handle(SetEmailAddress command, CommandContext context)
     {
+        // Get the identity of the authenticated user.
         var actor = context.HttpContext.User.Identity?.Name;
+        // Return 401 UNAUTHORIZED if the user cnnot be idetified securely.
         if (actor is null) return CommandResult.Unauthorized();
 
-        var emailAddress = command.EmailAddress;
+        // Validate command properties.
+        var emailAddress = EmailAddress.Of(command.EmailAddress);
+        if (emailAddress.IsFailure) return CommandResult.BadRequest($"Invalid email address {command.EmailAddress}");
+
+        // Retrieve the entities that matter for this command.
         var availability = await EmailAddressAvailability.GetAsync(context.EntityStore);
-
-        var result = availability.Claim(emailAddress);
-        if (result.IsFailure) return CommandResult.Forbidden(result.Error);
-
         var user = await context.EntityStore.ReconstituteAsync<User>(context.GetEntityId(), User.EntityType);
         if (user is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
 
-        user.SetEmailAddress(emailAddress);
+        // Perform operation(s) related to this command.
+        var result = availability.Claim(emailAddress.OrThrow());
+        if (result.IsFailure) return CommandResult.Forbidden(result.Error);
+        user.SetEmailAddress(emailAddress.OrThrow());
 
-        await context.EventPublisher.PublishChangesAsync(user, actor);
-        await context.EventPublisher.PublishChangesAsync(availability, actor);
+        // Publish all the changes in a single atomic operation.
+        await context.EventPublisher.PublishChangesAsync([user, availability], actor);
         return CommandResult.NoContent();
     }
 }
