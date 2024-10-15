@@ -11,5 +11,5 @@ public static class ServiceCollectionExtension
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
     /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
     public static EventSourceBuilder AddHostedSQLServerEventSource(this IServiceCollection services, string connectionString, string? eventSourceName = null) =>
-        services.AddHostedEventSource(new MSSQLEventSourceProvider(connectionString), eventSourceName);
+        services.AddHostedEventSource(new SQLServerEventSourceProvider(connectionString), eventSourceName);
 }

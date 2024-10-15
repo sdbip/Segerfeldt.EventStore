@@ -9,7 +9,7 @@
   The `Entity` object represents *a specific version* of the entity and it will not change that.
   When events are published, the entity's version is incremented, but the `Entity` remains as it was.
 - `System.Diagnostics.Debugger.Break()` in `EventSource`.
-- Rename MSSQL packages and APIs to SQLServer.
+- Rename MSSQL packages to SQLServer.
 - No error when adding two command handlers with the same entry-point.
   - This should be handled by the `MapEndpoints` call, not by `Commanding`.
   - It may be possible to analyse all the commands and find discrepancies
