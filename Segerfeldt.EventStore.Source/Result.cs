@@ -91,4 +91,8 @@ public readonly struct Failure
     /// <summary>A failure</summary>
     /// <param name="error">An exception that explains the error</param>
     public static Failure Error(Exception error) => new(error);
+
+    /// <summary>A failure</summary>
+    /// <param name="error">A essage that explans the error</param>
+    public static Failure Error(string error) => Error(new Exception(error));
 }
