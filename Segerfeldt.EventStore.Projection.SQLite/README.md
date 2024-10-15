@@ -12,7 +12,7 @@ Add Segerfeldt.EventStore.Source to another project to generate the events on th
 
 # Setup
 
-You will need to set up a database connection for each write-model database (a.k.a. `EventSource`) you want to project state from. Call the extension method `IServiceCollection.AddHostedSQLiteEventSource(string)` to subscribe to a write-model using your custom provider:
+You will need to set up a database connection for each write-model database (a.k.a. `EventSource`) you want to project state from. Call the extension method `IServiceCollection.AddHostedSQLiteEventSource(string)` to subscribe to a SQLite write-model:
 
 ```c#
 builder.Services.AddSingleton<ProjectionTracker>();
