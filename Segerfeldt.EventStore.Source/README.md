@@ -103,7 +103,7 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
     {
         // The actor is the user that executes the command.
         // The name of the current principal is usually a good choice.
-        var actor = context.context.HttpContext.User.Identity?.Name;
+        var actor = context.HttpContext.User.Identity?.Name;
 
         // Return status 401 UNAUTHORIZED if authentication fails.
         if (actor is null) return CommandResult.Unauthorized();
@@ -116,36 +116,21 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // See http://httpstatuses.com/ for details about response status codes.
 
         // The path of the request will contain the id when modifying an existing entity.
-        var id = new EntityId(context.GetRouteParameter("entityid"));
+        var id = context.GetEntityId();
         // Retrieve the referenced entity from the EntityStore.
         var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
         // Return 404 NOT FOUND if the entity doesn't exist.
         if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
         // Convert command properties to domain value objects.
-        Amount amount = new Amount(command.Amount);
-
-        try
-        {
-            amount = new Amount(command.Amount);
-        }
-        catch (ArgumentOutOfRangeException exception)
-        {
-            return CommandResult.BadRequest($"Command DTO is invalid: {exception.Message}")
-        }
+        var amount = Amount.Of(command.Amount);
+        if (amount.IsFailure) return CommandResult.BadRequest($"Command DTO is invalid: {amount.Error}");
 
         // Perform operations on the entity to change its state.
-        counter.IncrementBy(amount);
+        counter.IncrementBy(amount.OrThrow());
 
-        try
-        {
-            // The entity will add new events to define its new state. Publish them using the EventPublisher.
-            await context.EventPublisher.PublishChangesAsync(counter, actor);
-        }
-        catch
-        {
-            return
-        }
+        // The entity will add new events to define its new state. Publish them using the EventPublisher.
+        await context.EventPublisher.PublishChangesAsync(counter, actor);
 
         // Return 204 NO CONTENT (or 200 OK if there is a payload) if the command was successful.
         return CommandResult.NoContent();
@@ -193,14 +178,18 @@ public sealed class Amount : ValueObject<Amount>
         // Check that the input is acceptable. Throw an exception if it is not.
         // This makes it impossible to instantiate the Amount object with an invalid
         // value, and Amount instances will need no further validation.
-        if (value <= 0) throw new ArgumentOutOfRangeException("Amount value must be positive");
-
-       Value = value;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value, nameof(value));
+        Value = value;
     }
 
-    protected override IEnumerable<object> GetEqualityComponents() =>
+    public static Result<Amount> Of(int value)
+    {
+        try { return Result<Amount>.Success(new Amount(value)); }
+        catch (Exception error) { return Result<Amount>.Failure(error); }
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents() => [Value];
         // Prefer an ImmutableArray or other immutable enumeration type.
-        ImmutableArray.Create<object>(Amount);
         // The yield syntax can also be used, which is good if you have many properties.
 }
 
@@ -209,7 +198,7 @@ public sealed class Amount : ValueObject<Amount>
 public sealed class Counter : EntityBase
 {
     // It is recommended to define a static EntityType constant.
-    public static readonly EntityType EntityType = new("Counter");
+    public static readonly EntityType EntityType = EntityType.Name("Counter").OrThrow();
 
     // The constructor should usually be empty. Just call the base constructor with a
     // consistent (and unique to this entity class) EntityType value.
@@ -223,7 +212,7 @@ public sealed class Counter : EntityBase
     {
         // Always use EntityVersion.New as the version for new entities.
         // This indicates that the entity does not exist yet in the database.
-        var counter = new User(entityId, EntityVersion.New);
+        var counter = new Counter(entityId, EntityVersion.New);
         counter.Add(new UnpublishedEvent("Registered", new {}));
         return counter;
     }
@@ -236,7 +225,7 @@ public sealed class Counter : EntityBase
         // recommended as the domain class should always be safe to refactor.
         // The event structure however should never be allowed to change (as that would
         // make old and new details incompatible).
-        Add(new UnpublishedEvent("IncrementedBy", new IncrementedByDetails(amount.Value));
+        Add(new UnpublishedEvent("IncrementedBy", new IncrementedByDetails(amount.Value)));
     }
 
     // If you need knowlegde about the current state to protect invariants, you should
