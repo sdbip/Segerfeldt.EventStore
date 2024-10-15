@@ -18,10 +18,10 @@ public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
         var actor = context.HttpContext.User.Identity?.Name;
         if (actor is null) return CommandResult.Unauthorized();
 
-        EntityId entityId;
-        try { entityId = entityId = EntityId.Value(command.Username).OrThrow(); }
-        catch { return CommandResult.BadRequest($"Invalid username [{command.Username}]"); }
+        var entityIdResult = EntityId.Value(command.Username);
+        if (entityIdResult.IsFailure) return CommandResult.BadRequest($"Invalid username [{command.Username}]");
 
+        var entityId = entityIdResult.OrThrow();
         if (context.EntityStore.ContainsEntity(entityId))
             return CommandResult.Forbidden($"The username [{entityId}] is already in use");
 
