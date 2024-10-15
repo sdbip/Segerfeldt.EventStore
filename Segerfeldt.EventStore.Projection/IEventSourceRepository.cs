@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
+using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection;
@@ -15,17 +16,18 @@ public interface IEventSourceRepository
     IEnumerable<Event> GetEvents(long afterPosition);
 }
 
-/// <summary>The default <see cref="IEventSourceRepository"/> implementation</summary>
-/// <param name="connection">A connection to the source database</param>
-public sealed class DefaultEventSourceRepository(IDbConnection connection) : IEventSourceRepository
-{
-    private readonly IDbConnection connection = connection;
+public delegate DbConnection ConnectionFactory();
 
+/// <summary>The default <see cref="IEventSourceRepository"/> implementation</summary>
+/// <param name="connectionFactory">A deöegate that can create new connections</param>
+public sealed class DefaultEventSourceRepository(ConnectionFactory connectionFactory) : IEventSourceRepository
+{
     /// <inheritdoc/>
     public IEnumerable<Event> GetEvents(long afterPosition)
     {
         try
         {
+            using var connection = connectionFactory.Invoke();
             return connection.OpenAndExecute(_ =>
             {
                 using var command = connection.CreateCommand("""

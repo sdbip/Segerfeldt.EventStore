@@ -25,7 +25,7 @@ public sealed class ProjectionTests
         projectionTracker = new Mock<IProjectionTracker>();
 
         eventSource = new EventSource(
-            new DefaultEventSourceRepository(new SqlConnection(connectionString)),
+            new DefaultEventSourceRepository(() => new SqlConnection(connectionString)),
             projectionTracker.Object,
             delayConfiguration.Object);
 

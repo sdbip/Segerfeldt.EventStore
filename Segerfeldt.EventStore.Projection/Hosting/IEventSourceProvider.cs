@@ -13,5 +13,5 @@ public interface IEventSourceProvider
 
     /// <summary>Called to create new connections to the database</summary>
     /// <returns>a connection to the write-model database</returns>
-    DbConnection CreateConnection();
+    DbConnection CreateConnection(IServiceProvider serviceProvider);
 }
