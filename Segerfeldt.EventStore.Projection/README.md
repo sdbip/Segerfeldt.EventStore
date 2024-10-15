@@ -24,22 +24,22 @@ Call the extension method `IServiceCollection.AddHostedEventSource(IEventSourceP
 
 ```c#
 builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
+builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration), "source1")
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<ProjectionTracker>();
 
-internal class MyCustomEventSourceProvider : IEventSourceProvider
+internal class MyCustomEventSourceProvider(IConfiguration configuration) : IEventSourceProvider
 {
     // This method is called once only. At startup.
-    public void PrepareDatabase(IServiceProvider p)
+    public void PrepareToReceive(IServiceProvider p)
     {
         // You might want to add your own schema to the database.
         // Specifically, you might want to add a table for storing your current position in the stream(s).
-        MySchema.CreateIfMissing(CreateConnection());
+        MySchema.CreateIfMissing(new MyProjectionConnection(configuration.GetConnectionString("projection_database")!));
     }
 
     // This method creates a connection to your database.
-    public DbConnection CreateConnection() => new MyCustomConnection(connectionString);
+    public DbConnection CreateConnection() => new MyCustomConnection(configuration.GetConnectionString("source_database")!);
 }
 ```
 

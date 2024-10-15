@@ -11,7 +11,7 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 
 internal class DelegateEventSource(ConnectionFactory connectionFactory) : IEventSourceProvider
 {
-    public void PrepareDatabase(IServiceProvider serviceProvider) { }
+    public void PrepareToReceive(IServiceProvider serviceProvider) { }
     public DbConnection CreateConnection(IServiceProvider _) => connectionFactory.Invoke();
 }
 
@@ -48,7 +48,7 @@ public static class ServiceCollectionExtension
 
         services.AddSingleton<IHostedService>(p =>
         {
-            provider.PrepareDatabase(p);
+            provider.PrepareToReceive(p);
 
             var eventSource = builder.Build(p);
 
