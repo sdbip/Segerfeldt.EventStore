@@ -152,19 +152,18 @@ public sealed class Amount : ValueObject<Amount>
     // You should never allow mutation in a value object.
     public int Value { get; }
 
-    private Amount(int value)
-    {
-        // Check that the input is acceptable. Throw an exception if it is not.
-        // This makes it impossible to instantiate the Amount object with an invalid
-        // value, and Amount instances will need no further validation.
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value, nameof(value));
-        Value = value;
-    }
+    private Amount(int value) => Value = value;
 
     public static Result<Amount> Of(int value)
     {
-        try { return Result<Amount>.Success(new Amount(value)); }
-        catch (Exception error) { return Result<Amount>.Failure(error); }
+        // Check that the input is acceptable. Return an error result if it is not.
+        // If the constructor is private, this makes it impossible to instantiate
+        // the Amount object with an invalid value, and Amount instances will need
+        // no further validation.
+        if (value < 0) return Result<Amount>.Failure(new ArgumentOutOfRangeException(nameof(value), "Amount must be positive"));
+
+        // Return success if the value is valid.
+        return Result<Amount>.Success(new Amount(value));
     }
 
     protected override IEnumerable<object> GetEqualityComponents() => [Value];
