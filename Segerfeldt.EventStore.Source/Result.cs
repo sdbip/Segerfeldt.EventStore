@@ -10,7 +10,7 @@ public readonly struct Result<T>
     private readonly Exception? error;
 
     /// <summary>Whether this result is a failur</summary>
-    public readonly bool IsFailure => value == null;
+    public readonly bool IsFailure => value is null;
     /// <summary>Whether this result is successful</summary>
     public readonly bool IsSuccess => !IsFailure;
 
@@ -36,11 +36,10 @@ public readonly struct Result<T>
         else return conversion(value!);
     }
 
-    public T OrThrow()
-    {
-        if (value != null) return value;
-        throw error ?? new Exception("Operation Failed");
-    }
+    /// <summary>Get the value or throw the error <see cref="Exception"/></summary>
+    /// <exception cref="Exception">Thrown if failure</exception>
+    /// <returns>The value</returns>
+    public T OrThrow() => value ?? throw error ?? new Exception("Operation Failed");
 }
 
 /// <summary>A result which is always a failure</summary>
