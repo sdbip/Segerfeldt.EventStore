@@ -18,10 +18,12 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
         return existingAvailability ?? new EmailAddressAvailability(SingletonEntityId, EntityVersion.New);
     }
 
-    public void Claim(string emailAddress)
+    public Result Claim(string emailAddress)
     {
-        if (usedEmailAddresses.Contains(emailAddress)) throw new Exception($"The email address [{emailAddress}] is already claimed.");
+        if (usedEmailAddresses.Contains(emailAddress)) return Result.Failure($"The email address [{emailAddress}] is already claimed.");
+
         Add(new UnpublishedEvent(EmailAddressClaimed, new EmailAddressDetails(emailAddress)));
+        return Result.Success;
     }
 
     public void Release(string emailAddress)

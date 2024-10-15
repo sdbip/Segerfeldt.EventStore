@@ -21,21 +21,15 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
         var emailAddress = command.EmailAddress;
         var availability = await EmailAddressAvailability.GetAsync(context.EntityStore);
 
-        try
-        {
-            availability.Claim(emailAddress);
-        }
-        catch (Exception exception)
-        {
-            return CommandResult.Forbidden(exception.Message);
-        }
+        var result = availability.Claim(emailAddress);
+        if (result.IsFailure) return CommandResult.Forbidden(result.Error);
 
-        var entity = await context.EntityStore.ReconstituteAsync<User>(context.GetEntityId(), User.EntityType);
-        if (entity is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
+        var user = await context.EntityStore.ReconstituteAsync<User>(context.GetEntityId(), User.EntityType);
+        if (user is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
 
-        entity.SetEmailAddress(emailAddress);
+        user.SetEmailAddress(emailAddress);
 
-        await context.EventPublisher.PublishChangesAsync(entity, actor);
+        await context.EventPublisher.PublishChangesAsync(user, actor);
         await context.EventPublisher.PublishChangesAsync(availability, actor);
         return CommandResult.NoContent();
     }
