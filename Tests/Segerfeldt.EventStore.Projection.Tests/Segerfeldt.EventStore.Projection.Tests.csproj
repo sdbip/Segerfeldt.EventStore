@@ -19,12 +19,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
-      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
+      <ProjectReference Include="$(SolutionDir)\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
+      <ProjectReference Include="$(SolutionDir)\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Include="..\..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
+      <Compile Include="$(SolutionDir)\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
         <Link>ConnectionExtension.cs</Link>
       </Compile>
     </ItemGroup>

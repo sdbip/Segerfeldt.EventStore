@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
+      <ProjectReference Include="$(SolutionDir)\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
     </ItemGroup>
 
     <ItemGroup>

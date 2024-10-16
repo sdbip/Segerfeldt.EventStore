@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <RunSettingsFilePath>$(MSBuildProjectDirectory)\..\..\.runsettings</RunSettingsFilePath>
+    <RunSettingsFilePath>$(SolutionDir)\.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
 </Project>

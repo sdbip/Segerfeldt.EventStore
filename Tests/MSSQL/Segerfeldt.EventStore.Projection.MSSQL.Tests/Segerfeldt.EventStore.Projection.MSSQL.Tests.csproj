@@ -15,8 +15,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit.Analyzers" Version="4.3.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -25,18 +25,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SourceDB/schema.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Moq" />
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
-      <Link>ConnectionExtension.cs</Link>
+    <Compile Include="$(SolutionDir)\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
+    <Link>ConnectionExtension.cs</Link>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.csproj" />
+    <ProjectReference Include="$(SolutionDir)\MSSQL\Segerfeldt.EventStore.Projection.MSSQL\Segerfeldt.EventStore.Projection.MSSQL.csproj" />
   </ItemGroup>
 
 </Project>

@@ -19,7 +19,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{BEBCF8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{54E75207-7622-446F-9348-0E61399808EE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NUnit", "NUnit", "{54E75207-7622-446F-9348-0E61399808EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSSQL", "MSSQL", "{8296EC66-8CF2-49F8-928A-3853318FB0C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", "{034BBB99-026F-41DA-9164-F85FC7EDC1E7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{BDDE50E3-3951-4103-8B4C-4DA5CB81F549}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NUnit", "NUnit", "{B6585F9C-3701-4AF2-9699-8B2B2D152BD8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source", "Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj", "{291B366A-E774-469C-87B2-67BFB056DCD5}"
 EndProject
@@ -35,41 +43,41 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectionWebApplication", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceConsoleApp", "Apps\SourceConsoleApp\SourceConsoleApp.csproj", "{372637BF-B12C-4DE1-A24A-E49835893957}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.NUnit", "TestUtils\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj", "{8E721FA2-BC35-437F-AB82-3AE89A72F151}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.NUnit", "NUnit\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj", "{8E721FA2-BC35-437F-AB82-3AE89A72F151}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectionWebApplicationTests", "Tests\ProjectionWebApplicationTests\ProjectionWebApplicationTests.csproj", "{28ADC19F-26E1-4B9B-ACD1-0A5BDE09447D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.NUnit", "TestUtils\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj", "{A7E664CB-DB3F-45D5-BB89-6FFF66D70641}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.NUnit", "NUnit\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj", "{A7E664CB-DB3F-45D5-BB89-6FFF66D70641}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceWebApplication", "Apps\SourceWebApplication\SourceWebApplication.csproj", "{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.NUnit.Tests", "Tests\Segerfeldt.EventStore.Source.NUnit.Tests\Segerfeldt.EventStore.Source.NUnit.Tests.csproj", "{0FC836B7-3695-4D41-870B-B2610AFA2C6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.NUnit.Tests", "Tests\NUnit\Segerfeldt.EventStore.Source.NUnit.Tests\Segerfeldt.EventStore.Source.NUnit.Tests.csproj", "{0FC836B7-3695-4D41-870B-B2610AFA2C6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.NUnit.Tests", "Tests\Segerfeldt.EventStore.Projection.NUnit.Tests\Segerfeldt.EventStore.Projection.NUnit.Tests.csproj", "{9A5494B3-5716-4A04-882E-0822E21DE783}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.NUnit.Tests", "Tests\NUnit\Segerfeldt.EventStore.Projection.NUnit.Tests\Segerfeldt.EventStore.Projection.NUnit.Tests.csproj", "{9A5494B3-5716-4A04-882E-0822E21DE783}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceWebApplicationTests", "Tests\SourceWebApplicationTests\SourceWebApplicationTests.csproj", "{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.PostgreSQL", "PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.csproj", "{3814BBDE-9880-47B9-90A2-2A99C543C290}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.PostgreSQL.Tests", "Tests\Segerfeldt.EventStore.Source.PostgreSQL.Tests\Segerfeldt.EventStore.Source.PostgreSQL.Tests.csproj", "{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.PostgreSQL.Tests", "Tests\PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.Tests\Segerfeldt.EventStore.Source.PostgreSQL.Tests.csproj", "{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.SQLite.Tests", "Tests\Segerfeldt.EventStore.Source.SQLite.Tests\Segerfeldt.EventStore.Source.SQLite.Tests.csproj", "{20D4472F-1C54-4CC1-BBF8-E8E046648B02}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.SQLite.Tests", "Tests\SQLite\Segerfeldt.EventStore.Source.SQLite.Tests\Segerfeldt.EventStore.Source.SQLite.Tests.csproj", "{20D4472F-1C54-4CC1-BBF8-E8E046648B02}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.SQLite", "SQLite\Segerfeldt.EventStore.Source.SQLite\Segerfeldt.EventStore.Source.SQLite.csproj", "{12E5BCBB-532F-4337-9B47-6586576A63F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.MSSQL.Tests", "Tests\Segerfeldt.EventStore.Source.MSSQL.Tests\Segerfeldt.EventStore.Source.MSSQL.Tests.csproj", "{C1CDAC5B-D567-4FBD-B8EF-2AB141DC4B98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.MSSQL.Tests", "Tests\MSSQL\Segerfeldt.EventStore.Source.MSSQL.Tests\Segerfeldt.EventStore.Source.MSSQL.Tests.csproj", "{C1CDAC5B-D567-4FBD-B8EF-2AB141DC4B98}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.MSSQL", "MSSQL\Segerfeldt.EventStore.Source.MSSQL\Segerfeldt.EventStore.Source.MSSQL.csproj", "{916C9615-7FBD-4BB7-A1B1-04865BBE32A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.PostgreSQL.Tests", "Tests\Segerfeldt.EventStore.Projection.PostgreSQL.Tests\Segerfeldt.EventStore.Projection.PostgreSQL.Tests.csproj", "{9014C6DD-13D4-494D-B689-6B52E2B18CEC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.PostgreSQL.Tests", "Tests\PostgreSQL\Segerfeldt.EventStore.Projection.PostgreSQL.Tests\Segerfeldt.EventStore.Projection.PostgreSQL.Tests.csproj", "{9014C6DD-13D4-494D-B689-6B52E2B18CEC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.PostgreSQL", "PostgreSQL\Segerfeldt.EventStore.Projection.PostgreSQL\Segerfeldt.EventStore.Projection.PostgreSQL.csproj", "{C768DF64-2CDE-4F60-93A7-ADE46EC35DB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.MSSQL.Tests", "Tests\Segerfeldt.EventStore.Projection.MSSQL.Tests\Segerfeldt.EventStore.Projection.MSSQL.Tests.csproj", "{62F3712A-B8FE-48E8-AC9D-65C4316DC3CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.MSSQL.Tests", "Tests\MSSQL\Segerfeldt.EventStore.Projection.MSSQL.Tests\Segerfeldt.EventStore.Projection.MSSQL.Tests.csproj", "{62F3712A-B8FE-48E8-AC9D-65C4316DC3CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.MSSQL", "MSSQL\Segerfeldt.EventStore.Projection.MSSQL\Segerfeldt.EventStore.Projection.MSSQL.csproj", "{5630B3B1-79E3-4248-BC6E-6CF8C6A1C7F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.SQLite.Tests", "Tests\Segerfeldt.EventStore.Projection.SQLite.Tests\Segerfeldt.EventStore.Projection.SQLite.Tests.csproj", "{3A35EEFF-2AE7-4E15-A749-486F2FAB9620}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.SQLite.Tests", "Tests\SQLite\Segerfeldt.EventStore.Projection.SQLite.Tests\Segerfeldt.EventStore.Projection.SQLite.Tests.csproj", "{3A35EEFF-2AE7-4E15-A749-486F2FAB9620}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.SQLite", "SQLite\Segerfeldt.EventStore.Projection.SQLite\Segerfeldt.EventStore.Projection.SQLite.csproj", "{E422D97B-C24D-47CA-8CF0-2D932283A25F}"
 EndProject
@@ -184,12 +192,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E422D97B-C24D-47CA-8CF0-2D932283A25F} = {BEBCF832-7F32-4CF1-8659-F3E64D70EF2C}
-		{12E5BCBB-532F-4337-9B47-6586576A63F8} = {BEBCF832-7F32-4CF1-8659-F3E64D70EF2C}
-		{C768DF64-2CDE-4F60-93A7-ADE46EC35DB0} = {6FE06808-5F75-4A9A-91EF-E140DFBB7F52}
-		{3814BBDE-9880-47B9-90A2-2A99C543C290} = {6FE06808-5F75-4A9A-91EF-E140DFBB7F52}
-		{5630B3B1-79E3-4248-BC6E-6CF8C6A1C7F9} = {4A4CAB91-0155-452B-A462-A5D734BFD8C5}
-		{916C9615-7FBD-4BB7-A1B1-04865BBE32A8} = {4A4CAB91-0155-452B-A462-A5D734BFD8C5}
+		{8296EC66-8CF2-49F8-928A-3853318FB0C7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{034BBB99-026F-41DA-9164-F85FC7EDC1E7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{BDDE50E3-3951-4103-8B4C-4DA5CB81F549} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{B6585F9C-3701-4AF2-9699-8B2B2D152BD8} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{4428506E-E739-4DBB-9FAA-0E2FEDE4F4E7} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{0D622C2D-7D3A-499A-B1CD-C819F7787F4E} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{C2174C2A-B3B6-4B71-B204-93B6AF38FB13} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
@@ -198,14 +204,20 @@ Global
 		{28ADC19F-26E1-4B9B-ACD1-0A5BDE09447D} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{A7E664CB-DB3F-45D5-BB89-6FFF66D70641} = {54E75207-7622-446F-9348-0E61399808EE}
 		{DB7A1DAB-39AA-446A-8DFA-4142CEF6BDAF} = {F1CC1632-5BAF-486F-AE4F-12DBAB652B1E}
-		{0FC836B7-3695-4D41-870B-B2610AFA2C6B} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{9A5494B3-5716-4A04-882E-0822E21DE783} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{0FC836B7-3695-4D41-870B-B2610AFA2C6B} = {B6585F9C-3701-4AF2-9699-8B2B2D152BD8}
+		{9A5494B3-5716-4A04-882E-0822E21DE783} = {B6585F9C-3701-4AF2-9699-8B2B2D152BD8}
 		{B7CA401A-D5B0-4E4E-9559-62BFDA6EDF48} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{20D4472F-1C54-4CC1-BBF8-E8E046648B02} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{C1CDAC5B-D567-4FBD-B8EF-2AB141DC4B98} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{9014C6DD-13D4-494D-B689-6B52E2B18CEC} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{62F3712A-B8FE-48E8-AC9D-65C4316DC3CA} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
-		{3A35EEFF-2AE7-4E15-A749-486F2FAB9620} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
+		{3814BBDE-9880-47B9-90A2-2A99C543C290} = {6FE06808-5F75-4A9A-91EF-E140DFBB7F52}
+		{C55E35C5-7BF5-42D0-AC0F-725FD6B1E4DE} = {034BBB99-026F-41DA-9164-F85FC7EDC1E7}
+		{20D4472F-1C54-4CC1-BBF8-E8E046648B02} = {BDDE50E3-3951-4103-8B4C-4DA5CB81F549}
+		{12E5BCBB-532F-4337-9B47-6586576A63F8} = {BEBCF832-7F32-4CF1-8659-F3E64D70EF2C}
+		{C1CDAC5B-D567-4FBD-B8EF-2AB141DC4B98} = {8296EC66-8CF2-49F8-928A-3853318FB0C7}
+		{916C9615-7FBD-4BB7-A1B1-04865BBE32A8} = {4A4CAB91-0155-452B-A462-A5D734BFD8C5}
+		{9014C6DD-13D4-494D-B689-6B52E2B18CEC} = {034BBB99-026F-41DA-9164-F85FC7EDC1E7}
+		{C768DF64-2CDE-4F60-93A7-ADE46EC35DB0} = {6FE06808-5F75-4A9A-91EF-E140DFBB7F52}
+		{62F3712A-B8FE-48E8-AC9D-65C4316DC3CA} = {8296EC66-8CF2-49F8-928A-3853318FB0C7}
+		{5630B3B1-79E3-4248-BC6E-6CF8C6A1C7F9} = {4A4CAB91-0155-452B-A462-A5D734BFD8C5}
+		{3A35EEFF-2AE7-4E15-A749-486F2FAB9620} = {BDDE50E3-3951-4103-8B4C-4DA5CB81F549}
+		{E422D97B-C24D-47CA-8CF0-2D932283A25F} = {BEBCF832-7F32-4CF1-8659-F3E64D70EF2C}
 	EndGlobalSection
 EndGlobal
