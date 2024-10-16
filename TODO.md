@@ -15,3 +15,15 @@
 - Convert file imports to a shared project import (Segerfeldt.EventStore.Shared.shproj).
   - Unfortunately this is difficult outside of Visual Studio proper.
     And VS For Mac has been discontinued, so a Windows machine may be needed.
+- Report VSCode bug.
+    When running single test in the Testing view, VSCode builds with the wrong command:
+
+    ```sh
+    dotnet build /Users/johan/Arbete/Segerfeldt/Segerfeldt.EventStore/Tests/PostgreSQL/Segerfeldt.EventStore.Projection.PostgreSQL.Tests/Segerfeldt.EventStore.Projection.PostgreSQL.Tests.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:Configuration=Debug /p:Platform="AnyCPU"
+    ```
+
+    I have the `$(SolutionDir)` prefix in my project reference paths; I want to be free to change the folder structure without having to adjust all the paths. But the above command doesn't know about the solution, so the `$(SolutionDir)` value is empty and build fails. This command however works:
+
+    ```sh
+    dotnet build /Users/johan/Arbete/Segerfeldt/Segerfeldt.EventStore/Segerfeldt.EventStore.sln /target:PostgreSQL\Segerfeldt_EventStore_Projection_PostgreSQL /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:Configuration=Debug /p:Platform="Any CPU"
+    ```
