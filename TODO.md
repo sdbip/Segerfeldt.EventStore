@@ -1,8 +1,6 @@
 # TODO
 
 - Command-line `dotnet test` fails sporadically (even habitually?)
-  - It is always the `SQLServer*` tests that fail.
-  - Maybe my Docker instance is slowed down sporadically?
 - `SourceWebApplicationTests` deletes all data stored by `SourceWebApplication`.
   This data should however not be important so it might be okay.
 - Explain somewhere that an *entity* is not a code object. It is the actual thing being modelled.
