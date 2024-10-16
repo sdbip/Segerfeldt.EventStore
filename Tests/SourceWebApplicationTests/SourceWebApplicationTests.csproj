@@ -22,8 +22,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\Apps\SourceWebApplication\SourceWebApplication.csproj" />
-      <ProjectReference Include="$(SolutionDir)\NUnit\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
+      <ProjectReference Include="..\..\Apps\SourceWebApplication\SourceWebApplication.csproj" />
+      <ProjectReference Include="..\..\NUnit\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
     </ItemGroup>
 
 </Project>

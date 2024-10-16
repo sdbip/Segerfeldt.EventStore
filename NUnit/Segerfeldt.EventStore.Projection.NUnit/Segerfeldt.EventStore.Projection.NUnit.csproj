@@ -15,12 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
+      <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <None Include="README.md" Pack="true" PackagePath=""/>
-      <Compile Include="$(SolutionDir)\Segerfeldt.EventStore.Shared\JSON.cs">
+      <Compile Include="..\..\Segerfeldt.EventStore.Shared\JSON.cs">
         <Link>JSON.cs</Link>
       </Compile>
     </ItemGroup>

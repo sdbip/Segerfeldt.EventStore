@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
+    <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
   </ItemGroup>
 
 </Project>

@@ -19,6 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\SQLite\Segerfeldt.EventStore.Source.SQLite\Segerfeldt.EventStore.Source.SQLite.csproj" />
+      <ProjectReference Include="..\..\SQLite\Segerfeldt.EventStore.Source.SQLite\Segerfeldt.EventStore.Source.SQLite.csproj" />
     </ItemGroup>
 </Project>

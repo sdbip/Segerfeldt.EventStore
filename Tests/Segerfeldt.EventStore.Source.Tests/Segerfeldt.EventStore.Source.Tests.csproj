@@ -15,12 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
-      <ProjectReference Include="$(SolutionDir)\NUnit\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
+      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
+      <ProjectReference Include="..\..\NUnit\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Include="$(SolutionDir)\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
+      <Compile Include="..\..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
         <Link>ConnectionExtension.cs</Link>
       </Compile>
     </ItemGroup>

@@ -18,8 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\Apps\ProjectionWebApplication\ProjectionWebApplication.csproj" />
-      <ProjectReference Include="$(SolutionDir)\NUnit\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj" />
+      <ProjectReference Include="..\..\Apps\ProjectionWebApplication\ProjectionWebApplication.csproj" />
+      <ProjectReference Include="..\..\NUnit\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj" />
     </ItemGroup>
 
     <ItemGroup>
