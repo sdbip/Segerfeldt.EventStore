@@ -6,17 +6,11 @@ internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, 
 {
     public static readonly EntityType EntityType = EntityType.Name("User");
 
-    internal static User New(EntityId entityId)
+    internal static User New(EntityId entityId, EmailAddress? emailAddress = null)
     {
         var user = new User(entityId, EntityVersion.New);
         user.Add(new UnpublishedEvent("Registered", new { }));
-        return user;
-    }
-
-    internal static User New(string username, EmailAddress emailAddress)
-    {
-        var user = new User(EntityId.Value(username), EntityVersion.New);
-        user.SetEmailAddress(emailAddress);
+        if (emailAddress is not null) user.SetEmailAddress(emailAddress);
         return user;
     }
 
