@@ -1,3 +1,5 @@
+using Segerfeldt.EventStore.Projection.Hosting;
+
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,12 +30,15 @@ public sealed class EventSourceTests
 
         var receivedEvents = CaptureReceivedEvents("first-event");
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
         Assert.That(receivedEvents, Is.Not.Empty);
-        Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
-        Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
-        Assert.That(receivedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(receivedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        });
     }
 
     [Test]
@@ -48,10 +53,13 @@ public sealed class EventSourceTests
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event", "third-event");
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-        Assert.That(receivedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
+        Assert.Multiple(() =>
+        {
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
+        });
     }
 
     [Test]
@@ -63,10 +71,13 @@ public sealed class EventSourceTests
         var startingPosition = CaptureStartingPosition();
         var finishedPosition = CaptureFinishedPosition();
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(startingPosition.Value, Is.EqualTo(1));
-        Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(startingPosition.Value, Is.EqualTo(1));
+            Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        });
     }
 
     private List<Event> CaptureReceivedEvents(params string[] eventNames)

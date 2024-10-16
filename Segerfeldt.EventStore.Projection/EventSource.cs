@@ -17,7 +17,7 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
     private readonly IProjectionTracker? tracker = tracker;
     private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
     private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = [];
-    private long lastReadPosition;
+    private long lastReadPosition = -1;
     private CancellationTokenSource? currentDelay;
 
     /// <summary>
@@ -28,31 +28,42 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
     {
         foreach (var eventName in receptacle.AcceptedEvents)
         {
-            if (receptacles.ContainsKey(eventName))
-                receptacles[eventName].Add(receptacle);
+            if (receptacles.TryGetValue(eventName, out var value))
+                value.Add(receptacle);
             else
-                receptacles[eventName] = new List<IReceptacle> {receptacle};
+                receptacles[eventName] = [receptacle];
         }
     }
 
     /// <summary>Start projecting the source state</summary>
     public void BeginProjecting()
     {
-        lastReadPosition = tracker?.GetLastFinishedPosition() ?? -1;
+        GetPositionFromTracker();
         PollEventsTable();
+    }
+
+    internal void GetPositionFromTracker()
+    {
+        lastReadPosition = tracker?.GetLastFinishedPosition() ?? -1;
     }
 
     private void PollEventsTable()
     {
         currentDelay?.Cancel();
-        var readEvents = repository.GetEvents(lastReadPosition);
-        var numNotified = Emit(readEvents);
+        var numNotified = PollEventsTableOnce();
 
         var nextDelay = pollingStrategy.NextDelay(numNotified);
         currentDelay = new CancellationTokenSource();
-        Task.Delay(nextDelay, currentDelay.Token).ContinueWith(t => {
+        Task.Delay(nextDelay, currentDelay.Token).ContinueWith(t =>
+        {
             if (!t.IsCanceled) PollEventsTable();
         });
+    }
+
+    internal int PollEventsTableOnce()
+    {
+        var readEvents = repository.GetEvents(lastReadPosition);
+        return Emit(readEvents);
     }
 
     public int Emit(IEnumerable<Event> unsortedEvents)

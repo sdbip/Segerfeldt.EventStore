@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
@@ -18,5 +19,16 @@ public class ProjectionTester
     public void Emit(string eventSourceName, params Event[] events)
     {
         eventSources[eventSourceName].Emit(events);
+    }
+
+    public static void EmitInitialEvents(EventSource eventSource)
+    {
+        eventSource.GetPositionFromTracker();
+        eventSource.PollEventsTableOnce();
+    }
+
+    public static void EmitNewEvents(EventSource eventSource)
+    {
+        eventSource.PollEventsTableOnce();
     }
 }

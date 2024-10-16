@@ -1,3 +1,4 @@
+using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Tests;
@@ -33,12 +34,16 @@ public sealed class ProjectionTests
 
         var receivedEvents = CaptureReceivedEvents("first-event");
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
         Assert.That(receivedEvents, Is.Not.Empty);
-        Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
-        Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
-        Assert.That(receivedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(receivedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(receivedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(receivedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        });
+
     }
 
     [Test]
@@ -51,10 +56,12 @@ public sealed class ProjectionTests
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event", "third-event");
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-        Assert.That(receivedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
+        Assert.Multiple(() => {
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(receivedEvents.Select(e => e.Name), Is.EqualTo(new[] { "first-event", "second-event", "third-event" }));
+        });
     }
 
     [Test]
@@ -65,12 +72,12 @@ public sealed class ProjectionTests
         GivenEntity("an-entity");
         var receivedEvents = CaptureReceivedEvents("early-event", "late-event");
         GivenEvent("an-entity", "early-event", ordinal: 1, position: 1);
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
         receivedEvents.Clear();
 
         GivenEvent("an-entity", "late-event", ordinal: 2, position: 2);
 
-        Thread.Sleep(100);
+        ProjectionTester.EmitNewEvents(eventSource);
 
         Assert.That(receivedEvents, Is.Not.Empty);
         var expected = new[] { "late-event" };
@@ -87,7 +94,7 @@ public sealed class ProjectionTests
 
         var receivedEvents = CaptureReceivedEvents("first-event", "second-event");
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
         Assert.That(receivedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
     }
@@ -100,7 +107,7 @@ public sealed class ProjectionTests
 
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
         Assert.Multiple(() =>
         {

@@ -1,5 +1,6 @@
 using Npgsql;
 
+using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.PostgreSQL.Tests;
@@ -50,13 +51,15 @@ public sealed class ProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event");
 
-        eventSource.BeginProjecting();
-        Task.Yield();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
         Assert.That(notifiedEvents, Is.Not.Empty);
-        Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
-        Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
-        Assert.That(notifiedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        });
     }
 
     [Test]
@@ -69,12 +72,15 @@ public sealed class ProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
-        Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
-        Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
-        Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
+            Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
+        });
     }
 
     [Test]
@@ -88,12 +94,12 @@ public sealed class ProjectionTests
 
         GivenEvent("an-entity", "an-event", ordinal: 1, position: 1);
 
-        eventSource.BeginProjecting();
+        ProjectionTester.EmitInitialEvents(eventSource);
         notifiedEvents.Clear();
 
         GivenEvent("an-entity", "an-event", ordinal: 2, position: 2);
 
-        Thread.Sleep(100);
+        ProjectionTester.EmitNewEvents(eventSource);
 
         Assert.That(notifiedEvents.Select(e => e.Position), Is.EquivalentTo(new[] { 2L }));
     }
@@ -108,8 +114,7 @@ public sealed class ProjectionTests
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 
-        eventSource.BeginProjecting();
-        Task.Yield();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
         Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
     }
@@ -123,11 +128,14 @@ public sealed class ProjectionTests
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
 
-        eventSource.BeginProjecting();
-        Task.Yield();
+        ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(startingPosition.Value, Is.EqualTo(1));
-        Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(startingPosition.Value, Is.EqualTo(1));
+            Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        });
+
     }
 
     private void GivenEntity(string entityId, int version = 1)
