@@ -14,9 +14,9 @@ public sealed class EntityType : ValueObject<EntityType>
 
     /// <summary>Initialize a type</summary>
     /// <param name="name">The string value that uniquely identifies the type (and its events)</param>
-    public static Result<EntityType> Name(string name)
+    public static EntityType Name(string name)
     {
-        if (!IsValidTypeName(name)) return Failure.Error(new ArgumentOutOfRangeException(nameof(name), $"'{name}' is not a valid entity-id"));
+        if (!IsValidTypeName(name)) throw new ArgumentOutOfRangeException(nameof(name), $"'{name}' is not a valid entity-type");
         return Safe(name);
     }
 

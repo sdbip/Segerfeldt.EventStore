@@ -24,9 +24,9 @@ public sealed class EntityVersion : ValueObject<EntityVersion>
     /// <param name="value">the actual value of the version</param>
     /// <returns>a valid <see cref="EntityVersion"/>with the specified <paramref name="value"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">if the value is negative</exception>
-    public static Result<EntityVersion> Of(int value)
+    public static EntityVersion Of(int value)
     {
-        if (value < 0) return Failure.Error(new ArgumentOutOfRangeException(nameof(value), "Must be positive"));
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, 0, nameof(value));
         return new EntityVersion(value);
     }
 

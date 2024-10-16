@@ -20,11 +20,11 @@ public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
         // Return 401 UNAUTHORIZED if the user cnnot be idetified securely.
         if (actor is null) return CommandResult.Unauthorized();
 
-        var entityIdResult = EntityId.Value(command.Username);
-        if (entityIdResult.IsFailure) return CommandResult.BadRequest($"Invalid username [{command.Username}]");
+        EntityId entityId;
+        try { entityId = EntityId.Value(command.Username); }
+        catch (ArgumentException exception) { return CommandResult.BadRequest(exception.Message); }
 
         // Check for duplications.
-        var entityId = entityIdResult.OrThrow();
         if (context.EntityStore.ContainsEntity(entityId))
             return CommandResult.Forbidden($"The username [{entityId}] is already in use");
 

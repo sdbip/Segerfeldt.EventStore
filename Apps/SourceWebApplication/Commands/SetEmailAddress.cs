@@ -2,6 +2,7 @@ using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 using SourceWebApplication.Domaim;
+using SourceWebApplication.Domain;
 
 namespace SourceWebApplication.Commands;
 
@@ -21,8 +22,9 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
         if (actor is null) return CommandResult.Unauthorized();
 
         // Validate command properties.
-        var emailAddress = EmailAddress.Of(command.EmailAddress);
-        if (emailAddress.IsFailure) return CommandResult.BadRequest($"Invalid email address {command.EmailAddress}");
+        EmailAddress emailAddress;
+        try { emailAddress = EmailAddress.Of(command.EmailAddress); }
+        catch (ArgumentOutOfRangeException exeption) { return CommandResult.BadRequest(exeption.Message); }
 
         // Retrieve the entities that matter for this command.
         var availability = await EmailAddressAvailability.GetAsync(context.EntityStore);
@@ -30,9 +32,9 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
         if (user is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
 
         // Perform operation(s) related to this command.
-        var result = availability.Claim(emailAddress.OrThrow());
-        if (result.IsFailure) return CommandResult.Forbidden(result.Error);
-        user.SetEmailAddress(emailAddress.OrThrow());
+        try { availability.Claim(emailAddress); }
+        catch (ArgumentOutOfRangeException exception) { return CommandResult.Forbidden(exception.Message); }
+        user.SetEmailAddress(emailAddress);
 
         // Publish all the changes in a single atomic operation.
         await context.EventPublisher.PublishChangesAsync([user, availability], actor);

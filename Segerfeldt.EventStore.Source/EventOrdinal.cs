@@ -17,9 +17,9 @@ public sealed class EventOrdinal : ValueObject<EventOrdinal>
     /// <summary>Create an <see cref="EventOrdinal"/></summary>
     /// <param name="value">the value of the ordinal (must be > 0)</param>
     /// <returns></returns>
-    public static Result<EventOrdinal> Of(int value)
+    public static EventOrdinal Of(int value)
     {
-        if (value < 0) return Failure.Error(new ArgumentOutOfRangeException(nameof(value), "Must be positive"));
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, 0, nameof(value));
         return Safe(value);
     }
 

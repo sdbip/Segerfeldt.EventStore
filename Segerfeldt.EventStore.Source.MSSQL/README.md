@@ -70,7 +70,7 @@ using Domain;
 namespace Commands;
 
 // The “command” is just a DTO. Execution is done by the associated CommandHandler.
-public record IncrementCounter(int amount);
+public record IncrementCounter(int Amount);
 
 // Implement one of the ICommandHandler interfaces to declare a command handler. The
 // `ModifiesEntityAttribute` (and its subclasses) defines the path pattern and the
@@ -102,11 +102,12 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
         // Convert command properties to domain value objects.
-        var amount = Amount.Of(command.Amount);
-        if (amount.IsFailure) return CommandResult.BadRequest($"Command DTO is invalid: {amount.Error}");
+        Amount amount;
+        try { amount = new Amount(command.Amount); }
+        catch (ArgumentException exception) { return CommandResult.BadRequest($"Command DTO is invalid: {exception.Message}"); }
 
         // Perform operations on the entity to change its state.
-        counter.IncrementBy(amount.OrThrow());
+        counter.IncrementBy(amount);
 
         // The entity will add new events to define its new state. Publish them using the EventPublisher.
         await context.EventPublisher.PublishChangesAsync(counter, actor);
@@ -152,18 +153,14 @@ public sealed class Amount : ValueObject<Amount>
     // You should never allow mutation in a value object.
     public int Value { get; }
 
-    private Amount(int value) => Value = value;
-
-    public static Result<Amount> Of(int value)
+    public Amount(int value)
     {
-        // Check that the input is acceptable. Return an error result if it is not.
-        // If the constructor is private, this makes it impossible to instantiate
-        // the Amount object with an invalid value, and Amount instances will need
-        // no further validation.
-        if (value < 0) return Result<Amount>.Failure(new ArgumentOutOfRangeException(nameof(value), "Amount must be positive"));
+        // Throw an exception if the input is not acceptable.
+        // This makes it impossible to instantiate the Amount object with an
+        // invalid value, and Amount instances will need no further validation.
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, 0, nameof(value));
 
-        // Return success if the value is valid.
-        return Result<Amount>.Success(new Amount(value));
+        Value = value;
     }
 
     protected override IEnumerable<object> GetEqualityComponents() => [Value];
@@ -176,7 +173,7 @@ public sealed class Amount : ValueObject<Amount>
 public sealed class Counter : EntityBase
 {
     // It is recommended to define a static EntityType constant.
-    public static readonly EntityType EntityType = EntityType.Name("Counter").OrThrow();
+    public static readonly EntityType EntityType = EntityType.Name("Counter");
 
     // The constructor should usually be empty. Just call the base constructor with a
     // consistent (and unique to this entity class) EntityType value.

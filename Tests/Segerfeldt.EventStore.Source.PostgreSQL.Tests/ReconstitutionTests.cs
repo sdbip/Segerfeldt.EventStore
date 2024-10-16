@@ -46,16 +46,16 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-1").OrThrow(), EntityType.Name("a-type").OrThrow());
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-1"), EntityType.Name("a-type"));
 
         Assert.That(entity, Is.Not.Null);
-        Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3).OrThrow()));
+        Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
     }
 
     [Test]
     public void ReturnsNullIfNoEntity()
     {
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-2").OrThrow(), EntityType.Name("a-type").OrThrow());
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-2"), EntityType.Name("a-type"));
 
         Assert.That(entity, Is.Null);
     }
@@ -74,7 +74,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-3").OrThrow(), EntityType.Name("a-type").OrThrow());
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-3"), EntityType.Name("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -105,7 +105,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-4").OrThrow(), EntityType.Name("a-type").OrThrow());
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-4"), EntityType.Name("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -130,7 +130,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var history = store.GetHistory(EntityId.Value("an-entity-5").OrThrow());
+        var history = store.GetHistory(EntityId.Value("an-entity-5"));
 
         Assert.That(history, Is.Not.Null);
 
@@ -155,7 +155,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var history = store.GetHistory(EntityId.Value("an-entity-6").OrThrow());
+        var history = store.GetHistory(EntityId.Value("an-entity-6"));
 
         Assert.That(history, Is.Not.Null);
 
@@ -179,7 +179,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-7").OrThrow(), EntityType.Name("a-type").OrThrow());
+        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-7"), EntityType.Name("a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.First().Timestamp.Offset, Is.EqualTo(TimeSpan.Zero));
@@ -225,7 +225,7 @@ public sealed class ReconstitutionTests
     {
         public EntityId Id { get; } = id;
         public EntityVersion Version { get; } = version;
-        public EntityType Type => EntityType.Name("MyEntity").OrThrow();
+        public EntityType Type => EntityType.Name("MyEntity");
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
         public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }

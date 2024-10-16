@@ -1,11 +1,11 @@
 using Segerfeldt.EventStore.Source;
 
-namespace SourceWebApplication.Domaim;
+namespace SourceWebApplication.Domain;
 
 internal sealed class EmailAddressAvailability(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
-    public static readonly EntityType EntityType = EntityType.Name("EmailAddressAvailability").OrThrow();
-    private static readonly EntityId SingletonEntityId = EntityId.Value("usernames").OrThrow();
+    public static readonly EntityType EntityType = EntityType.Name("EmailAddressAvailability");
+    private static readonly EntityId SingletonEntityId = EntityId.Value("usernames");
 
     private const string EmailAddressClaimed = "EmailAddressClaimed";
     private const string EmailAddressReleased = "EmailAddressReleased";
@@ -18,12 +18,11 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
         return existingAvailability ?? new EmailAddressAvailability(SingletonEntityId, EntityVersion.New);
     }
 
-    public Result Claim(EmailAddress emailAddress)
+    public void Claim(EmailAddress emailAddress)
     {
-        if (usedEmailAddresses.Contains(emailAddress)) return Result.Failure($"The email address [{emailAddress}] is already claimed.");
+        if (usedEmailAddresses.Contains(emailAddress)) throw new Exception($"The email address [{emailAddress}] is already claimed.");
 
         Add(new UnpublishedEvent(EmailAddressClaimed, new EmailAddressDetails(emailAddress)));
-        return Result.Success;
     }
 
     public void Release(string emailAddress)
@@ -34,13 +33,13 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
     [ReplaysEvent(EmailAddressClaimed)]
     public void OnEmailAddressClaimed(EmailAddressDetails details)
     {
-        usedEmailAddresses.Add(EmailAddress.Of(details.EmailAddress).OrThrow());
+        usedEmailAddresses.Add(EmailAddress.Prevalidated(details.EmailAddress));
     }
 
     [ReplaysEvent(EmailAddressReleased)]
     public void OnEmailAddressReleased(EmailAddressDetails details)
     {
-        usedEmailAddresses.Remove(EmailAddress.Of(details.EmailAddress).OrThrow());
+        usedEmailAddresses.Remove(EmailAddress.Prevalidated(details.EmailAddress));
     }
 
     internal record EmailAddressDetails(string EmailAddress);
@@ -52,11 +51,13 @@ internal sealed class EmailAddress : ValueObject<EmailAddress>
 
     private EmailAddress(string value) => this.value = value;
 
-    public static Result<EmailAddress> Of(string value)
+    public static EmailAddress Of(string value)
     {
-        if (value == null) return Failure.Error($"invalid email address {value}");
+        ArgumentException.ThrowIfNullOrEmpty($"invalid email address {value}", nameof(value));
         return new EmailAddress(value);
     }
+
+    public static EmailAddress Prevalidated(string value) => new(value);
 
     public static implicit operator string(EmailAddress value) => value.value;
 

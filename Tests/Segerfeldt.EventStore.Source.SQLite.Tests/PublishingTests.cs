@@ -28,8 +28,8 @@ public sealed class PublishingTests
     public void CanPublishSingleEvent()
     {
         publisher.Publish(
-            EntityId.Value("an-entity").OrThrow(),
-            EntityType.Name("a-type").OrThrow(),
+            EntityId.Value("an-entity"),
+            EntityType.Name("a-type"),
             new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
 
         using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
@@ -56,8 +56,8 @@ public sealed class PublishingTests
     public void CanPublishNewEntity()
     {
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
         publisher.PublishChanges(entity.Object, "johan");
@@ -88,8 +88,8 @@ public sealed class PublishingTests
         connection.CreateCommand("INSERT INTO Entities (id, type, version) VALUES ('an-entity', 'a-type', 0)").ExecuteNonQuery();
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Zero);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
 
@@ -119,8 +119,8 @@ public sealed class PublishingTests
     public void WillNotPublishChangesIfThereAreNoEvents()
     {
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
         entity.Setup(e => e.UnpublishedEvents).Returns(Array.Empty<UnpublishedEvent>());
         publisher.PublishChanges(entity.Object, "johan");
@@ -140,8 +140,8 @@ public sealed class PublishingTests
             .ExecuteNonQuery();
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Version).Returns(EntityVersion.Of(2).OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
 
         Assert.That(() => publisher.PublishChanges(entity.Object, "johan"), Throws.Exception);

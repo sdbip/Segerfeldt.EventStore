@@ -7,9 +7,9 @@ public sealed class IdentifiablesAreSameTests
     {
         Assert.Multiple(() =>
         {
-            Assert.That(new TestEntity(EntityId.Value("same_id").OrThrow()).IsSameAs(new TestEntity(EntityId.Value("same_id").OrThrow())), Is.True, "Same entity");
-            Assert.That(new TestEntity(EntityId.Value("the_id").OrThrow()).IsSameAs(new TestEntity(EntityId.Value("other_id").OrThrow())), Is.False, "Different Id");
-            Assert.That(new TestEntity(EntityId.Value("the_id").OrThrow()).IsSameAs(new OtherEntity(EntityId.Value("the_id").OrThrow())), Is.False, "Different type");
+            Assert.That(new TestEntity(EntityId.Value("same_id")).IsSameAs(new TestEntity(EntityId.Value("same_id"))), Is.True, "Same entity");
+            Assert.That(new TestEntity(EntityId.Value("the_id")).IsSameAs(new TestEntity(EntityId.Value("other_id"))), Is.False, "Different Id");
+            Assert.That(new TestEntity(EntityId.Value("the_id")).IsSameAs(new OtherEntity(EntityId.Value("the_id"))), Is.False, "Different type");
         });
     }
 

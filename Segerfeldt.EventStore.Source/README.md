@@ -91,7 +91,7 @@ using Domain;
 namespace Commands;
 
 // The “command” is just a DTO. Execution is done by the associated CommandHandler.
-public record IncrementCounter(int amount);
+public record IncrementCounter(int Amount);
 
 // Implement one of the ICommandHandler interfaces to declare a command handler. The
 // `ModifiesEntityAttribute` (and its subclasses) defines the path pattern and the
@@ -123,11 +123,12 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
         // Convert command properties to domain value objects.
-        var amount = Amount.Of(command.Amount);
-        if (amount.IsFailure) return CommandResult.BadRequest($"Command DTO is invalid: {amount.Error}");
+        Amount amount;
+        try { amount = new Amount(command.Amount); }
+        catch (ArgumentException exception) { return CommandResult.BadRequest($"Command DTO is invalid: {exception.Message}"); }
 
         // Perform operations on the entity to change its state.
-        counter.IncrementBy(amount.OrThrow());
+        counter.IncrementBy(amount);
 
         // The entity will add new events to define its new state. Publish them using the EventPublisher.
         await context.EventPublisher.PublishChangesAsync(counter, actor);

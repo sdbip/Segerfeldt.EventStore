@@ -10,7 +10,7 @@ var connection = new SqlConnection(connectionString);
 var publisher = new EventPublisher(connection);
 var store = new EntityStore(connection);
 
-var entityId = EntityId.Value("player3").OrThrow();
+var entityId = EntityId.Value("player3");
 var player = await Player.ReconstituteAsync(entityId, store) ?? Player.RegisterNew(entityId, "Jones");
 
 const int points = 2;

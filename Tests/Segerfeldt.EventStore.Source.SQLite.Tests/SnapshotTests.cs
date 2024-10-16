@@ -27,13 +27,13 @@ public sealed class SnapshotTests
         GivenEntity("an-entity-1", "a-type", 42);
 
         var snapshot = new Snapshot(
-            EntityId.Value("an-entity-1").OrThrow(),
-            EntityType.Name("a-type").OrThrow(),
-            EventOrdinal.Of(13).OrThrow()) { Value = 19 };
+            EntityId.Value("an-entity-1"),
+            EntityType.Name("a-type"),
+            EventOrdinal.Of(13)) { Value = 19 };
         var entity = store.Reconstitute(snapshot);
 
         Assert.That(new { entity?.Id, entity?.Version, entity?.SnapshotValue },
-            Is.EqualTo(new { Id = EntityId.Value("an-entity-1").OrThrow(), Version = EntityVersion.Of(42).OrThrow(), SnapshotValue = (int?)19 }));
+            Is.EqualTo(new { Id = EntityId.Value("an-entity-1"), Version = EntityVersion.Of(42), SnapshotValue = (int?)19 }));
     }
 
     [Test]
@@ -44,9 +44,9 @@ public sealed class SnapshotTests
         GivenEvent("an-entity-2", "after-snapshot-event", ordinal: 43);
 
         var snapshot = new Snapshot(
-            EntityId.Value("an-entity-2").OrThrow(),
-            EntityType.Name("a-type").OrThrow(),
-            EventOrdinal.Of(42).OrThrow());
+            EntityId.Value("an-entity-2"),
+            EntityType.Name("a-type"),
+            EventOrdinal.Of(42));
         var entity = store.Reconstitute(snapshot);
 
         var expected = new[] { "after-snapshot-event" };
@@ -94,7 +94,7 @@ public sealed class SnapshotTests
     {
         public EntityId Id { get; } = id;
         public EntityVersion Version { get; } = version;
-        public EntityType Type => EntityType.Name("MyEntity").OrThrow();
+        public EntityType Type => EntityType.Name("MyEntity");
         public IEnumerable<UnpublishedEvent> UnpublishedEvents => ImmutableList<UnpublishedEvent>.Empty;
 
         public IEnumerable<PublishedEvent>? ReplayedEvents { get; private set; }

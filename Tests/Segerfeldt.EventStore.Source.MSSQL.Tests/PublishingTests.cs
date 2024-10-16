@@ -40,8 +40,8 @@ public sealed class PublishingTests
     public void CanPublishSingleEvent()
     {
         publisher.Publish(
-            EntityId.Value("an-entity-1").OrThrow(),
-            EntityType.Name("a-type").OrThrow(),
+            EntityId.Value("an-entity-1"),
+            EntityType.Name("a-type"),
             new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
 
         connection.Open();
@@ -73,8 +73,8 @@ public sealed class PublishingTests
         GivenEntity("an-entity", version: EntityVersion.Zero);
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Zero);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
         publisher.PublishChanges(entity.Object, "johan");
@@ -107,8 +107,8 @@ public sealed class PublishingTests
         GivenEntity("an-entity", version: EntityVersion.Zero);
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Zero);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
 
@@ -139,10 +139,10 @@ public sealed class PublishingTests
     [Test]
     public void CannotPublishChangesIfRemoteUpdated()
     {
-        GivenEntity("an-entity-3", version: EntityVersion.Of(1).OrThrow());
+        GivenEntity("an-entity-3", version: EntityVersion.Of(1));
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity-3").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity-3"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Zero);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
 

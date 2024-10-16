@@ -7,7 +7,7 @@ namespace SourceConsoleApp;
 
 internal sealed class Player(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
-    public static readonly EntityType EntityType = EntityType.Name("Player").OrThrow();
+    public static readonly EntityType EntityType = EntityType.Name("Player");
 
     private const string PlayerRegistered = "PlayerRegistered";
     private const string ScoreIncreased = "ScoreIncreased";

@@ -40,8 +40,8 @@ public sealed class PublishingTests
     public void CanPublishSingleEvent()
     {
         publisher.Publish(
-            EntityId.Value("an-entity").OrThrow(),
-            EntityType.Name("a-type").OrThrow(),
+            EntityId.Value("an-entity"),
+            EntityType.Name("a-type"),
             new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
 
         connection.Open();
@@ -69,12 +69,12 @@ public sealed class PublishingTests
     [Test]
     public void CanPublishNewEntity()
     {
-        GivenEntity("an-entity", version: EntityVersion.Of(3).OrThrow());
+        GivenEntity("an-entity", version: EntityVersion.Of(3));
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
-        entity.Setup(e => e.Version).Returns(EntityVersion.Of(3).OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(3));
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
         publisher.PublishChanges(entity.Object, "johan");
 
@@ -106,8 +106,8 @@ public sealed class PublishingTests
         GivenEntity("an-entity", version: EntityVersion.Zero);
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type").OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.Zero);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
 
@@ -138,11 +138,11 @@ public sealed class PublishingTests
     [Test]
     public void CannotPublishChangesIfRemoteUpdated()
     {
-        GivenEntity("an-entity", version: EntityVersion.Of(3).OrThrow());
+        GivenEntity("an-entity", version: EntityVersion.Of(3));
 
         var entity = new Mock<IEntity>();
-        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity").OrThrow());
-        entity.Setup(e => e.Version).Returns(EntityVersion.Of(2).OrThrow());
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.Of(2));
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
 
         Assert.That(async () => await publisher.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
