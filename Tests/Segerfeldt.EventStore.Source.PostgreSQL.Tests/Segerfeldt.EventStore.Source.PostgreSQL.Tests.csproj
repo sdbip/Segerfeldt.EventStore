@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Segerfeldt.EventStore.Source.PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.csproj" />
+    <ProjectReference Include="..\..\PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.csproj" />
   </ItemGroup>
 
 </Project>

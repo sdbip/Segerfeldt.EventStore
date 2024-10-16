@@ -11,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+    <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
   </ItemGroup>
 
   <ItemGroup>

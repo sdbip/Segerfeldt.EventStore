@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection.MSSQL\Segerfeldt.EventStore.Projection.MSSQL.csproj" />
+    <ProjectReference Include="..\..\MSSQL\Segerfeldt.EventStore.Projection.MSSQL\Segerfeldt.EventStore.Projection.MSSQL.csproj" />
   </ItemGroup>
 
 </Project>

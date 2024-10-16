@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection.SQLite\Segerfeldt.EventStore.Projection.SQLite.csproj" />
+    <ProjectReference Include="..\..\SQLite\Segerfeldt.EventStore.Projection.SQLite\Segerfeldt.EventStore.Projection.SQLite.csproj" />
   </ItemGroup>
 
 </Project>

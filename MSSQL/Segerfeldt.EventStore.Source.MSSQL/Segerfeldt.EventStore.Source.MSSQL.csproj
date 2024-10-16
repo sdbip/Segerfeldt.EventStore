@@ -11,15 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="schema.sql" />
+    <None Include="README.md" Pack="true" PackagePath=""/>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath=""/>
+    <ProjectReference Include="..\..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
   </ItemGroup>
 
 </Project>

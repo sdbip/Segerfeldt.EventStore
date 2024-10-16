@@ -23,7 +23,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Apps\SourceWebApplication\SourceWebApplication.csproj" />
-      <ProjectReference Include="..\..\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
+      <ProjectReference Include="..\..\TestUtils\Segerfeldt.EventStore.Source.NUnit\Segerfeldt.EventStore.Source.NUnit.csproj" />
     </ItemGroup>
 
 </Project>

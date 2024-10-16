@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj" />
+      <ProjectReference Include="..\..\TestUtils\Segerfeldt.EventStore.Projection.NUnit\Segerfeldt.EventStore.Projection.NUnit.csproj" />
     </ItemGroup>
 
     <ItemGroup>

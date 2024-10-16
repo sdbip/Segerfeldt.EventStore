@@ -11,16 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="schema.sql" />
+    <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection\Segerfeldt.EventStore.Projection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath=""/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Npgsql" Version="8.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Segerfeldt.EventStore.Source\Segerfeldt.EventStore.Source.csproj" />
   </ItemGroup>
 
 </Project>
