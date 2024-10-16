@@ -24,23 +24,45 @@ Call the extension method `IServiceCollection.AddHostedEventSource(IEventSourceP
 
 ```c#
 builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration), "source1")
+builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration))
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<ProjectionTracker>();
 
 internal class MyCustomEventSourceProvider(IConfiguration configuration) : IEventSourceProvider
 {
-    // This method is called once only. At startup.
+    // This method is called once per source; at startup.
     public void PrepareToReceive(IServiceProvider p)
     {
-        // You might want to add your own schema to the database.
-        // Specifically, you might want to add a table for storing your current position in the stream(s).
+        // It's intended use is to run a schema DDL on your projection database so that it is ready to recieve updates.
+        // It might be a different database provider than the source,
         MySchema.CreateIfMissing(new MyProjectionConnection(configuration.GetConnectionString("projection_database")!));
+
+        // You might also want to add a table (or some other persistence container) for storing your current position in the stream.
     }
 
     // This method creates a connection to your database.
     public DbConnection CreateConnection() => new MyCustomConnection(configuration.GetConnectionString("source_database")!);
 }
+```
+
+You can add multiple sources (and they don't all have to use the same provider). Just make sure that they are logically separated in the projection database (or use transactions) as they will emit events on independent threads:
+
+```c#
+builder.Services.AddSingleton<Source1ProjectionTracker>();
+builder.Services.AddSingleton<Source2ProjectionTracker>();
+builder.Services.AddSingleton<Source3ProjectionTracker>();
+
+builder.Services.AddHostedPostgreSQLEventSource(builder.Configuration.GetConnectionString("source1_database")!)
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<Source1ProjectionTracker>();
+
+builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnectionString("source2_database")!)
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<Source2ProjectionTracker>();
+
+builder.Services.AddHostedSQLiteEventSource(builder.Configuration.GetConnectionString("source3_database")!)
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<Source3ProjectionTracker>();
 ```
 
 # Implementation

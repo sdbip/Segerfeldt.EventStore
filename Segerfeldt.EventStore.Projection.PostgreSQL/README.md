@@ -21,6 +21,51 @@ builder.Services.AddHostedPostgreSQLEventSource(builder.Configuration.GetConnect
     .SetProjectionTracker<ProjectionTracker>();
 ```
 
+The above API assumes that you projection database is set up and ready to receive data. If you want to perform a task (like adding schema) on startup, you'll have to use a custom provider:
+
+```c#
+builder.Services.AddSingleton<ProjectionTracker>();
+builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration))
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<ProjectionTracker>();
+
+internal class MyCustomEventSourceProvider(IConfiguration configuration) : IEventSourceProvider
+{
+    // This method is called once per source; at startup.
+    public void PrepareToReceive(IServiceProvider p)
+    {
+        // It's intended use is to run a schema DDL on your projection database so that it is ready to recieve updates.
+        // It might be a different database provider than the source,
+        MySchema.CreateIfMissing(new NpgsqlConnection(configuration.GetConnectionString("projection_database")!));
+
+        // You might also want to add a table (or some other persistence container) for storing your current position in the stream.
+    }
+
+    // This method creates a connection to your database.
+    public DbConnection CreateConnection() => new NpgsqlConnection(configuration.GetConnectionString("source_database")!);
+}
+```
+
+You can add multiple sources (and they don't all have to be PostgreSQL databases). Just make sure that they are logically separated in the projection database (or use transactions) as they will emit events on independent threads:
+
+```c#
+builder.Services.AddSingleton<Source1ProjectionTracker>();
+builder.Services.AddSingleton<Source2ProjectionTracker>();
+builder.Services.AddSingleton<Source3ProjectionTracker>();
+
+builder.Services.AddHostedPostgreSQLEventSource(builder.Configuration.GetConnectionString("source1_database")!)
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<Source1ProjectionTracker>();
+
+builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnectionString("source2_database")!)
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<Source2ProjectionTracker>();
+
+builder.Services.AddHostedSQLiteEventSource(builder.Configuration.GetConnectionString("source3_database")!)
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<Source3ProjectionTracker>();
+```
+
 # Implementation
 
 Receptacles are detected automatically in the specified assemblies. All `public` classes that implement `IReceptacle` will be notified.
