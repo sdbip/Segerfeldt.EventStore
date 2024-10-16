@@ -41,7 +41,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Segerfeldt.EventStore.Projection.PostgreSQL\Segerfeldt.EventStore.Projection.PostgreSQL.csproj" />
-    <ProjectReference Include="..\..\Segerfeldt.EventStore.Source.PostgreSQL\Segerfeldt.EventStore.Source.PostgreSQL.csproj" />
   </ItemGroup>
 
 </Project>
