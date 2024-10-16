@@ -1,6 +1,6 @@
 using Segerfeldt.EventStore.Source;
 
-namespace SourceWebApplication.Domaim;
+namespace SourceWebApplication.Domain;
 
 internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, EntityType, version)
 {
@@ -9,18 +9,18 @@ internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, 
     internal static User New(EntityId entityId)
     {
         var user = new User(entityId, EntityVersion.New);
-        user.Add(new UnpublishedEvent("Registered", new {}));
+        user.Add(new UnpublishedEvent("Registered", new { }));
         return user;
     }
 
-    internal static User New(string username, string emailAddress)
+    internal static User New(string username, EmailAddress emailAddress)
     {
         var user = new User(EntityId.Value(username), EntityVersion.New);
         user.SetEmailAddress(emailAddress);
         return user;
     }
 
-    internal void SetEmailAddress(string emailAddress)
+    internal void SetEmailAddress(EmailAddress emailAddress)
     {
         Add(new UnpublishedEvent("EmailAddressChanged", new { emailAddress }));
     }

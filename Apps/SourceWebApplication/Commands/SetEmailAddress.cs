@@ -1,7 +1,6 @@
 using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-using SourceWebApplication.Domaim;
 using SourceWebApplication.Domain;
 
 namespace SourceWebApplication.Commands;
