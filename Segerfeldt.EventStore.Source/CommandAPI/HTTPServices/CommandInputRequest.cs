@@ -35,14 +35,24 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
         return await commandHandlerExecuter.HandleAsync(command, CreateCommandContext());
     }
 
-    private CommandContext CreateCommandContext()
+    private CommandContext CreateCommandContext() => context.RequestServices.CreateCommandContext(context);
+}
+
+public static class ServiceProviderExtension
+{
+    internal static CommandContext CreateCommandContext(this IServiceProvider serviceProvider, HttpContext httpContext)
     {
-        var factory = context.RequestServices.GetRequiredService<IConnectionFactory>();
+        var factory = serviceProvider.GetRequiredService<IConnectionFactory>();
         return new CommandContext
         {
             EventPublisher = new EventPublisher(factory),
             EntityStore = new EntityStore(factory),
-            HttpContext = context
+            HttpContext = httpContext
         };
     }
+
+    /// <summary>Create a CommandContext (for testing)</summary>
+    /// <param name="serviceProvider">A service provider that has been set up with <see cref="Commanding.UseEventStore(IServiceCollection, IEventStoreProvider)"/></param>
+    public static CommandContext CreateCommandContext(this IServiceProvider serviceProvider) =>
+        serviceProvider.CreateCommandContext(new DefaultHttpContext());
 }
