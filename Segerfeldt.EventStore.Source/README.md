@@ -198,7 +198,7 @@ public sealed class Amount : ValueObject<Amount>
 public sealed class Counter : EntityBase
 {
     // It is recommended to define a static EntityType constant.
-    public static readonly EntityType EntityType = EntityType.Name("Counter").OrThrow();
+    public static readonly EntityType EntityType = EntityType.Name("Counter");
 
     // The constructor should usually be empty. Just call the base constructor with a
     // consistent (and unique to this entity class) EntityType value.

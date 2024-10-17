@@ -1,8 +1,8 @@
 # Segerfeldt.EventStore.Source.NUnit
 
-A package for assisting tests of Segerfeldt.EventSourcing.Source applications.
+A package providing NUnit users with a language for testing Segerfeldt.EventSourcing.Source applications.
 
-It allows for unit testing entities. You can verify added events without needing to publish them:
+It allows for unit testing `IEntity` events without publishing them, using the Hamcrestian `Assert.That()` method:
 
 ```csharp
 [Test]
@@ -20,7 +20,7 @@ public void TestEntityCreationEvent()
 [Test]
 public void TestEntityOperationEvent()
 {
-    var entity = new MyEntity(EntityId.Value("some_id").OrThrow(), EntityVersion.New);
+    var entity = new MyEntity(EntityId.Value("some_id"), EntityVersion.New);
 
     entity.PerformOperation();
 
@@ -29,6 +29,17 @@ public void TestEntityOperationEvent()
 
     // Assert that the event was added with the correct details
     Assert.That(entity, Added.Event("EventName").WithDetails(new EventDetails("prop1", "prop2")));
+}
+
+[Test]
+public void TestUnsupportedOperationEvent()
+{
+    var entity = new MyEntity(EntityId.Value("some_id"), EntityVersion.New);
+
+    Assert.That(() => entity.PerformUnsupportedOperation(), Throws.Exception);
+
+    // Assert that no events have been added to the entity
+    Assert.That(entity, Added.NoEvents;
 }
 ```
 
