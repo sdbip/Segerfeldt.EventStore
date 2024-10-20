@@ -33,6 +33,8 @@ public class ModifiesEntityAttribute : Attribute
     /// Default: <see cref="OperationType.Post" />
     /// </summary>
     public OperationType Method { get; set; }
+    /// <summary>The mode of command serialization</summary>
+    public CommandSerializationMode SerializationType{ get; set; } = CommandSerializationMode.JSONBody;
     /// <summary>
     /// The name of the entity id path component.
     /// Default: entityId
@@ -75,4 +77,13 @@ public class ModifiesEntityAttribute : Attribute
         Entity = entity;
         Method = method;
     }
+}
+
+/// <summary>The mode of command serialization</summary>
+public enum CommandSerializationMode
+{
+    /// <summary>The command will be added to the URL</summary>
+    URLQuery,
+    /// <summary>The command will be serialized as JSON and sent in the request body</summary>
+    JSONBody
 }

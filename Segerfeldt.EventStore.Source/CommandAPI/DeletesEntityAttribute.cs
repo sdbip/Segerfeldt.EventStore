@@ -12,5 +12,6 @@ public sealed class DeletesEntityAttribute : ModifiesEntityAttribute
     public DeletesEntityAttribute(string entity) : base(entity, OperationType.Delete)
     {
         EntityId = DefaultEntityId;
+        SerializationType = CommandSerializationMode.URLQuery;
     }
 }

@@ -4,10 +4,10 @@ namespace SourceWebApplication.Commands;
 
 /// <summary>This exemplifies a command with a custom method.</summary>
 /// NOTE: Swagger doesn't support custom methods so this command will not be documented.
-public record Poke();
+public record Poke(string stick);
 
 /// <inheritdoc/>
-[ModifiesEntity("Pokey", CustomMethod = "POKE")]
+[ModifiesEntity("Pokey", CustomMethod = "POKE", SerializationType = CommandSerializationMode.URLQuery)]
 public sealed class PokeCommandHandler : ICommandHandler<Poke>
 {
     /// <inheritdoc/>

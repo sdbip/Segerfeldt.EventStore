@@ -46,9 +46,45 @@ public sealed class CommandTests
     [Test]
     public async Task Poke_Returns204NoContent()
     {
-        var response = await client.SendCommand(new HttpMethod("POKE"), "Pokey/", new { });
+        var response = await client.SendCommand(new HttpMethod("POKE"), "Pokey/", new { stick = "" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+    }
+
+    [Test]
+    public async Task Delete_Returns204NoContent()
+    {
+        var response = await client.SendDeleteCommand("Pokey/poo", new { parameter = 12, required = "set" });
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(await response.Content.ReadAsStringAsync(), Is.EqualTo(""));
+        });
+    }
+
+    [Test]
+    public async Task Delete_NullableParameterNotSet_Returns204NoContent()
+    {
+        var response = await client.SendDeleteCommand("Pokey/poo", new { required = "set" });
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(await response.Content.ReadAsStringAsync(), Is.EqualTo(""));
+        });
+    }
+
+    [Test]
+    public async Task Delete_RequiredParameterNotSet_Returns400BadRequest()
+    {
+        var response = await client.SendDeleteCommand("Pokey/poo", new { });
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(await response.Content.ReadAsStringAsync(), Is.Not.EqualTo(""));
+        });
     }
 }
 

@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Http.Extensions;
+
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -26,8 +29,27 @@ public static class HttpClientExtension
     /// <param name="command">The command DTO to send</param>
     /// <param name="addHeaders">Action for configuring the request headers</param>
     /// <returns>The response from the command handler (or 404 NOT FOUND if the command handler is not set up correctly)</returns>
-    public static async Task<HttpResponseMessage> SendDeleteCommand(this HttpClient client, string path, object command, Action<HttpRequestHeaders>? addHeaders = null) =>
-        await client.SendCommand(HttpMethod.Delete, path, command, addHeaders);
+    public static async Task<HttpResponseMessage> SendDeleteCommand(this HttpClient client, string path, object command, Action<HttpRequestHeaders>? addHeaders = null)
+    {
+        ArgumentNullException.ThrowIfNull(client, nameof(client));
+
+        var queryBuilder = new QueryBuilder();
+        foreach (var prop in command.GetType().GetProperties())
+        {
+            if (prop.GetValue(command) is string s)
+                queryBuilder.Add(prop.Name, s);
+            if (prop.GetValue(command) is IEnumerable<string> a)
+                queryBuilder.Add(prop.Name, a);
+        }
+        var requestUri = new UriBuilder
+        {
+            Path = path,
+            Query = queryBuilder.ToQueryString().ToUriComponent(),
+        };
+        var request = new HttpRequestMessage(HttpMethod.Delete, requestUri.Uri);
+        addHeaders?.Invoke(request.Headers);
+        return await client.SendAsync(request);
+    }
 
     /// <summary>Send a request with a serialized command to the application</summary>
     /// <param name="client">The client to send the command with</param>

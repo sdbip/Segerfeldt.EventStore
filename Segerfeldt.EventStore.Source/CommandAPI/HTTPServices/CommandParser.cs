@@ -20,7 +20,7 @@ internal class CommandParser(HttpContext context)
         var handleMethodParameters = handleMethod.GetParameters();
         var command = await DeserializeCommand(handleMethodParameters[0].ParameterType)
             ?? throw new ParseException("Command is null");
-        var missingProperties = GetMissingProperties(command).ToList();
+        var missingProperties = GetMissingProperties(command);
         if (missingProperties.Any())
             throw new ParseException(
                 "Not all required properties are specified",
@@ -30,7 +30,7 @@ internal class CommandParser(HttpContext context)
                     missingProperties
                 });
 
-        var invalidProperties = GetInvalidProperties(command).ToList();
+        var invalidProperties = GetInvalidProperties(command);
         if (invalidProperties.Any())
             throw new ParseException(
                 "Not all properties are valid",
@@ -50,13 +50,12 @@ internal class CommandParser(HttpContext context)
 
     private object DeserializeQueryCommand(Type commandType)
     {
-        var command = commandType.GetConstructor(Array.Empty<Type>())?.Invoke(Array.Empty<object>())
-                ?? throw new Exception($"The type {commandType.Name} cannot be instantiated from an empty constructor.");
+        var dict = new Dictionary<string, string>();
+        foreach (var (key, value) in context.Request.Query) dict.Add(key, (string)value!);
+        var json = JSON.Serialize(dict);
 
-        foreach (var (key, value) in context.Request.Query)
-            commandType.GetProperty(key, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public)?
-                .SetValue(command, value.FirstOrDefault());
-        return command;
+        return JSON.Deserialize(json, commandType)
+            ?? throw new Exception($"The type {commandType.Name} cannot be instantiated from an empty constructor.");
     }
 
     private async Task<object> DeserializeJSONCommand(Type commandType) =>
