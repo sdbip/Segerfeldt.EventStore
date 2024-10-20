@@ -13,6 +13,8 @@ namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
 internal class CommandParser(HttpContext context)
 {
+    private static readonly NullabilityInfoContext NullabilityContext = new();
+
     private readonly HttpContext context = context;
 
     public async Task<object> GetCommandDTOAsync(MethodBase handleMethod)
@@ -72,7 +74,7 @@ internal class CommandParser(HttpContext context)
 
     private static IEnumerable<string> GetMissingProperties(object command) =>
         command.GetType().GetProperties()
-            .Where(p => p.GetCustomAttribute<RequiredAttribute>() is not null)
+            .Where(p => p.GetCustomAttribute<RequiredAttribute>() is not null || NullabilityContext.Create(p).WriteState == NullabilityState.NotNull)
             .Where(p => p.GetValue(command) is null)
             .Select(p => p.Name);
 
