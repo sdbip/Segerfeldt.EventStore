@@ -1,7 +1,5 @@
 using System.Reflection;
 
-using Microsoft.AspNetCore.Authentication;
-
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 

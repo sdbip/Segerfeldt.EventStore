@@ -23,7 +23,14 @@ public class ModifiesEntityAttribute : Attribute
     public string Entity { get; }
     /// <summary>
     /// The HTTP method (verb) to be used for the generated endpoint.
-    /// Default: POST
+    /// This overrides the <see cref="Method"/> property.
+    /// </summary>
+    /// NOTE: This command will not be documented; custom methods are not supported by Swagger.
+    /// Motivation here: https://github.com/domaindrivendev/Swashbuckle.WebApi/issues/429
+    public string? CustomMethod { get; set; }
+    /// <summary>
+    /// The HTTP method (verb) to be used for the generated endpoint.
+    /// Default: <see cref="OperationType.Post" />
     /// </summary>
     public OperationType Method { get; set; }
     /// <summary>

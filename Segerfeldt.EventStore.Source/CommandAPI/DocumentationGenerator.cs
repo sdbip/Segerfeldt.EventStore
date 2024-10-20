@@ -40,6 +40,8 @@ public sealed class DocumentationGenerator(DocumentFilterContext context)
                 : schemaRepository.GetSchema(handler);
 
             var attribute = handler.GetCustomAttribute<ModifiesEntityAttribute>(false)!;
+            // Swagger does not support custom verb/method.
+            if (attribute.CustomMethod is not null) continue;
 
             if (!document.Paths.ContainsKey(attribute.Pattern))
                 document.Paths[attribute.Pattern] = new OpenApiPathItem

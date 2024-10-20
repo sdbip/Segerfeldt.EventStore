@@ -73,7 +73,7 @@ public static class Commanding
             .Select(type => (type, type.GetCustomAttribute<ModifiesEntityAttribute>(false)!));
 
         foreach (var (handlerClass, attribute) in attributedClasses)
-            endpoints.MapMethods(attribute.Pattern, [attribute.Method.ToString()], context => HandleCommand(context, handlerClass));
+            endpoints.MapMethods(attribute.Pattern, [attribute.CustomMethod ?? attribute.Method.ToString()], context => HandleCommand(context, handlerClass));
     }
 
     private static async Task HandleCommand(HttpContext context, TypeInfo handlerClass)

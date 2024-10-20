@@ -42,6 +42,14 @@ public sealed class CommandTests
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
+
+    [Test]
+    public async Task Poke_Returns204NoContent()
+    {
+        var response = await client.SendCommand(new HttpMethod("POKE"), "Pokey/", new { });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+    }
 }
 
 internal static class ConnectionExtension
