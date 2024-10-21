@@ -80,7 +80,6 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
 
         foreach (var (position, events) in batch)
         {
-            lastReadPosition = position;
             tracker?.OnProjectionStarting(position);
             try { foreach (var @event in events) Emit(@event); }
             catch
@@ -88,6 +87,7 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
                 tracker?.OnProjectionError(position);
                 throw;
             }
+            lastReadPosition = position;
             tracker?.OnProjectionFinished(position);
         }
 
