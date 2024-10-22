@@ -2,6 +2,8 @@
 
 ## Icebox Issues & Ideas
 
+- Add more tests for commanding and hosting.
+- Add tests for documentatioon.
 - Maybe `Reconstitute` should accept a `string` instead of an `EntityId`?
   - If you have stored “invalid” entities, you should still be able to reconstitute them.
   - Could just make `EntityId.Safe()` public, but that might cause developers to bypass validation where it shouldn't be.
@@ -21,15 +23,4 @@
 - Convert file imports to a shared project import (Segerfeldt.EventStore.Shared.shproj).
   - Unfortunately this is difficult outside of Visual Studio proper.
     And VS For Mac has been discontinued, so a Windows machine may be needed.
-- Report VSCode bug.
-    When running single test in the Testing view, VSCode builds with the wrong command:
-
-    ```sh
-    dotnet build /project_path/project_name.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:Configuration=Debug /p:Platform="AnyCPU"
-    ```
-
-    I have the `$(SolutionDir)` prefix in my project reference paths; I want to be free to change the folder structure without having to adjust all the paths. But the above command doesn't know about the solution, so the `$(SolutionDir)` value is empty and build fails. This command however works (assuming all dots in the target name are replaced with underscores):
-
-    ```sh
-    dotnet build /solution_path/Solution.sln /target:rel_project_path/project_name /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:Configuration=Debug /p:Platform="Any CPU"
-    ```
+    (Or maybe JetBrains Rider has the ability?)
