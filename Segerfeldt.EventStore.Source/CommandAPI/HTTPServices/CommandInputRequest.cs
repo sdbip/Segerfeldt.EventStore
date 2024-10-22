@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
@@ -18,7 +19,7 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
         try
         {
             command = await new CommandParser(context)
-                .GetCommandDTOAsync(handlerType.GetMethod(nameof(ICommandHandler<object>.Handle))!);
+                .GetCommandDTOAsync(handlerType.GetMethod(nameof(ICommandHandler<object>.Handle))!, handlerType.GetCustomAttribute<ModifiesEntityAttribute>()!);
         }
         catch (ParseException exception)
         {

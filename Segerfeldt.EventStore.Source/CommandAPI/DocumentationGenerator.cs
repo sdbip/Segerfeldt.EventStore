@@ -53,7 +53,7 @@ public sealed class DocumentationGenerator(DocumentFilterContext context)
                 new OpenApiOperation
                 {
                     Parameters = Parameters(attribute),
-                    OperationId = $"{attribute.Method.ToString().ToUpper()} {attribute.Pattern}",
+                    OperationId = $"{attribute.MethodString} {attribute.Pattern}",
                     Summary = commandSchema?.Description ?? "",
                     Responses = Responses(handler, context),
                     RequestBody = RequestBody(commandParameter?.ParameterType, requestBodySchema),
@@ -62,7 +62,7 @@ public sealed class DocumentationGenerator(DocumentFilterContext context)
         }
     }
 
-    private static IList<OpenApiParameter>? Parameters(ModifiesEntityAttribute attribute)
+    private static List<OpenApiParameter>? Parameters(ModifiesEntityAttribute attribute)
     {
         if (!attribute.HasEntityIdParameter && !attribute.HasPropertyIdParameter) return null;
 

@@ -17,10 +17,10 @@ internal class CommandParser(HttpContext context)
 
     private readonly HttpContext context = context;
 
-    public async Task<object> GetCommandDTOAsync(MethodBase handleMethod)
+    public async Task<object> GetCommandDTOAsync(MethodBase handleMethod, ModifiesEntityAttribute attribute)
     {
         var handleMethodParameters = handleMethod.GetParameters();
-        var command = await DeserializeCommand(handleMethodParameters[0].ParameterType)
+        var command = await DeserializeCommand(handleMethodParameters[0].ParameterType, attribute)
             ?? throw new ParseException("Command is null");
         var missingProperties = GetMissingProperties(command);
         if (missingProperties.Any())
@@ -45,8 +45,8 @@ internal class CommandParser(HttpContext context)
         return command;
     }
 
-    private async Task<object> DeserializeCommand(Type commandType) =>
-        context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Delete
+    private async Task<object> DeserializeCommand(Type commandType, ModifiesEntityAttribute attribute) =>
+        attribute.SerializationType == CommandSerializationMode.URLQuery
             ? DeserializeQueryCommand(commandType)
             : await DeserializeJSONCommand(commandType);
 

@@ -46,7 +46,7 @@ public sealed class CommandTests
     [Test]
     public async Task Poke_Returns204NoContent()
     {
-        var response = await client.SendCommand(new HttpMethod("POKE"), "Pokey/", new { stick = "" });
+        var response = await client.SendCommandOnURL(new HttpMethod("POKE"), "Pokey/", new { stick = "" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
     }

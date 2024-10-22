@@ -56,15 +56,24 @@ public class ModifiesEntityAttribute : Attribute
     /// Example path: /entity/{entityId}/property/{propertyId}/subproperty
     /// </summary>
     public string? Subproperty { get; init; }
+    /// <summary>
+    /// Flag that adds the default entity-id parameter to the <see cref="Pattern"/>
+    /// even if no property has been added
+    /// </summary>
+    public bool IncludeEntityId { get; init; }
 
     internal string EntityIdOrDefault => EntityId ?? DefaultEntityId;
-    internal bool HasEntityIdParameter => Method == OperationType.Delete || Property is not null;
+    internal bool HasEntityIdParameter => IncludeEntityId || EntityId is not null || Property is not null;
     internal bool HasPropertyIdParameter => PropertyId is not null;
     internal bool HasSubpropertyParameter => Subproperty is not null;
 
-    internal string Pattern =>
+    /// <summary>The actuaal HTTP method/verb (string) to use in requests</summary>
+    public string MethodString => CustomMethod ?? Method.ToString().ToUpper();
+
+    /// <summary>The pattern to match to URL paths when resolving the command hsndler</summary>
+    public string Pattern =>
         Property is not null ? SpecificPropertyPattern :
-        EntityId is not null ? SpecificEntityPattern :
+        EntityId is not null || IncludeEntityId ? SpecificEntityPattern :
         BaseEntityPattern;
 
     private string SpecificPropertyPattern => $"{SpecificEntityPattern}/{Property}{(PropertyId is null ? "" : $"/{{{PropertyId}}}")}{(Subproperty is null ? "" : $"/{Subproperty}")}";
