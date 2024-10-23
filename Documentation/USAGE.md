@@ -16,7 +16,6 @@ Add the following line to your Program.cs to automatically find and map endpoint
 
 ```csharp
 using Segerfeldt.EventStore.Source.CommandAPI;
-using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 
 app.MapCommands(Assembly.GetExecutingAssembly());
 ```
