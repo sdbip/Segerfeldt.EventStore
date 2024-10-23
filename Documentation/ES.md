@@ -65,6 +65,6 @@ Projection can be used for other purposes than the Query side of CQRS. It can fo
 
 Aggregate (as a noun) is a redundant term and not used here. The term aggregate is replaced with `Entity` in this library. See [An In-Depth Discussion on Aggregates](./AGGREGATES.md) for some arguments for this choice.
 
-Note: The `Entity` only refers to the aggregate root. It is up to the developer to define child entity and implement the coupling between them and their root. Their state should be modeled by the root entities events, so operations on entities must add to its `UnpublishedEvents`, and replaying the events must propagate to the child entities or they won't be able to make decisions based on their state.
+Note: The `Entity` only refers to the aggregate root. It is up to the developer to define child entities and implement the coupling between them and their root. Their state should be modeled by the root entity's events, so operations on entities must add to its `UnpublishedEvents`, and replaying the events must propagate to the child entities or they won't be able to make decisions based on their state.
 
 There is an example of how it might be acheived in the test case `Segerfeldt.EventStore.Source.Tests.AggregateTests`. Please do not take it as canon though; it is not meant to be a guide to the best ever implementation (or even necessarily a good one). It was written merely to ensure that it is at all possible. Your own implementation will probably be much better for your situation.
