@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 17.5.002.0
-MinimumVisualStudioVersion =
+MinimumVisualStudioVersion = 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4753DDB6-1168-4785-9400-75A28AB654C8}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
@@ -80,6 +80,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.SQLite.Tests", "Tests\SQLite\Segerfeldt.EventStore.Projection.SQLite.Tests\Segerfeldt.EventStore.Projection.SQLite.Tests.csproj", "{3A35EEFF-2AE7-4E15-A749-486F2FAB9620}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.SQLite", "SQLite\Segerfeldt.EventStore.Projection.SQLite\Segerfeldt.EventStore.Projection.SQLite.csproj", "{E422D97B-C24D-47CA-8CF0-2D932283A25F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Refactoring", "Segerfeldt.EventStore.Refactoring\Segerfeldt.EventStore.Refactoring.csproj", "{4E8B789D-96BE-4071-8C30-66B528D51FAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Refactoring.Tests", "Tests\Segerfeldt.EventStore.Refactoring.Tests\Segerfeldt.EventStore.Refactoring.Tests.csproj", "{95A98D8E-97C1-4307-8E77-8A7A524DCE77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -187,6 +191,14 @@ Global
 		{E422D97B-C24D-47CA-8CF0-2D932283A25F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E422D97B-C24D-47CA-8CF0-2D932283A25F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E422D97B-C24D-47CA-8CF0-2D932283A25F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E8B789D-96BE-4071-8C30-66B528D51FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E8B789D-96BE-4071-8C30-66B528D51FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E8B789D-96BE-4071-8C30-66B528D51FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E8B789D-96BE-4071-8C30-66B528D51FAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95A98D8E-97C1-4307-8E77-8A7A524DCE77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95A98D8E-97C1-4307-8E77-8A7A524DCE77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95A98D8E-97C1-4307-8E77-8A7A524DCE77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95A98D8E-97C1-4307-8E77-8A7A524DCE77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,5 +231,6 @@ Global
 		{5630B3B1-79E3-4248-BC6E-6CF8C6A1C7F9} = {4A4CAB91-0155-452B-A462-A5D734BFD8C5}
 		{3A35EEFF-2AE7-4E15-A749-486F2FAB9620} = {BDDE50E3-3951-4103-8B4C-4DA5CB81F549}
 		{E422D97B-C24D-47CA-8CF0-2D932283A25F} = {BEBCF832-7F32-4CF1-8659-F3E64D70EF2C}
+		{95A98D8E-97C1-4307-8E77-8A7A524DCE77} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 	EndGlobalSection
 EndGlobal
