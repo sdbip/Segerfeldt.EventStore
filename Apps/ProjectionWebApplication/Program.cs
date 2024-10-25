@@ -6,7 +6,6 @@ using Microsoft.OpenApi.Models;
 
 using ProjectionWebApplication;
 
-using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
 using System.Reflection;

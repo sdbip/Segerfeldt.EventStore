@@ -1,0 +1,119 @@
+<mxfile host="65bd71144e">
+    <diagram id="CEsB5nFw5pQXFJHHaU9K" name="Page-1">
+        <mxGraphModel dx="1480" dy="871" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="4" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="2" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="2. [for each event]&lt;br&gt;Get translated events&lt;br&gt;for [event]" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="4">
+                    <mxGeometry x="-0.175" y="-2" relative="1" as="geometry">
+                        <mxPoint x="11" y="1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="6" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="2" target="5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="1. Get all events at position [p]" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="6">
+                    <mxGeometry x="0.225" y="-1" relative="1" as="geometry">
+                        <mxPoint x="-1" y="8" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="26" value="" style="edgeStyle=none;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="2" target="25">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="0. Get last stored position" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="26">
+                    <mxGeometry x="0.14" y="-1" relative="1" as="geometry">
+                        <mxPoint x="11" y="-8" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="28" value="4. Store position [p] as done" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="26">
+                    <mxGeometry x="0.14" y="-1" relative="1" as="geometry">
+                        <mxPoint x="11" y="12" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="2" value="(Refactoring)&lt;br&gt;EventSource" style="html=1;" vertex="1" parent="1">
+                    <mxGeometry x="512" y="339" width="110" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Transformation" style="html=1;" vertex="1" parent="1">
+                    <mxGeometry x="895" y="339" width="110" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="EventSource&lt;br&gt;Repository" style="html=1;" vertex="1" parent="1">
+                    <mxGeometry x="512" y="98" width="110" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="This will work similar to ES.Projection.&lt;br&gt;&lt;br&gt;Except it will not Emit events." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;" vertex="1" parent="1">
+                    <mxGeometry x="703" y="145" width="150" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" style="edgeStyle=none;html=1;endArrow=oval;endFill=0;" edge="1" parent="1" source="10" target="2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Event&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;entity-id&lt;/span&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;entity-type&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;name&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;details&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;actor&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;timestamp&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="268" y="60" width="160" height="126" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Entity&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;id&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;type&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;version = 0&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="430" y="660" width="160" height="87" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="" style="edgeStyle=none;html=1;" edge="1" target="19" parent="1" source="2">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="567" y="585" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="18" value="3. Publish translated events at position [p]&lt;br&gt;using the same actor and timestamp" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="16">
+                    <mxGeometry x="0.0375" y="3" relative="1" as="geometry">
+                        <mxPoint x="-3" y="-8" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="19" value="EventPublisher" style="html=1;" vertex="1" parent="1">
+                    <mxGeometry x="512" y="550" width="110" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Event&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;entity-id&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;name&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;details&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;actor&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;timestamp&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="512" width="160" height="126" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="This will work similar to ES.Source.&lt;br&gt;&lt;br&gt;Except it will never update the Entity version beyond 0." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;" vertex="1" parent="1">
+                    <mxGeometry x="698" y="570" width="160" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" style="edgeStyle=none;html=1;endArrow=oval;endFill=0;" edge="1" source="21" parent="1" target="19">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="311" y="563.6342592592592" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="23" style="edgeStyle=none;html=1;endArrow=oval;endFill=0;" edge="1" parent="1" source="20" target="19">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="643" y="545" as="sourcePoint"/>
+                        <mxPoint x="609.5252525252527" y="605" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="13" style="edgeStyle=none;html=1;endArrow=oval;endFill=0;" edge="1" parent="1" source="12" target="5">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="483" y="74" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="15" style="edgeStyle=none;html=1;endArrow=oval;endFill=0;" edge="1" parent="1" source="14" target="19">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="633" y="555" as="sourcePoint"/>
+                        <mxPoint x="463.0000000000001" y="229.30927835051557" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="35" value="" style="edgeStyle=none;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="25" target="34">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="PositionTracker&lt;br&gt;RefactoringTracker" style="html=1;" vertex="1" parent="1">
+                    <mxGeometry x="140" y="339" width="110" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Event&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;entity-id&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;entity-type&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;name&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;details&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="870" y="405" width="160" height="103" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" style="edgeStyle=none;html=1;endArrow=oval;endFill=0;" edge="1" source="29" parent="1" target="3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1086" y="425" as="sourcePoint"/>
+                        <mxPoint x="1065" y="374.4796380090497" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="34" value="Refactoring&lt;br&gt;Position" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=6.458333333333314;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="418.5" width="70" height="50" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
