@@ -103,14 +103,14 @@ public record IncrementCounter(int amount);
 // Implement one of the ICommandHandler interfaces to declare a command handler. The
 // `ModifiesEntityAttribute` (and its subclasses) defines the path pattern and the
 // verb/method for the command's HTTP endpoint.
-[ModifiesEntity("Counter")]
+[ModifiesEntity("Counter", AddEntityId = true)]
 public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCounter>
 {
     public async Task<CommandResult> Handle(IncrementCounter command, CommandContext context)
     {
         // The actor is the user that executes the command.
         // The name of the current principal is usually a good choice.
-        var actor = context.context.HttpContext.User.Identity?.Name;
+        var actor = context.HttpContext.User.Identity?.Name;
 
         // Return status 401 UNAUTHORIZED if authentication fails.
         if (actor is null) return CommandResult.Unauthorized();
@@ -122,15 +122,8 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
 
         // See http://httpstatuses.com/ for details about response status codes.
 
-        // The path of the request will contain the id when modifying an existing entity.
-        var id = new EntityId(context.GetRouteParameter("entityid"));
-        // Retrieve the referenced entity from the EntityStore.
-        var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
-        // Return 404 NOT FOUND if the entity doesn't exist.
-        if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
-
         // Convert command properties to domain value objects.
-        Amount amount = new Amount(command.Amount);
+        Amount amount;
 
         try
         {
@@ -141,19 +134,18 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
             return CommandResult.BadRequest($"Command DTO is invalid: {exception.Message}")
         }
 
+        // The path of the request will contain the id when modifying an existing entity.
+        var id = context.GetEntityId();
+        // Retrieve the referenced entity from the EntityStore.
+        var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
+        // Return 404 NOT FOUND if the entity doesn't exist.
+        if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
+
         // Perform operations on the entity to change its state.
         counter.IncrementBy(amount);
 
-        try
-        {
-            // The entity will add new events to define its new state. Publish them using the EventPublisher.
-            await context.EventPublisher.PublishChangesAsync(counter, actor);
-        }
-        catch
-        {
-            return
-        }
-
+        // The entity will add new events to define its new state. Publish them using the EventPublisher.
+        await context.EventPublisher.PublishChangesAsync(counter, actor);
         // Return 204 NO CONTENT (or 200 OK if there is a payload) if the command was successful.
         return CommandResult.NoContent();
     }
