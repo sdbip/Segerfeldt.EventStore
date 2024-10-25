@@ -2,11 +2,29 @@
 
 ## Icebox Issues & Ideas
 
+- Integrate better with the authentication handler.
+  - `Forbid()` in a controller calls `Forbid()` on the handler.
+  - The `AuthorizeAttribute` triggers the authorization handler(s) before even instantiating the controller. If the auth handler doesn't accept the user credentials the endpoint is not executed.
+  - How do auth-schemes work? Should the auth scheme be detected and used to select which handler(s) to use?
+  - Is it because of the support for multiple handlers (that could all accept) that the `IPrincipal` has multiple `Identities`?
+  - What else?
+- Automate the `actor` and create methods (possibly extension-methods) that publish changes.
+- Create a refactoring function/tool. Probably in a new package?
+  - Go through all events just like a projection,
+  - But for each event, run the details through some sort of translation mechanism that generates new events
+  - Maybe split the event in two or more.
+  - Keep the same timestamp, position and actor,
+  - Allow changes to the details, name and possibly even the entity.
+  - Ordinal seems complex.
+  - Allow it to run in parallel with the existing model.
+  - Keep projecting the old model into the new model for a while.
+  - When the new model is caught up with the state, make it the main model.
+  - Perhaps project the new model into the old so that other projections have some time to make the switch.
+  - When all projections are switched to the new model, remove the old altogether.
+- Answer this: Can you run code synchronously yet have Tasks that are completed when they return? `Task.FromResult()`?
+  - Could be a problem if synchronous code in receptacles is actually run in parallel.
 - Add more tests for commanding and hosting.
-- Add tests for documentatioon.
-- Maybe `Reconstitute` should accept a `string` instead of an `EntityId`?
-  - If you have stored “invalid” entities, you should still be able to reconstitute them.
-  - Could just make `EntityId.Safe()` public, but that might cause developers to bypass validation where it shouldn't be.
+- Add tests for documentation.
 - Command-line `dotnet test` fails sporadically.
 - `SourceWebApplicationTests` deletes all data stored by `SourceWebApplication`.
   This data should however not be important so it might be okay.
