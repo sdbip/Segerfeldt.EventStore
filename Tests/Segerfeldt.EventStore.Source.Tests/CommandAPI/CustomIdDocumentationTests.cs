@@ -263,7 +263,7 @@ public sealed class CustomIdDocumentationTests
         }
     }
 
-    [ModifiesEntity("Entity", Method = OperationType.Delete)]
+    [ModifiesEntity("Entity", Method = OperationType.Delete, IncludeEntityId = false)]
     private class OverloadingCommandHandler : ICommandHandler<OverloadingCommand>
     {
         public Task<CommandResult> Handle(OverloadingCommand command, CommandContext context)

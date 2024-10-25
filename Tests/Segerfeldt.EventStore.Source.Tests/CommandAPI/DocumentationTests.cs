@@ -264,7 +264,7 @@ public sealed class DocumentationTests
         }
     }
 
-    [ModifiesEntity("Entity", Method = OperationType.Delete)]
+    [ModifiesEntity("Entity", Method = OperationType.Delete, IncludeEntityId = false)]
     private class OverloadingCommandHandler : ICommandHandler<OverloadingCommand>
     {
         public Task<CommandResult> Handle(OverloadingCommand command, CommandContext context)

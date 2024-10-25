@@ -7,7 +7,12 @@ namespace SourceWebApplication.Commands;
 public record Poke(string stick);
 
 /// <inheritdoc/>
-[ModifiesEntity("Pokey", CustomMethod = "POKE", SerializationType = CommandSerializationMode.URLQuery)]
+[
+    ModifiesEntity("Pokey",
+        IncludeEntityId = false,
+        CustomMethod = "POKE",
+        SerializationType = CommandSerializationMode.URLQuery)
+]
 public sealed class PokeCommandHandler : ICommandHandler<Poke>
 {
     /// <inheritdoc/>

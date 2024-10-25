@@ -60,7 +60,7 @@ public class ModifiesEntityAttribute : Attribute
     /// Flag that adds the default entity-id parameter to the <see cref="Pattern"/>
     /// even if no property has been added
     /// </summary>
-    public bool IncludeEntityId { get; init; }
+    public bool IncludeEntityId { get; init; } = true;
 
     internal string EntityIdOrDefault => EntityId ?? DefaultEntityId;
     internal bool HasEntityIdParameter => IncludeEntityId || EntityId is not null || Property is not null;

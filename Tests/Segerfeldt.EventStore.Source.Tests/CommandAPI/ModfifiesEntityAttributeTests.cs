@@ -85,6 +85,15 @@ public sealed class ModifiesEntityAttributeTests
         var attribute = new ModifiesEntityAttribute("Entity")
             { PropertyId = "property", };
 
+        Assert.That(attribute.Pattern, Is.EqualTo("/entity/{entityId}"));
+    }
+
+    [Test]
+    public void AddsEntityOmitsEntityId()
+    {
+        var attribute = new AddsEntityAttribute("Entity")
+            { PropertyId = "property", };
+
         Assert.That(attribute.Pattern, Is.EqualTo("/entity"));
     }
 
