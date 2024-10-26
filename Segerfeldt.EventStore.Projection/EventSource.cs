@@ -120,9 +120,7 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
 
     private void Emit(Event @event)
     {
-        var tasks = GetReceptacles(@event)
-            .Select(async d => await d.UpdateAsync(@event));
-        Task.WhenAll(tasks).Wait();
+        foreach (var receptacle in GetReceptacles(@event)) receptacle.Update(@event);
     }
 
     private IEnumerable<IReceptacle> GetReceptacles(Event @event) =>

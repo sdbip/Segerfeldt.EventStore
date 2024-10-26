@@ -5,49 +5,56 @@ namespace Segerfeldt.EventStore.Projection.Tests;
 public sealed class ReceptacleBaseTests
 {
     [Test]
-    public async Task InvokesMethodWithMatchingEventNameAndType()
+    public void InvokesMethodWithMatchingEventNameAndType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        await receptacle.UpdateAsync(new Event("an-entity", EntityTypeTestingReceptacle.MatchedType, EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", EntityTypeTestingReceptacle.MatchedType, EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
 
     [Test]
-    public async Task DoesNotInvokeMethodWithMismatchingEventType()
+    public void DoesNotInvokeMethodWithMismatchingEventType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        await receptacle.UpdateAsync(new Event("an-entity", "mismatching-type", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", "mismatching-type", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Null);
     }
 
     [Test]
-    public async Task InvokesMethodIfEventTypeIgnored()
+    public void InvokesMethodIfEventTypeIgnored()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        await receptacle.UpdateAsync(new Event("an-entity", "an-entity-type", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", "an-entity-type", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
 
     [Test]
-    public async Task InvokesMethodWithOnlyEventParameter()
+    public void InvokesMethodWithOnlyEventParameter()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        await receptacle.UpdateAsync(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
 
     [Test]
-    public async Task InvokesMethodWithEntityIdAndDataParameters()
+    public void InvokesMethodWithEntityIdAndDataParameters()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        await receptacle.UpdateAsync(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, @"{""property"":42}", 0, 0));
+        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, @"{""property"":42}", 0, 0));
 
         Assert.That(receptacle.ReceivedEntityId, Is.EqualTo("an-entity"));
         Assert.That(receptacle.ReceivedData, Is.EqualTo(new EventData(42)));
+    }
+
+    [Test]
+    public void ExecutesTasksSynchronously()
+    {
+        var receptacle = new AsyncTestingReceptacle();
+        receptacle.Update(new Event("an-entity", "an-entity-type", AsyncTestingReceptacle.AcceptedEvent, "{}", 0, 0));
     }
 }
 
@@ -92,6 +99,30 @@ public class ParameterListTestingReceptacle : ReceptacleBase
     {
         ReceivedEntityId = entityId;
         ReceivedData = data;
+    }
+}
+
+public class AsyncTestingReceptacle : ReceptacleBase
+{
+    public const string AcceptedEvent = "AcceptedEvent";
+
+    private bool isProcessingEvent;
+
+    [ReceivesEvent(AcceptedEvent)]
+    public async Task Method1(Event _){ await WaitAsync(); }
+
+    [ReceivesEvent(AcceptedEvent)]
+    public async Task Method2(Event _){ await WaitAsync(); }
+
+    [ReceivesEvent(AcceptedEvent)]
+    public async Task Method3(Event _){ await WaitAsync(); }
+
+    private async Task WaitAsync()
+    {
+        Assert.That(isProcessingEvent, Is.False);
+        isProcessingEvent = true;
+        await Task.Delay(10);
+        isProcessingEvent = false;
     }
 }
 

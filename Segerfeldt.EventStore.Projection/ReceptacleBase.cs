@@ -32,15 +32,12 @@ public abstract class ReceptacleBase : IReceptacle
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAsync(Event @event)
+    public void Update(Event @event)
     {
         if (!lazyMethods.Value.TryGetValue(@event.Name, out var methods)) return;
 
-        var tasks = methods
-            .Where(m => m.GetCustomAttribute<ReceivesEventAttribute>()!.Accepts(@event))
-            .Select(m => InvokeMethod(m, @event))
-            .OfType<Task>();
-        await Task.WhenAll(tasks);
+        foreach (var method in methods.Where(m => m.GetCustomAttribute<ReceivesEventAttribute>()!.Accepts(@event)))
+            if (InvokeMethod(method, @event) is Task task) task.Wait();
     }
 
     private object? InvokeMethod(MethodBase method, Event @event)
