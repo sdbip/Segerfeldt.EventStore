@@ -61,5 +61,5 @@ internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal? after
     }
 
     private static DateTimeOffset DateTimeOffset(object timestamp) =>
-        new(TimestampConverter.FromTimestamp(Convert.ToDouble(timestamp)), TimeSpan.Zero);
+        TimestampConverter.ToDateTime(Convert.ToDouble(timestamp));
 }

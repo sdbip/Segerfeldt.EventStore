@@ -211,7 +211,7 @@ public sealed class ReconstitutionTests
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", timestamp.UtcDateTime.DaysSinceEpoch());
+        command.AddParameter("@timestamp", TimestampConverter.ToOADate(timestamp));
         command.ExecuteNonQuery();
     }
 
