@@ -15,34 +15,24 @@ public interface IEventSourceRepository
     IEnumerable<Event> GetEvents(long afterPosition);
 }
 
-public delegate DbConnection ConnectionFactory();
-
 /// <summary>The default <see cref="IEventSourceRepository"/> implementation</summary>
-/// <param name="connectionFactory">A deöegate that can create new connections</param>
-public sealed class DefaultEventSourceRepository(ConnectionFactory connectionFactory) : IEventSourceRepository
+/// <param name="connection">A connection to the source write-model</param>
+public sealed class DefaultEventSourceRepository(IDbConnection connection) : IEventSourceRepository
 {
     /// <inheritdoc/>
     public IEnumerable<Event> GetEvents(long afterPosition)
     {
-        try
-        {
-            using var connection = connectionFactory.Invoke();
-            using var command = connection.CreateCommand("""
-                SELECT Events.*, Entities.type AS entity_type FROM Events
-                JOIN Entities ON Entities.id = Events.entity_id
-                    WHERE position > @position
-                """);
-            command.AddParameter("@position", afterPosition);
+        using var command = connection.CreateCommand("""
+            SELECT Events.*, Entities.type AS entity_type FROM Events
+            JOIN Entities ON Entities.id = Events.entity_id
+                WHERE position > @position
+            """);
+        command.AddParameter("@position", afterPosition);
 
-            connection.Open();
-            try { return command.ExecuteReader().AllRowsAs(ReadEvent); }
-            catch (DbException) { return []; } // No connection => no events.
-            finally { connection.Close(); }
-        }
-        catch (DbException)
-        {
-            return [];
-        }
+        connection.Open();
+        try { return command.ExecuteReader().AllRowsAs(ReadEvent); }
+        catch (DbException) { return []; } // No connection => no events.
+        finally { connection.Close(); }
     }
 
     private static Event ReadEvent(IDataRecord record) => new(

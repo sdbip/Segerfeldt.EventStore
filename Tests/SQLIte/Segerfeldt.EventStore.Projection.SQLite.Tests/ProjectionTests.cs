@@ -19,7 +19,7 @@ public sealed class ProjectionTests
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
         eventSource = new EventSource(
-            new DefaultEventSourceRepository(() => connection),
+            new DefaultEventSourceRepository(connection),
             projectionTracker.Object,
             delayConfiguration.Object);
 

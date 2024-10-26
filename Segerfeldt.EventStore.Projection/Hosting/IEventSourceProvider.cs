@@ -1,5 +1,5 @@
 using System;
-using System.Data.Common;
+using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
@@ -13,5 +13,5 @@ public interface IEventSourceProvider
 
     /// <summary>Called to create new connections to the database</summary>
     /// <returns>a connection to the write-model database</returns>
-    DbConnection CreateConnection(IServiceProvider serviceProvider);
+    IDbConnection CreateConnection(IServiceProvider serviceProvider);
 }

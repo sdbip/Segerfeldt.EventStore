@@ -5,14 +5,15 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using System;
+using System.Data;
 using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-internal class DelegateEventSource(ConnectionFactory connectionFactory) : IEventSourceProvider
+internal class DelegateEventSource(IDbConnection connection) : IEventSourceProvider
 {
     public void PrepareToReceive(IServiceProvider serviceProvider) { }
-    public DbConnection CreateConnection(IServiceProvider _) => connectionFactory.Invoke();
+    public IDbConnection CreateConnection(IServiceProvider _) => connection;
 }
 
 [PublicAPI]
@@ -20,11 +21,11 @@ public static class ServiceCollectionExtension
 {
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the Web API builder services</param>
-    /// <param name="connectionFactory">A delegate function that creates connections to the write-model database</param>
+    /// <param name="connection">A connection to the sourcce write-model database</param>
     /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
     /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, ConnectionFactory connectionFactory, string? eventSourceName = null) =>
-        AddHostedEventSource(services, new DelegateEventSource(connectionFactory), eventSourceName);
+    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IDbConnection connection, string? eventSourceName = null) =>
+        AddHostedEventSource(services, new DelegateEventSource(connection), eventSourceName);
 
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the Web API builder services</param>
@@ -36,7 +37,7 @@ public static class ServiceCollectionExtension
         // The ProjectionTester is only intended as an aid for testing.
         if (eventSourceName != null) services.TryAddSingleton(_ => new ProjectionTester());
 
-        var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(() => provider.CreateConnection(p)));
+        var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(provider.CreateConnection(p)));
 
         // A new hosted service is created for each EventSource.
 
