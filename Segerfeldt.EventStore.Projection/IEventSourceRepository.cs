@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection;
@@ -28,20 +27,20 @@ public sealed class DefaultEventSourceRepository(ConnectionFactory connectionFac
         try
         {
             using var connection = connectionFactory.Invoke();
-            return connection.OpenAndExecute(_ =>
-            {
-                using var command = connection.CreateCommand("""
-                    SELECT Events.*, Entities.type AS entity_type FROM Events
-                    JOIN Entities ON Entities.id = Events.entity_id
-                        WHERE position > @position
-                    """);
-                command.AddParameter("@position", afterPosition);
-                return command.ExecuteReader().AllRowsAs(ReadEvent);
-            });
+            using var command = connection.CreateCommand("""
+                SELECT Events.*, Entities.type AS entity_type FROM Events
+                JOIN Entities ON Entities.id = Events.entity_id
+                    WHERE position > @position
+                """);
+            command.AddParameter("@position", afterPosition);
+
+            connection.Open();
+            try { return command.ExecuteReader().AllRowsAs(ReadEvent); }
+            catch (DbException) { return []; } // No connection => no events.
+            finally { connection.Close(); }
         }
         catch (DbException)
         {
-            // No connection => no events.
             return [];
         }
     }

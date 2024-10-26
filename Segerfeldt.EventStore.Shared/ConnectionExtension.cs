@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 
 namespace Segerfeldt.EventStore.Shared;
 
@@ -48,5 +50,14 @@ internal static class ConnectionExtension
         parameter.ParameterName = name;
         parameter.Value = value ?? DBNull.Value;
         command.Parameters.Add(parameter);
+    }
+
+    public static IEnumerable<T> AllRowsAs<T>(this IDataReader reader, Func<IDataReader, T> readItem) =>
+       ReadRows(reader, readItem).ToList();
+
+    private static IEnumerable<T> ReadRows<T>(IDataReader reader, Func<IDataReader, T> readItem)
+    {
+        while (reader.Read())
+            yield return readItem(reader);
     }
 }
