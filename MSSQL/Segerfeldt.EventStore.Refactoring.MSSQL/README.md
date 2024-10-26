@@ -4,7 +4,7 @@
     This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
 -->
 
-# Segerfeldt.EventStore.Refactoring
+# Segerfeldt.EventStore.Refactoring.MSSQL
 
 A NuGet package for performing a total redesign of a CQRS application write-model. Add this to your existing Segerfeldt.EventStore.Source application to generate a parallel write-model database representing the same history in a different language.
 
@@ -20,12 +20,33 @@ Once an event has been recorded in an event database, its structure must never b
 
 This package is meant to aid the refactoring process. It specifically addresses steps 1, 2 and 5 in the above list.
 
-Set up refactoring using the following code:
+# Setup
+
+You will need to set up a database connection for each write-model database (a.k.a. `EventSource`) you want to project state from. Call the extension method `IServiceCollection.UseSQLServerRefactoring(string)` to subscribe to a SQL Server write-model:
+
+```csharp
+builder.Services.UseSQLServerRefactoring(builder.Configuration.GetConnectionString("old-event-model")!)
+    .UseSQLServerTarget(builder.Configuration.GetConnectionString("new-event-model")!)
+    .UseProjectionTracker<ProjectionTracker>()
+    .UseTransformation<TransformationStrategy>();
+```
+
+You do not have to have SQL Server on both sides of the refactoring. You can for example copy an SQL Server event model to your custom database:
+
+```csharp
+builder.Services.AddSingleton<ProjectionTracker>();
+builder.Services.UseSQLServerRefactoring(builder.Configuration.GetConnectionString("old-event-model")!)
+    .UseTarget(p => new MyCustomConnection(builder.Configuration.GetConnectionString("new-event-model")!))
+    .UseProjectionTracker<ProjectionTracker>()
+    .UseTransformation<TransformationStrategy>();
+```
+
+Or you could copy from your custom database to SQL Server:
 
 ```csharp
 builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.UseRefactoring(p => new MyCustomConnection(builder.Configuration.GetConnectionString("old-event-model")!))
-    .UseTarget(p => new MyCustomConnection(builder.Configuration.GetConnectionString("new-event-model")!))
+    .UseSQLServerTarget(builder.Configuration.GetConnectionString("new-event-model")!)
     .UseProjectionTracker<ProjectionTracker>()
     .UseTransformation<TransformationStrategy>();
 ```
@@ -33,6 +54,10 @@ builder.Services.UseRefactoring(p => new MyCustomConnection(builder.Configuratio
 For step 5, revese the relationship:
 
 ```csharp
+builder.Services.UseSQLServerRefactoring(builder.Configuration.GetConnectionString("new-event-model")!)
+    .UseSQLServerTarget(builder.Configuration.GetConnectionString("old-event-model")!)
+    .UseProjectionTracker<ProjectionTracker>()
+    .UseTransformation<TransformationStrategy>();
 builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.UseRefactoring(p => new MyCustomConnection(builder.Configuration.GetConnectionString("new-event-model")!))
     .UseTarget(p => new MyCustomConnection(builder.Configuration.GetConnectionString("old-event-model")!))
