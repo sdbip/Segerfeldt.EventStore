@@ -55,11 +55,8 @@ internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal? after
                 (string)reader["name"],
                 (string)reader["details"],
                 (string)reader["actor"],
-                DateTimeOffset(reader["timestamp"])
+                ConvertTimestamp.ToDateTime(Convert.ToDouble(reader["timestamp"]))
             );
         }
     }
-
-    private static DateTimeOffset DateTimeOffset(object timestamp) =>
-        TimestampConverter.ToDateTime(Convert.ToDouble(timestamp));
 }

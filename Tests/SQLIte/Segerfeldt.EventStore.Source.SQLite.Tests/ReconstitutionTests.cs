@@ -167,7 +167,7 @@ public sealed class ReconstitutionTests
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@eventName", eventName);
         command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", TimestampConverter.ToOADate(timestamp));
+        command.AddParameter("@timestamp", ConvertTimestamp.ToOADate(timestamp));
         command.ExecuteNonQuery();
     }
 
