@@ -1,6 +1,7 @@
 using Segerfeldt.EventStore.Projection.Hosting;
 
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
@@ -10,16 +11,18 @@ public sealed class EventSourceTests
 {
     private Mock<IEventSourceRepository> repository = null!;
     private EventSource eventSource = null!;
+    private ReceptacleCollection receptacles = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
     private Mock<IProjectionTracker> projectionTracker = null!;
 
     [SetUp]
     public void Setup()
     {
-        repository = new Mock<IEventSourceRepository>();
+        receptacles = new ReceptacleCollection();
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
-        eventSource = new EventSource(repository.Object, projectionTracker.Object, delayConfiguration.Object);
+        repository = new Mock<IEventSourceRepository>();
+        eventSource = new EventSource(repository.Object, receptacles, projectionTracker.Object, delayConfiguration.Object);
     }
 
     [Test]
@@ -84,7 +87,7 @@ public sealed class EventSourceTests
     {
         var events = new List<Event>();
         foreach (var eventName in eventNames)
-            eventSource.Register(new DelegateReceptacle(events.Add, eventName));
+            receptacles.Add(new DelegateReceptacle(events.Add, eventName));
         return events;
     }
 

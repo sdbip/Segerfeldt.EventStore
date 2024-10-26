@@ -10,8 +10,8 @@ public static class ServiceCollectionExtension
 {
     /// <summary>Add an <see cref="EventSource"/> to project events from an PostgreSQL database</summary>
     /// <param name="connectionString">the connection-string to access the database</param>
-    /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedPostgreSQLEventSource(this IServiceCollection services, string connectionString, string? eventSourceName = null) =>
-        services.AddHostedEventSource(new NpgsqlConnection(connectionString), eventSourceName);
+    /// <param name="name">A unique name for the <see cref="EventSource"/></param>
+    /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
+    public static EventSourceConfiguration AddHostedPostgreSQLEventSource(this IServiceCollection services, string connectionString, string name) =>
+        services.AddHostedEventSource(name, new NpgsqlConnection(connectionString));
 }

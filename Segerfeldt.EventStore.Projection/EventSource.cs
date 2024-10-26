@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,29 +10,13 @@ namespace Segerfeldt.EventStore.Projection;
 /// <param name="repository"></param>
 /// <param name="tracker"></param>
 /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-public sealed class EventSource(IEventSourceRepository repository, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+public sealed class EventSource(IEventSourceRepository repository, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
 {
     private readonly IEventSourceRepository repository = repository;
     private readonly IProjectionTracker? tracker = tracker;
     private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
-    private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = [];
     private long lastReadPosition = -1;
     private CancellationTokenSource? currentDelay;
-
-    /// <summary>
-    /// Register a projector that will be notified whenever new events occur
-    /// </summary>
-    /// <param name="receptacle">the projector to register</param>
-    public void Register(IReceptacle receptacle)
-    {
-        foreach (var eventName in receptacle.AcceptedEvents)
-        {
-            if (receptacles.TryGetValue(eventName, out var value))
-                value.Add(receptacle);
-            else
-                receptacles[eventName] = [receptacle];
-        }
-    }
 
     /// <summary>Start projecting the source state</summary>
     public void BeginProjecting()
@@ -123,11 +106,38 @@ public sealed class EventSource(IEventSourceRepository repository, IProjectionTr
         foreach (var receptacle in GetReceptacles(@event)) receptacle.Update(@event);
     }
 
-    private IEnumerable<IReceptacle> GetReceptacles(Event @event) =>
-        receptacles.TryGetValue(@event.Name, out var value) ? value : ImmutableList<IReceptacle>.Empty;
+    private IEnumerable<IReceptacle> GetReceptacles(Event @event) => receptacles.GetReceptacles(@event.Name);
 
     private sealed class DefaultPollingStrategy : IPollingStrategy
     {
         public int NextDelay(int count) => count == 0 ? 60_000 : 1_000;
     }
+}
+
+public class ReceptacleCollection
+{
+    private readonly Dictionary<string, ICollection<IReceptacle>> receptacles = [];
+
+    public ReceptacleCollection()
+    {
+    }
+
+    public ReceptacleCollection(IEnumerable<IReceptacle> enumerable)
+    {
+        foreach(var receptacle in enumerable) Add(receptacle);
+    }
+
+    public void Add(IReceptacle receptacle)
+    {
+        foreach (var eventName in receptacle.AcceptedEvents)
+        {
+            if (receptacles.TryGetValue(eventName, out var value))
+                value.Add(receptacle);
+            else
+                receptacles[eventName] = [receptacle];
+        }
+    }
+
+    public IEnumerable<IReceptacle> GetReceptacles(string eventName) =>
+        receptacles.TryGetValue(eventName, out var value) ? value : ImmutableList<IReceptacle>.Empty;
 }

@@ -9,6 +9,7 @@ public sealed class ProjectionTests
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Structure", "NUnit1032:An IDisposable field/property should be Disposed in a TearDown method", Justification = "<Pending>")]
     private InMemoryConnection connection = null!;
     private EventSource eventSource = null!;
+    private ReceptacleCollection receptacles = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
     private Mock<IProjectionTracker> projectionTracker = null!;
 
@@ -18,8 +19,10 @@ public sealed class ProjectionTests
         connection = new InMemoryConnection();
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
+        receptacles = new ReceptacleCollection();
         eventSource = new EventSource(
-            new DefaultEventSourceRepository(connection),
+            new EventSourceRepository(connection),
+            receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);
 
@@ -141,7 +144,7 @@ public sealed class ProjectionTests
     {
         var events = new List<Event>();
         foreach (var eventName in eventNames)
-            eventSource.Register(new DelegateReceptacle(events.Add, eventName));
+            receptacles.Add(new DelegateReceptacle(events.Add, eventName));
         return events;
     }
 

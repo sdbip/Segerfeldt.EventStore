@@ -29,6 +29,7 @@ public class WebApplicationFactory<TStartup> : MS.WebApplicationFactory<TStartup
                 foreach (var hosted in hosteds) hosted.ImplementationFactory?.Invoke(provider);
                 return new InsipidService();
             });
+            services.AddSingleton<ProjectionTester>();
 
             ConfigureServices(services);
         });

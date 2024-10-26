@@ -1,19 +1,17 @@
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using System;
 using System.Data;
-using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-internal class DelegateEventSource(IDbConnection connection) : IEventSourceProvider
+internal class SingletonEventSource(IDbConnection connection) : IEventSourceProvider
 {
     public void PrepareToReceive(IServiceProvider serviceProvider) { }
-    public IDbConnection CreateConnection(IServiceProvider _) => connection;
+    public IDbConnection CreateConnection() => connection;
 }
 
 [PublicAPI]
@@ -21,23 +19,27 @@ public static class ServiceCollectionExtension
 {
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the Web API builder services</param>
+    /// <param name="name">A unique name for the <see cref="EventSource"/></param>
     /// <param name="connection">A connection to the sourcce write-model database</param>
-    /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IDbConnection connection, string? eventSourceName = null) =>
-        AddHostedEventSource(services, new DelegateEventSource(connection), eventSourceName);
+    /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
+    public static EventSourceConfiguration AddHostedEventSource(this IServiceCollection services, string name, IDbConnection connection) =>
+        AddHostedEventSource(services, name, new SingletonEventSource(connection));
 
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the Web API builder services</param>
+    /// <param name="name">A unique name for the <see cref="EventSource"/></param>
     /// <param name="provider">an object that knows how to create connections to the write-model database</param>
-    /// <param name="eventSourceName">An optional (unique) name for the <see cref="EventSource"/> if you need to access it later</param>
-    /// <returns>An <see cref="EventSourceBuilder"/> for allowing additional configuration</returns>
-    public static EventSourceBuilder AddHostedEventSource(this IServiceCollection services, IEventSourceProvider provider, string? eventSourceName = null)
+    /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
+    public static EventSourceConfiguration AddHostedEventSource(this IServiceCollection services, string name, IEventSourceProvider provider)
     {
-        // The ProjectionTester is only intended as an aid for testing.
-        if (eventSourceName != null) services.TryAddSingleton(_ => new ProjectionTester());
+        services.AddKeyedSingleton(name, new EventSourceRepository(provider.CreateConnection()));
+        services.AddKeyedSingleton(name, (p, n) => new EventSource(
+            p.GetRequiredKeyedService<EventSourceRepository>(n),
+            p.GetRequiredKeyedService<ReceptacleCollection>(n),
+            p.GetKeyedService<IProjectionTracker>(n),
+            p.GetKeyedService<IPollingStrategy>(n)));
 
-        var builder = new EventSourceBuilder(p => new DefaultEventSourceRepository(provider.CreateConnection(p)));
+        var configuration = new EventSourceConfiguration(services, name);
 
         // A new hosted service is created for each EventSource.
 
@@ -50,19 +52,8 @@ public static class ServiceCollectionExtension
         services.AddSingleton<IHostedService>(p =>
         {
             provider.PrepareToReceive(p);
-
-            var eventSource = builder.Build(p);
-
-            // Add the eventSource to ProjectionTester to allow tests to inject events
-            // This is not used outside of testing
-            if (eventSourceName != null)
-            {
-                var tester = p.GetRequiredService<ProjectionTester>();
-                tester.Add(eventSource, eventSourceName);
-            }
-
-            return new HostedEventSource(eventSource);
+            return new HostedEventSource(p.GetRequiredKeyedService<EventSource>(configuration.name));
         });
-        return builder;
+        return configuration;
     }
 }

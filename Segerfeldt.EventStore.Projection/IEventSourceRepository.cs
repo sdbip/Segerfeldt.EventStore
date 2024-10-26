@@ -17,9 +17,10 @@ public interface IEventSourceRepository
 
 /// <summary>The default <see cref="IEventSourceRepository"/> implementation</summary>
 /// <param name="connection">A connection to the source write-model</param>
-public sealed class DefaultEventSourceRepository(IDbConnection connection) : IEventSourceRepository
+public sealed class EventSourceRepository(IDbConnection connection) : IEventSourceRepository
 {
-    /// <inheritdoc/>
+    private readonly IDbConnection connection = connection;
+
     public IEnumerable<Event> GetEvents(long afterPosition)
     {
         using var command = connection.CreateCommand("""

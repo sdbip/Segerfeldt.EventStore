@@ -13,6 +13,7 @@ public sealed class ProjectionTests
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
     private Mock<IProjectionTracker> projectionTracker = null!;
+    private ReceptacleCollection receptacles = null!;
 
     [SetUp]
     public void Setup()
@@ -23,9 +24,11 @@ public sealed class ProjectionTests
         connection = new NpgsqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
+        receptacles = new ReceptacleCollection();
 
         eventSource = new EventSource(
-            new DefaultEventSourceRepository(new NpgsqlConnection(connectionString)),
+            new EventSourceRepository(new NpgsqlConnection(connectionString)),
+            receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);
 
@@ -180,9 +183,7 @@ public sealed class ProjectionTests
     {
         var events = new List<Event>();
         foreach (var eventName in eventNames)
-        {
-            eventSource.Register(new DelegateReceptacle(events.Add, eventName));
-        }
+            receptacles.Add(new DelegateReceptacle(events.Add, eventName));
 
         return events;
     }
