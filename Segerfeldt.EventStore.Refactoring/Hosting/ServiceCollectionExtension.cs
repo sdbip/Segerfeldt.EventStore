@@ -12,7 +12,7 @@ namespace Segerfeldt.EventStore.Refactoring.Hosting;
 [PublicAPI]
 public static class ServiceCollectionExtension
 {
-    /// <summary>Add an <see cref="EventSource"/> to project events</summary>
+    /// <summary>Set up an <see cref="EventSource"/> to project events for refactoring</summary>
     /// <param name="services">the Web API builder services</param>
     /// <param name="provider">an object that knows how to create connections to the write-model database</param>
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>

@@ -7,12 +7,12 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Refactoring;
 
-/// <summary>A repository that contains the published events of the entities.</summary>
+/// <summary>A repository that contains the published source events.</summary>
 public class EventSourceRepository(IDbConnection connection)
 {
     private readonly IDbConnection connection = connection;
 
-    /// <summary>Gets new events sorted chronologically</summary>
+    /// <summary>Gets events publiished after a given position.</summary>
     /// <param name="afterPosition">The last position to skip as it has already been processed.</param>
     public IEnumerable<Event> GetEvents(long afterPosition)
     {

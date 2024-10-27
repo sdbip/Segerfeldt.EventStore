@@ -14,7 +14,7 @@ public sealed class EventSourceConfiguration(IServiceCollection services)
         return this;
     }
 
-    /// <summary>Use a prepared object to translate events</summary>
+    /// <summary>Use a prepared object to transform events</summary>
     /// <param name="strategy">The transformation stategy object</param>
     /// <returns>This <see cref="EventSourceConfiguration"/> for further configuration</returns>
     public EventSourceConfiguration UseTransformationStrategy(ITransformationStrategy strategy)
@@ -23,7 +23,7 @@ public sealed class EventSourceConfiguration(IServiceCollection services)
         return this;
     }
 
-    /// <summary>Use injection to create the object that translates events</summary>
+    /// <summary>Use injection to create the object that transforms events</summary>
     /// <typeparam name="TTransformationStrategy">The type that implements the transformation</typeparam>
     /// <returns>This <see cref="EventSourceConfiguration"/> for further configuration</returns>
     public EventSourceConfiguration UseTransformationStrategy<TTransformationStrategy>() where TTransformationStrategy : ITransformationStrategy =>
