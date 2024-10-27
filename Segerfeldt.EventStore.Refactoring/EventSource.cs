@@ -8,6 +8,8 @@ namespace Segerfeldt.EventStore.Refactoring;
 
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 /// <param name="repository"></param>
+/// <param name="eventPublisher"></param>
+/// <param name="strategy">/param>
 /// <param name="tracker"></param>
 /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
 public sealed class EventSource(EventSourceRepository repository, EventPublisher eventPublisher, ITransformationStrategy strategy, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
@@ -66,18 +68,10 @@ public sealed class EventSource(EventSourceRepository repository, EventPublisher
 
         foreach (var (position, events) in batch)
         {
-            tracker?.OnProjectionStarting(position);
-            try
-            {
-                var currentEvents = events.Select(e => e.SourceEvent);
-                var translatedEvents = strategy.TransformPublishedBatch(currentEvents);
-                eventPublisher.Publish(translatedEvents, events[0].Metadata);
-            }
-            catch
-            {
-                tracker?.OnProjectionError(position);
-                throw;
-            }
+            var currentEvents = events.Select(e => e.SourceEvent);
+            var translatedEvents = strategy.TransformPublishedBatch(currentEvents);
+            eventPublisher.Publish(translatedEvents, events[0].Metadata);
+
             lastReadPosition = position;
             tracker?.OnProjectionFinished(position);
         }
