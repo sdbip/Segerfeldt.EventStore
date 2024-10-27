@@ -71,7 +71,7 @@ public sealed class EventSource(EventSourceRepository repository, EventPublisher
             {
                 var currentEvents = events.Select(e => e.SourceEvent);
                 var translatedEvents = strategy.TransformPublishedBatch(currentEvents);
-                eventPublisher.Publish(translatedEvents, position, events[0].Metadata.Actor, events[0].Metadata.Timestamp);
+                eventPublisher.Publish(translatedEvents, events[0].Metadata);
             }
             catch
             {

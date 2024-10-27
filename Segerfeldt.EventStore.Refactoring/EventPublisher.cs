@@ -7,20 +7,16 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Refactoring;
 
-/// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
-public sealed class EventPublisher
+/// <summary>The object that publishes the transformed events in the target database</summary>
+/// <param name="connection">A connection to the target database</param>
+public sealed class EventPublisher(IDbConnection connection)
 {
-    private readonly IDbConnection connection;
+    private readonly IDbConnection connection = connection;
 
-    internal EventPublisher(IDbConnection connection)
-    {
-        this.connection = connection;
-    }
-
-    /// <summary>Publish all new changes since reconstituting an entity</summary>
-    /// <param name="entities">the entities whose events to publish</param>
-    /// <param name="actor">the actor/user who caused these changes</param>
-    public void Publish(IEnumerable<TranslatedEvent> events, long position, string actor, double timestamp)
+    /// <summary>Publish all the transformed events from a given position</summary>
+    /// <param name="events">The transformed data</param>
+    /// <param name="metadata">The metadata for the position</param>
+    public void Publish(IEnumerable<TranslatedEvent> events, EventMetadata metadata)
     {
         var entities = events.Select(e => e.Entity).Distinct();
 
@@ -59,9 +55,9 @@ public sealed class EventPublisher
             command.AddParameter("@entityId", @event.Entity.Id);
             command.AddParameter("@eventName", @event.Name);
             command.AddParameter("@details", JSON.Serialize(@event.Details));
-            command.AddParameter("@actor", actor);
-            command.AddParameter("@position", position);
-            command.AddParameter("@timestamp", timestamp);
+            command.AddParameter("@actor", metadata.Actor);
+            command.AddParameter("@position", metadata.Position);
+            command.AddParameter("@timestamp", metadata.Timestamp);
             command.ExecuteNonQuery();
         }
     }
