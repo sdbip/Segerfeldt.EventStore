@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
 /// <summary>Internal class. Only made public to be accessible by tests.</summary>
-public class CommandHandlerExecuter(ICommandHandler handler)
+public class CommandHandlerExecuter(object handler)
 {
-    private readonly ICommandHandler handler = handler;
+    private readonly object handler = handler;
 
     public async Task<ActionResult> HandleAsync(object command, CommandContext context)
     {
@@ -36,7 +36,7 @@ public class CommandHandlerExecuter(ICommandHandler handler)
         return handlerResult.ActionResult();
     }
 
-    private static Task InvokeHandler(ICommandHandler handler, object command, CommandContext context)
+    private static Task InvokeHandler(object handler, object command, CommandContext context)
     {
         // The handler might be any of ICommandHandler<in TCommand> or ICommandHandler<in TCommand, TResponseDTO>.
         // The exact type cannot be known. It is therefore impossible to access the Handle method in a type-secure

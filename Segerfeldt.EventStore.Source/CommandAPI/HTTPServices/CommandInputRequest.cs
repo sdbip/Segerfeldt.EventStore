@@ -31,7 +31,7 @@ internal class CommandInputRequest(Type handlerType, HttpContext context)
 
     private async Task<ActionResult> HandleAsync(object command)
     {
-        var handler = (ICommandHandler)ActivatorUtilities.CreateInstance(context.RequestServices, handlerType);
+        var handler = ActivatorUtilities.CreateInstance(context.RequestServices, handlerType);
         var commandHandlerExecuter = new CommandHandlerExecuter(handler);
         return await commandHandlerExecuter.HandleAsync(command, CreateCommandContext());
     }

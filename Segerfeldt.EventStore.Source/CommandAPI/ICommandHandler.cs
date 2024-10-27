@@ -2,15 +2,9 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
 
-/// <summary>Interface that marks a command handler</summary>
-/// Do not use this interface directly. Use one of its subinterfaces instead:
-/// - <see cref="ICommandHandler{TCommand}"/>
-/// - <see cref="ICommandHandler{TCommand, TResponseDTO}"/>
-public interface ICommandHandler { }
-
 /// <summary>Interface that marks a command handler without response DTO</summary>
 /// <typeparam name="TCommand">DTO type for the command input</typeparam>
-public interface ICommandHandler<in TCommand> : ICommandHandler
+public interface ICommandHandler<in TCommand>
 {
     /// <summary>Handles the command</summary>
     /// Access the <see cref="EntityStore"/> and <see cref="EventPublisher"/>
@@ -25,7 +19,7 @@ public interface ICommandHandler<in TCommand> : ICommandHandler
 /// <summary>Interface that marks a command handler with response DTO</summary>
 /// <typeparam name="TCommand">DTO type for the command input</typeparam>
 /// <typeparam name="TResponseDTO">DTO type for the command output</typeparam>
-public interface ICommandHandler<in TCommand, TResponseDTO> : ICommandHandler
+public interface ICommandHandler<in TCommand, TResponseDTO>
 {
     /// <summary>Handles the command</summary>
     /// Access the <see cref="EntityStore"/> and <see cref="EventPublisher"/>
