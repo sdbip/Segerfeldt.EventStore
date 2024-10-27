@@ -19,7 +19,7 @@ public record Event(SourceEvent SourceEvent, EventMetadata Metadata)
 /// <param name="Ordinal">The ordinal of this event in the entity stream</param>
 public record SourceEvent(Entity Entity, string Name, string Details, int Ordinal)
 {
-    public TranslatedEvent Unchanged => new(Entity, Name, Details);
+    public TransformedEvent Unchanged => new(Entity, Name, Details);
 
     public T? DetailsAs<T>() => JSON.Deserialize<T>(Details);
 }

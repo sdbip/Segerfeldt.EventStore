@@ -16,7 +16,7 @@ public sealed class EventPublisher(IDbConnection connection)
     /// <summary>Publish all the transformed events from a given position</summary>
     /// <param name="events">The transformed data</param>
     /// <param name="metadata">The metadata for the position</param>
-    public void Publish(IEnumerable<TranslatedEvent> events, EventMetadata metadata)
+    public void Publish(IEnumerable<TransformedEvent> events, EventMetadata metadata)
     {
         var entities = events.Select(e => e.Entity).Distinct();
 
@@ -47,7 +47,7 @@ public sealed class EventPublisher(IDbConnection connection)
             command.ExecuteNonQuery();
         }
 
-        void InsertEvent(TranslatedEvent @event)
+        void InsertEvent(TransformedEvent @event)
         {
             using var command = connection.CreateCommand(
                 "INSERT INTO Events (entity_id, name, details, actor, ordinal, position, timestamp)" +

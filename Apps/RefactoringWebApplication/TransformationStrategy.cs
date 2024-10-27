@@ -4,5 +4,5 @@ namespace RefactoringWebApplication;
 
 internal class TransformationStrategy : ITransformationStrategy
 {
-    public IEnumerable<TranslatedEvent> TransformPublishedBatch(IEnumerable<SourceEvent> sourceEvents) => sourceEvents.Select(e => e.Unchanged);
+    public IEnumerable<TransformedEvent> TransformPublishedBatch(IEnumerable<SourceEvent> sourceEvents) => sourceEvents.Select(e => e.Unchanged);
 }
