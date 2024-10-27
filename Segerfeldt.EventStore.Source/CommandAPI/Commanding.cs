@@ -11,6 +11,7 @@ using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
 
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -70,10 +71,25 @@ public static class Commanding
             .SelectMany(assembly => assembly.DefinedTypes)
             .Where(type => type.IsClass && !type.IsAbstract)
             .Where(type => type.GetCustomAttribute<ModifiesEntityAttribute>(false) is not null)
-            .Select(type => (type, type.GetCustomAttribute<ModifiesEntityAttribute>(false)!));
+            .ToList();
 
-        foreach (var (handlerClass, attribute) in attributedClasses)
+
+        if (attributedClasses.Any(type => !HasCommandHandlerInterface(type)))
+            throw new NotSupportedException($"Invalid class(es): {string.Join(',',attributedClasses.Select(type => type.FullName))}. The {nameof(ModifiesEntityAttribute)} requires implementating ICommandHandler<>");
+
+        foreach (var handlerClass in attributedClasses)
+        {
+            var attribute = handlerClass.GetCustomAttribute<ModifiesEntityAttribute>()!;
             endpoints.MapMethods(attribute.Pattern, [attribute.MethodString], context => HandleCommand(context, handlerClass));
+        }
+    }
+
+    private static bool HasCommandHandlerInterface(TypeInfo info)
+    {
+        var interfaces = info.GetInterfaces().Where(i => i.IsGenericType);
+        if (interfaces.Any(t => t.GetGenericTypeDefinition() == typeof(ICommandHandler<>) || t.GetGenericTypeDefinition() == typeof(ICommandHandler<,>))) return true;
+        if (info.BaseType is null) return false;
+        return HasCommandHandlerInterface(info.BaseType.GetTypeInfo());
     }
 
     private static async Task HandleCommand(HttpContext context, TypeInfo handlerClass)
