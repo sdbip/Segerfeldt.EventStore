@@ -29,13 +29,23 @@ public class EventSourceRepository(IDbConnection connection)
         finally { connection.Close(); }
     }
 
-    private static Event ReadEvent(IDataRecord record) => new(
-        record.GetString(record.GetOrdinal("entity_id")),
-        record.GetString(record.GetOrdinal("entity_type")),
-        record.GetString(record.GetOrdinal("name")),
-        record.GetString(record.GetOrdinal("details")),
-        Convert.ToInt16(record.GetValue(record.GetOrdinal("ordinal"))),
-        record.GetInt64(record.GetOrdinal("position")),
-        record.GetString(record.GetOrdinal("actor")),
-        record.GetDouble(record.GetOrdinal("timestamp")));
+    private static Event ReadEvent(IDataRecord record)
+    {
+        var entity = new Entity(
+            record.GetString(record.GetOrdinal("entity_id")),
+            record.GetString(record.GetOrdinal("entity_type")));
+        var sourceEvent = new SourceEvent(
+            entity,
+            record.GetString(record.GetOrdinal("name")),
+            record.GetString(record.GetOrdinal("details")),
+            Convert.ToInt16(record.GetValue(record.GetOrdinal("ordinal")))
+        );
+        var metadata = new EventMetadata(
+            record.GetInt64(record.GetOrdinal("position")),
+            record.GetString(record.GetOrdinal("actor")),
+            record.GetDouble(record.GetOrdinal("timestamp"))
+        );
+
+        return new(sourceEvent, metadata);
+    }
 }

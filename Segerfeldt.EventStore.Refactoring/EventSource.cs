@@ -69,9 +69,9 @@ public sealed class EventSource(EventSourceRepository repository, EventPublisher
             tracker?.OnProjectionStarting(position);
             try
             {
-                var currentEvents = events.Select(e => new SourceEvent(new Entity(e.EntityId, e.EntityType), e.Name, e.Details));
+                var currentEvents = events.Select(e => e.SourceEvent);
                 var translatedEvents = strategy.TransformPublishedBatch(currentEvents);
-                eventPublisher.Publish(translatedEvents, position, events[0].Actor, events[0].Timestamp);
+                eventPublisher.Publish(translatedEvents, position, events[0].Metadata.Actor, events[0].Metadata.Timestamp);
             }
             catch
             {
@@ -91,12 +91,12 @@ public sealed class EventSource(EventSourceRepository repository, EventPublisher
         var nextBatch = new List<Event>();
         foreach (var @event in events)
         {
-            if (@event.Position != currentPosition)
+            if (@event.Metadata.Position != currentPosition)
             {
                 if (nextBatch.Count > 0)
                     yield return (currentPosition, nextBatch.ToImmutableList());
                 nextBatch.Clear();
-                currentPosition = @event.Position;
+                currentPosition = @event.Metadata.Position;
             }
 
             nextBatch.Add(@event);
@@ -104,7 +104,7 @@ public sealed class EventSource(EventSourceRepository repository, EventPublisher
 
         if (nextBatch.Count > 0)
         {
-            nextBatch.Sort((e1, e2) => e1.Ordinal - e2.Ordinal);
+            nextBatch.Sort(Event.SortOrder);
             yield return (currentPosition, nextBatch.ToImmutableList());
         }
     }

@@ -1,26 +1,31 @@
-using System;
-
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Refactoring;
 
 /// <summary>An event notifying that the state of an entity has changed at the source</summary>
-public sealed class Event(string entityId, string entityType, string name, string details, int ordinal, long position, string actor, double timestamp)
+/// <param name="SourceEvent">The event data that will need to be transformed</param>
+/// <param name="Metadata">Metadata that will be kept as-is</param>
+    /// Note: It is assumed that all events published with the
+    /// same position will have the same metadata in total.
+public record Event(SourceEvent SourceEvent, EventMetadata Metadata)
 {
-    /// <summary>The id of the entity that changed</summary>
-    public string EntityId { get; } = entityId;
-    /// <summary>The type of entity publishing this event, used as a namespace for duplicated event names</summary>
-    public string EntityType { get; } = entityType;
-    /// <summary>The name of the event, indicating in what way the entity's state has changed</summary>
-    public string Name { get; } = name;
-    /// <summary>A JSON object specifying the details of the change</summary>
-    public string Details { get; } = details;
-    /// <summary>The ordinal of this event in the entity stream</summary>
-    public int Ordinal { get; } = ordinal;
-    public long Position { get; } = position;
-    public string Actor { get; } = actor;
-    public double Timestamp { get; } = timestamp;
+    internal static int SortOrder(Event left, Event right) => left.SourceEvent.Ordinal - right.SourceEvent.Ordinal;
+}
+
+/// <summary>The transformed part of an event.</summary>
+/// <param name="Entity">The entity whose state is modelled by the event</param>
+/// <param name="Name">The name of the event</param>
+/// <param name="Details">The details structure (JSON) of the event</param>
+/// <param name="Ordinal">The ordinal of this event in the entity stream</param>
+public record SourceEvent(Entity Entity, string Name, string Details, int Ordinal)
+{
+    public TranslatedEvent Unchanged => new(Entity, Name, Details);
 
     public T? DetailsAs<T>() => JSON.Deserialize<T>(Details);
-    internal object? DetailsAs(Type type) => JSON.Deserialize(Details, type);
 }
+
+/// <summary>Fixed metadata that is attached to a batch of events and maintained in the transformation</summary>
+/// <param name="Position">The position in the stream whh the event (and potentially others) were added.</param>
+/// <param name="Actor">The actor whose action caused the event (and its friends) to be published</param>
+/// <param name="Timestamp">The point in time (as OADate) when the event was published.</param>
+public record EventMetadata(long Position, string Actor, double Timestamp);
