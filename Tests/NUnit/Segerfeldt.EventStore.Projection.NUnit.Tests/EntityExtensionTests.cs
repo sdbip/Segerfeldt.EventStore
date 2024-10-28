@@ -12,7 +12,7 @@ public sealed class EventSourceExtensionTests
     {
         receptacle = new TestReceptacle();
         eventSource = new EventSource(
-            new EventSourceRepository(null!),
+            Mock.Of<IEventSourceRepository>(),
             new ReceptacleCollection([receptacle]),
             Mock.Of<IProjectionTracker>(),
             Mock.Of<IPollingStrategy>());

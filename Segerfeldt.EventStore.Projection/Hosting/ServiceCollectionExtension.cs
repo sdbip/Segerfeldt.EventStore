@@ -4,14 +4,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using System;
-using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
 
-internal class SingletonEventSource(IDbConnection connection) : IEventSourceProvider
+public class SingletonEventSource(IEventSourceRepository repository) : IEventSourceProvider
 {
-    public void PrepareToReceive(IServiceProvider serviceProvider) { }
-    public IDbConnection CreateConnection() => connection;
+    public Action<IServiceProvider> PrepareToReceive { get; set; } = _ => {};
+
+    public IEventSourceRepository CreateRepository() => repository;
 }
 
 [PublicAPI]
@@ -22,8 +22,8 @@ public static class ServiceCollectionExtension
     /// <param name="name">A unique name for the <see cref="EventSource"/></param>
     /// <param name="connection">A connection to the sourcce write-model database</param>
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
-    public static EventSourceConfiguration AddHostedEventSource(this IServiceCollection services, string name, IDbConnection connection) =>
-        AddHostedEventSource(services, name, new SingletonEventSource(connection));
+    public static EventSourceConfiguration AddHostedEventSource(this IServiceCollection services, string name, IEventSourceRepository repository) =>
+        AddHostedEventSource(services, name, new SingletonEventSource(repository));
 
     /// <summary>Add an <see cref="EventSource"/> to project events</summary>
     /// <param name="services">the Web API builder services</param>
@@ -32,9 +32,9 @@ public static class ServiceCollectionExtension
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
     public static EventSourceConfiguration AddHostedEventSource(this IServiceCollection services, string name, IEventSourceProvider provider)
     {
-        services.AddKeyedSingleton(name, new EventSourceRepository(provider.CreateConnection()));
+        services.AddKeyedSingleton(name, provider.CreateRepository());
         services.AddKeyedSingleton(name, (p, n) => new EventSource(
-            p.GetRequiredKeyedService<EventSourceRepository>(n),
+            p.GetRequiredKeyedService<IEventSourceRepository>(n),
             p.GetRequiredKeyedService<ReceptacleCollection>(n),
             p.GetKeyedService<IProjectionTracker>(n),
             p.GetKeyedService<IPollingStrategy>(n)));

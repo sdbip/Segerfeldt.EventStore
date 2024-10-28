@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Shared;
 
-internal static class ConnectionExtension
+public static class ConnectionExtension
 {
     public static IDbCommand CreateCommand(this IDbTransaction transaction, string commandText)
     {

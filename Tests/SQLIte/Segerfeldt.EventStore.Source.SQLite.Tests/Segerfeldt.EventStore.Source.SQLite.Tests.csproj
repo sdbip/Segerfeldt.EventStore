@@ -30,12 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
-      <Link>ConnectionExtension.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\SQLite\Segerfeldt.EventStore.Source.SQLite\Segerfeldt.EventStore.Source.SQLite.csproj" />
   </ItemGroup>
 

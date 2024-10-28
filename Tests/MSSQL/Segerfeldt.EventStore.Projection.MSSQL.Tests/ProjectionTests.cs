@@ -1,6 +1,8 @@
+using System.Data;
 using System.Data.SqlClient;
 
 using Segerfeldt.EventStore.Projection.Hosting;
+using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.MSSQL.Tests;
@@ -28,7 +30,7 @@ public sealed class ProjectionTests
         receptacles = new ReceptacleCollection();
 
         eventSource = new EventSource(
-            new EventSourceRepository(new SqlConnection(connectionString)),
+            new SQLServerEventSourceRepository(new SqlConnection(connectionString)),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

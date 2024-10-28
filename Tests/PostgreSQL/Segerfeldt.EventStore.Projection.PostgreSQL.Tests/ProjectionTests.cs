@@ -1,6 +1,7 @@
 using Npgsql;
 
 using Segerfeldt.EventStore.Projection.Hosting;
+using Segerfeldt.EventStore.Projection.PostgreSQL.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.PostgreSQL.Tests;
@@ -27,7 +28,7 @@ public sealed class ProjectionTests
         receptacles = new ReceptacleCollection();
 
         eventSource = new EventSource(
-            new EventSourceRepository(new NpgsqlConnection(connectionString)),
+            new PostgreSQLEventSourceRepository(new NpgsqlConnection(connectionString)),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

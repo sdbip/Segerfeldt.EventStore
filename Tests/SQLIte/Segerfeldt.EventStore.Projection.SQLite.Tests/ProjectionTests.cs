@@ -1,6 +1,8 @@
 using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Shared;
 
+using Segerfeldt.EventStore.Projection.SQLite.Hosting;
+
 namespace Segerfeldt.EventStore.Projection.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming
@@ -21,7 +23,7 @@ public sealed class ProjectionTests
         projectionTracker = new Mock<IProjectionTracker>();
         receptacles = new ReceptacleCollection();
         eventSource = new EventSource(
-            new EventSourceRepository(connection),
+            new SQLiteEventSourceRepository(connection),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

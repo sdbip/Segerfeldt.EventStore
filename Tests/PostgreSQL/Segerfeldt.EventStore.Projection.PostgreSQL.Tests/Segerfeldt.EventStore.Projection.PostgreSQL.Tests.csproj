@@ -34,12 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
-      <Link>ConnectionExtension.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\PostgreSQL\Segerfeldt.EventStore.Projection.PostgreSQL\Segerfeldt.EventStore.Projection.PostgreSQL.csproj" />
   </ItemGroup>
 

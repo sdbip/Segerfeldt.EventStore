@@ -2,8 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Segerfeldt.EventStore.Projection.Hosting;
 
-using System.Data.SqlClient;
-
 namespace Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
 public static class ServiceCollectionExtension
@@ -13,5 +11,5 @@ public static class ServiceCollectionExtension
     /// <param name="name">A unique name for the <see cref="EventSource"/></param>
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
     public static EventSourceConfiguration AddHostedSQLServerEventSource(this IServiceCollection services, string connectionString, string name) =>
-        services.AddHostedEventSource(name, new SqlConnection(connectionString));
+        services.AddHostedEventSource(name, new SQLServerEventSourceProvider(connectionString));
 }
