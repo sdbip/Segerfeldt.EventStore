@@ -1,5 +1,9 @@
 # TODO
 
+- Add `LIMIT` to `EventSourceRepository` query. Projection, Refactoring.
+
+Then maybe this:
+
 - Integrate better with the authentication handler.
   - `Forbid()` in a controller calls `Forbid()` on the handler.
   - The `AuthorizeAttribute` triggers the authorization handler(s) before even instantiating the controller. If the auth handler doesn't accept the user credentials the endpoint is not executed.
@@ -8,10 +12,19 @@
   - What else?
 - Automate the `actor` and create methods (possibly extension-methods) that publish changes.
 
+Or this:
+
+- Make it possible to use BEGIN/COMMIT/ROLLBACK in the position tracker.
+  - Projection now uses a single db-connection; that should make it easier.
+  - Projections must not `Open()`/`Close()` the connection.
+  - Perhaps start a `DbTransaction` before `OnProjectionStart()` and pass that around to the receptacles?
+  - Make `EventPublisher` aware of the transaction (if projecting into another write-model).
+
 ## Icebox Issues & Ideas
 
 - Add more tests for commanding and hosting.
 - Add tests for documentation.
+- There are almost no tests at all for Refactoring.
 - Command-line `dotnet test` fails sporadically.
 - `SourceWebApplicationTests` deletes all data stored by `SourceWebApplication`.
   This data should however not be important so it might be okay.
