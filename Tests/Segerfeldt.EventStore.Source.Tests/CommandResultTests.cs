@@ -2,22 +2,24 @@ using Microsoft.AspNetCore.Mvc;
 
 using Segerfeldt.EventStore.Source.CommandAPI;
 
+using System.Net;
+
 namespace Segerfeldt.EventStore.Source.Tests;
 
 public sealed class CommandResultTests
 {
-    [TestCase(199)]
-    [TestCase(300)]
-    public void IsError(int statusCode)
-    {
-        Assert.That(CommandResult.Error(statusCode).IsError, Is.True);
-    }
-
-    [TestCase(200)]
-    [TestCase(299)]
-    public void Error_ThrowsIfNotError(int statusCode)
+    [TestCase(HttpStatusCode.OK)]
+    [TestCase(HttpStatusCode.NoContent)]
+    public void Error_SuccessStatus_ThrowsTypedException(HttpStatusCode statusCode)
     {
         Assert.That(() => CommandResult.Error(statusCode), Throws.TypeOf<InvalidStatusCodeException>());
+    }
+
+    [TestCase(HttpStatusCode.BadRequest)]
+    [TestCase(HttpStatusCode.InternalServerError)]
+    public void Error_ErrorStatus_DoesNotThrow(HttpStatusCode statusCode)
+    {
+        Assert.That(() => CommandResult.Error(statusCode), Throws.Nothing);
     }
 
     [Test]
@@ -59,7 +61,7 @@ public sealed class CommandResultTests
     public void UntypedError_ChainsToTypedError()
     {
         var initial = CommandResult.BadRequest("sample error message");
-        var result = initial.SameErrorFor<string>();
+        var result = initial.SameError();
 
         Assert.That(result.IsError(), Is.True);
         Assert.That(new {result.StatusCode, result.Content}, Is.EqualTo(new {initial.StatusCode, initial.Content}));
@@ -68,8 +70,8 @@ public sealed class CommandResultTests
     [Test]
     public void TypedError_ChainsToOtherType()
     {
-        var initial = CommandResult.BadRequest("sample error message").SameErrorFor<int>();
-        var result = initial.SameErrorFor<string>();
+        var initial = CommandResult.BadRequest("sample error message").SameError();
+        var result = initial.SameError();
 
         Assert.That(result.IsError(), Is.True);
         Assert.That(new {result.StatusCode, result.Content}, Is.EqualTo(new {initial.StatusCode, initial.Content}));
@@ -78,7 +80,7 @@ public sealed class CommandResultTests
     [Test]
     public void TypedError_ChainsToUntypedError()
     {
-        var initial = CommandResult.BadRequest("sample error message").SameErrorFor<int>();
+        var initial = CommandResult.BadRequest("sample error message").SameError();
         var result = initial.SameError();
 
         Assert.That(result.IsError(), Is.True);

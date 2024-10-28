@@ -19,7 +19,7 @@ public interface ICommandHandler<in TCommand>
 /// <summary>Interface that marks a command handler with response DTO</summary>
 /// <typeparam name="TCommand">DTO type for the command input</typeparam>
 /// <typeparam name="TResponseDTO">DTO type for the command output</typeparam>
-public interface ICommandHandler<in TCommand, TResponseDTO>
+public interface ICommandHandler<in TCommand, TResponseDTO> where TResponseDTO : class
 {
     /// <summary>Handles the command</summary>
     /// Access the <see cref="EntityStore"/> and <see cref="EventPublisher"/>

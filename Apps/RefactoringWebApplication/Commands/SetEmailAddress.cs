@@ -10,10 +10,10 @@ public record SetEmailAddress(string EmailAddress);
 
 /// <inheritdoc/>
 [ModifiesEntity("User", Property = "emailAddress")]
-public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddress, string?>
+public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddress, string>
 {
     /// <inheritdoc/>
-    public async Task<CommandResult<string?>> Handle(SetEmailAddress command, CommandContext context)
+    public async Task<CommandResult<string>> Handle(SetEmailAddress command, CommandContext context)
     {
         // Get the identity of the authenticated user.
         var actor = context.HttpContext.User.Identity?.Name;
@@ -37,6 +37,6 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
 
         // Publish all the changes in a single atomic operation.
         await context.EventPublisher.PublishChangesAsync([user, availability], actor);
-        return CommandResult.NoContent();
+        return CommandResult.NoContent<string>();
     }
 }
