@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -45,24 +46,26 @@ public sealed class EventSource(IEventSourceRepository repository, ReceptacleCol
 
     internal int PollEventsTableOnce()
     {
-        var readEvents = repository.GetEvents(lastReadPosition);
-        return Emit(readEvents);
+        var unsortedEvents = repository.GetEvents(lastReadPosition, maxCount: 100);
+        return Emit(unsortedEvents, maxCount: 100);
     }
 
-    public int Emit(IEnumerable<Event> unsortedEvents)
+    public int Emit(IEnumerable<Event> unsortedEvents, int maxCount)
     {
-        var eventGroups = GroupByPosition(unsortedEvents);
-        var batch = new List<(long position, List<Event> events)>();
+        var eventGroups = GroupByPosition(unsortedEvents).ToList();
+        // If the event batch is maxed out, the last position might be incomplete.
+        if (eventGroups.SelectMany(e => e.events).Count() >= maxCount)
+            eventGroups.RemoveAt(eventGroups.Count - 1);
+
+        return Emit(eventGroups);
+    }
+
+    private int Emit(List<(long position, IImmutableList<Event> events)> eventGroups)
+    {
         var count = 0;
         foreach (var (position, events) in eventGroups)
         {
             count += events.Count;
-            batch.Add((position, events.ToList()));
-            if (count > 100) break;
-        }
-
-        foreach (var (position, events) in batch)
-        {
             tracker?.OnProjectionStarting(position);
             try { foreach (var @event in events) Emit(@event); }
             catch
@@ -79,25 +82,15 @@ public sealed class EventSource(IEventSourceRepository repository, ReceptacleCol
 
     private static IEnumerable<(long position, IImmutableList<Event> events)> GroupByPosition(IEnumerable<Event> events)
     {
-        var currentPosition = -1L;
-        var nextBatch = new List<Event>();
-        foreach (var @event in events)
-        {
-            if (@event.Position != currentPosition)
-            {
-                if (nextBatch.Count > 0)
-                    yield return (currentPosition, nextBatch.ToImmutableList());
-                nextBatch.Clear();
-                currentPosition = @event.Position;
-            }
+        var groupings = events.GroupBy(e => e.Position).ToList();
+        groupings.Sort((a, b) => a.Key.CompareTo(b.Key));
 
-            nextBatch.Add(@event);
-        }
-
-        if (nextBatch.Count > 0)
+        foreach (var grouping in groupings)
         {
-            nextBatch.Sort((e1, e2) => e1.Ordinal - e2.Ordinal);
-            yield return (currentPosition, nextBatch.ToImmutableList());
+            var group = grouping.ToList();
+            group.Sort((a, b) => a.Ordinal.CompareTo(b.Ordinal));
+
+            yield return (position: grouping.Key, events: group.ToImmutableList());
         }
     }
 

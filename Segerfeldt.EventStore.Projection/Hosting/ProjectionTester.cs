@@ -13,7 +13,7 @@ public class ProjectionTester(IServiceProvider serviceProvider)
     public void Emit(string eventSourceName, params Event[] events)
     {
         var eventSource = serviceProvider.GetRequiredKeyedService<EventSource>(eventSourceName);
-        eventSource.Emit(events);
+        eventSource.Emit(events, maxCount: events.Length + 1);
     }
 
     public static void EmitInitialEvents(EventSource eventSource)

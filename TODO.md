@@ -1,8 +1,6 @@
 # TODO
 
-- Add `LIMIT` to `EventSourceRepository` query. Projection, Refactoring.
-
-Then maybe this:
+Maybe this:
 
 - Integrate better with the authentication handler.
   - `Forbid()` in a controller calls `Forbid()` on the handler.
