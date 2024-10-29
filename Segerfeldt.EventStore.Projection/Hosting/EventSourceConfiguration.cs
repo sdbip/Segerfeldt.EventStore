@@ -20,6 +20,8 @@ public sealed class EventSourceConfiguration(IServiceCollection services, string
     /// <returns>This <see cref="EventSourceConfiguration"/> for further configuration</returns>
     public EventSourceConfiguration AddReceptacles(params Assembly[] assemblies)
     {
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
         services.TryAddKeyedSingleton(name, (p, n) => new ReceptacleCollection(receptacles.Select(x => x(p))));
         foreach (var assembly in assemblies)
         {

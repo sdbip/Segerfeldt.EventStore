@@ -284,7 +284,7 @@ using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
 builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
-    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .AddReceptacles()
     .SetProjectionTracker<ProjectionTracker>();
 
 internal class MyCustomEventSourceProvider : IEventSourceProvider
@@ -312,7 +312,7 @@ builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnecti
 builder.Services.AddHostedSQLiteEventSource(builder.Configuration.GetConnectionString("events")!, "events");
 
 // You will still need to add receptacles and (optinally) a position tracker
-//    .AddReceptacles(Assembly.GetExecutingAssembly())
+//    .AddReceptacles()
 //    .SetProjectionTracker<ProjectionTracker>();
 ```
 
