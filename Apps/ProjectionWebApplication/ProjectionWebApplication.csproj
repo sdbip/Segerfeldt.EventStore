@@ -9,6 +9,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <EmbeddedResource Include="Schema\schema.sql" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\MSSQL\Segerfeldt.EventStore.Projection.MSSQL\Segerfeldt.EventStore.Projection.MSSQL.csproj" />
     </ItemGroup>
 

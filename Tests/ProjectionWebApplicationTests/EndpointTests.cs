@@ -2,8 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.NUnit;
+using Segerfeldt.EventStore.Shared;
 
 using System;
+using System.Data;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -21,6 +23,17 @@ public sealed class EndpointTests
     {
         webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        var connection = webApplicationFactory.Services.GetRequiredService<IDbConnection>();
+        var command = connection.CreateCommand("DELETE FROM Players");
+
+        connection.Open();
+        try { command.ExecuteNonQuery(); }
+        finally { connection.Close(); }
     }
 
     [Test]

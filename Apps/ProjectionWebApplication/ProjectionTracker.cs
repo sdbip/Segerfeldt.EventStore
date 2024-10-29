@@ -1,9 +1,13 @@
 using Segerfeldt.EventStore.Projection;
 
+using System.Data;
+
 namespace ProjectionWebApplication;
 
-public sealed class ProjectionTracker : IProjectionTracker
+public sealed class ProjectionTracker(IDbConnection connection) : IProjectionTracker
 {
+    private readonly IDbConnection connection = connection;
+
     public long? Position { get; private set; }
 
     public long? GetLastFinishedPosition() => null;
