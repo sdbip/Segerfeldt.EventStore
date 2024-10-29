@@ -4,6 +4,8 @@ using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Projection.PostgreSQL.Hosting;
 using Segerfeldt.EventStore.Shared;
 
+using System.Data;
+
 namespace Segerfeldt.EventStore.Projection.PostgreSQL.Tests;
 
 public sealed class ProjectionTests
@@ -27,8 +29,12 @@ public sealed class ProjectionTests
         projectionTracker = new Mock<IProjectionTracker>();
         receptacles = new ReceptacleCollection();
 
+        var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
+
         eventSource = new EventSource(
             new PostgreSQLEventSourceRepository(new NpgsqlConnection(connectionString)),
+            new TargetDbConnection(targetConnection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);
@@ -126,7 +132,6 @@ public sealed class ProjectionTests
     [Test]
     public void ReportsNewPosition()
     {
-        var startingPosition = CaptureStartingPosition();
         var finishedPosition = CaptureFinishedPosition();
 
         GivenEntity("an-entity");
@@ -134,12 +139,7 @@ public sealed class ProjectionTests
 
         ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(startingPosition.Value, Is.EqualTo(1));
-            Assert.That(finishedPosition.Value, Is.EqualTo(1));
-        });
-
+        Assert.That(finishedPosition.Value, Is.EqualTo(1));
     }
 
     private void GivenEntity(string entityId, int version = 1)
@@ -187,14 +187,6 @@ public sealed class ProjectionTests
             receptacles.Add(new DelegateReceptacle(events.Add, eventName));
 
         return events;
-    }
-
-    private Trap<long> CaptureStartingPosition()
-    {
-        var startingPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
-            .Callback<long>(l => startingPosition.Value = l);
-        return startingPosition;
     }
 
     private Trap<long> CaptureFinishedPosition()

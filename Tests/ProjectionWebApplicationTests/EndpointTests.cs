@@ -28,7 +28,7 @@ public sealed class EndpointTests
     [TearDown]
     public void TearDown()
     {
-        var connection = webApplicationFactory.Services.GetRequiredService<IDbConnection>();
+        var connection = webApplicationFactory.Services.GetRequiredService<TargetDbConnection>().WithoutTransaction;
         var command = connection.CreateCommand("DELETE FROM Players");
 
         connection.Open();

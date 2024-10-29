@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,11 +10,14 @@ namespace Segerfeldt.EventStore.Projection;
 
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 /// <param name="repository"></param>
+/// <param name="targetConnection"></param>
+/// <param name="receptacles"/></param>
 /// <param name="tracker"></param>
 /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-public sealed class EventSource(IEventSourceRepository repository, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+public sealed class EventSource(IEventSourceRepository repository, TargetDbConnection targetConnection, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
 {
     private readonly IEventSourceRepository repository = repository;
+    private readonly TargetDbConnection targetConnection = targetConnection;
     private readonly IProjectionTracker? tracker = tracker;
     private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
     private long lastReadPosition = -1;
@@ -65,16 +69,17 @@ public sealed class EventSource(IEventSourceRepository repository, ReceptacleCol
         var count = 0;
         foreach (var (position, events) in eventGroups)
         {
+            targetConnection.BeginTransaction();
             count += events.Count;
-            tracker?.OnProjectionStarting(position);
             try { foreach (var @event in events) Emit(@event); }
             catch
             {
-                tracker?.OnProjectionError(position);
+                targetConnection.Rollback();
                 throw;
             }
             lastReadPosition = position;
             tracker?.OnProjectionFinished(position);
+            targetConnection.Commit();
         }
 
         return count;

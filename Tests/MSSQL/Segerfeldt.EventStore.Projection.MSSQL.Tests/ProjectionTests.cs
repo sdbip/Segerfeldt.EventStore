@@ -24,13 +24,17 @@ public sealed class ProjectionTests
         Assert.That(connectionString, Is.Not.Null,
             "MSSQL_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
 
-        connection = new SqlConnection(connectionString);
+        this.connection = new SqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
         receptacles = new ReceptacleCollection();
 
+        var connection = new Mock<IDbConnection>();
+        connection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
+
         eventSource = new EventSource(
             new SQLServerEventSourceRepository(new SqlConnection(connectionString)),
+            new TargetDbConnection(connection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);
@@ -39,7 +43,7 @@ public sealed class ProjectionTests
             .Setup(c => c.NextDelay(It.IsAny<int>()))
             .Returns(Timeout.Infinite);
 
-        SourceDB.Schema.CreateIfMissing(connection);
+        SourceDB.Schema.CreateIfMissing(this.connection);
         ClearTables();
     }
 
@@ -127,7 +131,6 @@ public sealed class ProjectionTests
     [Test]
     public void ReportsNewPosition()
     {
-        var startingPosition = CaptureStartingPosition();
         var finishedPosition = CaptureFinishedPosition();
 
         GivenEntity("an-entity");
@@ -135,12 +138,7 @@ public sealed class ProjectionTests
 
         ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(startingPosition.Value, Is.EqualTo(1));
-            Assert.That(finishedPosition.Value, Is.EqualTo(1));
-        });
-
+        Assert.That(finishedPosition.Value, Is.EqualTo(1));
     }
 
     private void GivenEntity(string entityId, int version = 1)
@@ -188,14 +186,6 @@ public sealed class ProjectionTests
             receptacles.Add(new DelegateReceptacle(events.Add, eventName));
 
         return events;
-    }
-
-    private Trap<long> CaptureStartingPosition()
-    {
-        var startingPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
-            .Callback<long>(l => startingPosition.Value = l);
-        return startingPosition;
     }
 
     private Trap<long> CaptureFinishedPosition()

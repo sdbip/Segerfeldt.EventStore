@@ -2,6 +2,7 @@ using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Shared;
 
 using Segerfeldt.EventStore.Projection.SQLite.Hosting;
+using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Tests;
 
@@ -22,8 +23,13 @@ public sealed class ProjectionTests
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
         receptacles = new ReceptacleCollection();
+
+        var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
+
         eventSource = new EventSource(
             new SQLiteEventSourceRepository(connection),
+            new TargetDbConnection(targetConnection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);
@@ -107,19 +113,12 @@ public sealed class ProjectionTests
     [Test]
     public void ReportsNewPosition()
     {
-        var startingPosition = CaptureStartingPosition();
         var finishedPosition = CaptureFinishedPosition();
 
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
         ProjectionTester.EmitInitialEvents(eventSource);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(startingPosition.Value, Is.EqualTo(1));
-            Assert.That(finishedPosition.Value, Is.EqualTo(1));
-        });
-
+        Assert.That(finishedPosition.Value, Is.EqualTo(1));
     }
 
     private void GivenEntity(string entityId)
@@ -153,16 +152,8 @@ public sealed class ProjectionTests
     private Trap<long> CaptureFinishedPosition()
     {
         var finishedPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
+        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
             .Callback<long>(l => finishedPosition.Value = l);
         return finishedPosition;
-    }
-
-    private Trap<long> CaptureStartingPosition()
-    {
-        var startingPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
-            .Callback<long>(l => startingPosition.Value = l);
-        return startingPosition;
     }
 }

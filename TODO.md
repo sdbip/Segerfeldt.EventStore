@@ -12,11 +12,7 @@ Maybe this:
 
 Or this:
 
-- Make it possible to use BEGIN/COMMIT/ROLLBACK in the position tracker.
-  - Projection now uses a single db-connection; that should make it easier.
-  - Projections must not `Open()`/`Close()` the connection.
-  - Perhaps start a `DbTransaction` before `OnProjectionStart()` and pass that around to the receptacles?
-  - Make `EventPublisher` aware of the transaction (if projecting into another write-model).
+- Make `EventPublisher` aware of the transaction (if projecting into another write-model).
 
 ## Icebox Issues & Ideas
 

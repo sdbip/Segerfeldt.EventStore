@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.NUnit.Tests;
 
@@ -10,9 +11,12 @@ public sealed class EventSourceExtensionTests
     [SetUp]
     public void SetUp()
     {
+        var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
         receptacle = new TestReceptacle();
         eventSource = new EventSource(
             Mock.Of<IEventSourceRepository>(),
+            new TargetDbConnection(targetConnection.Object),
             new ReceptacleCollection([receptacle]),
             Mock.Of<IProjectionTracker>(),
             Mock.Of<IPollingStrategy>());

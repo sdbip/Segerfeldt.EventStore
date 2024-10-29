@@ -7,9 +7,9 @@ using Microsoft.OpenApi.Models;
 using ProjectionWebApplication;
 using ProjectionWebApplication.Schema;
 
+using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
-using System.Data;
 using System.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,13 +20,13 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectionWebApplication", Version = "v1" });
 });
 
-builder.Services.AddSingleton<IDbConnection>(new SqlConnection(builder.Configuration.GetConnectionString("projection")));
+builder.Services.AddSingleton(new TargetDbConnection(new SqlConnection(builder.Configuration.GetConnectionString("projection"))));
 builder.Services.AddSingleton<ScoreBoard>();
 builder.Services.AddHostedSQLServerEventSource("events", builder.Configuration.GetConnectionString("events")!, new Segerfeldt.EventStore.Projection.Hosting.EventSourceOptions
 {
     Initialization = p =>
     {
-        var connection = p.GetRequiredService<IDbConnection>();
+        var connection = p.GetRequiredService<TargetDbConnection>().WithoutTransaction;
         Schema.CreateIfMissing(connection);
     }
 })

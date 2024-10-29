@@ -2,18 +2,18 @@ using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Shared;
 
 using System.Collections.Generic;
-using System.Data;
 
 namespace ProjectionWebApplication;
 
-public sealed class ScoreBoard(IDbConnection connection) : ReceptacleBase
+public sealed class ScoreBoard(TargetDbConnection connection) : ReceptacleBase
 {
-    private readonly IDbConnection connection = connection;
+    private readonly TargetDbConnection connection = connection;
 
     public IEnumerable<(string name, int score)> PlayerScores
     {
         get
         {
+            var connection = this.connection.WithoutTransaction;
             var command = connection.CreateCommand("""
             SELECT * FROM Players
             """);
@@ -32,9 +32,7 @@ public sealed class ScoreBoard(IDbConnection connection) : ReceptacleBase
             """);
         command.AddParameter("@id", entityId);
         command.AddParameter("@name", details.Name);
-        connection.Open();
-        try { command.ExecuteNonQuery(); }
-        finally { connection.Close(); }
+        command.ExecuteNonQuery();
     }
 
     [ReceivesEvent("ScoreIncreased")]
@@ -46,9 +44,7 @@ public sealed class ScoreBoard(IDbConnection connection) : ReceptacleBase
             """);
         command.AddParameter("@id", entityId);
         command.AddParameter("@points", details.Points);
-        connection.Open();
-        try { command.ExecuteNonQuery(); }
-        finally { connection.Close(); }
+        command.ExecuteNonQuery();
     }
 }
 

@@ -22,7 +22,10 @@ public sealed class EventSourceTests
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
         repository = new Mock<IEventSourceRepository>();
-        eventSource = new EventSource(repository.Object, receptacles, projectionTracker.Object, delayConfiguration.Object);
+        var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
+
+        eventSource = new EventSource(repository.Object, new TargetDbConnection(targetConnection.Object), receptacles, projectionTracker.Object, delayConfiguration.Object);
     }
 
     [Test]
@@ -71,16 +74,11 @@ public sealed class EventSourceTests
         repository.Setup(r => r.GetEvents(It.IsAny<long>(), It.IsAny<int>()))
             .Returns([new Event("an-entity", "some-entity", "first-event", @"{""value"":42}", ordinal: 0, position: 1)]);
 
-        var startingPosition = CaptureStartingPosition();
         var finishedPosition = CaptureFinishedPosition();
 
         ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(startingPosition.Value, Is.EqualTo(1));
-            Assert.That(finishedPosition.Value, Is.EqualTo(1));
-        });
+        Assert.That(finishedPosition.Value, Is.EqualTo(1));
     }
 
     private List<Event> CaptureReceivedEvents(params string[] eventNames)
@@ -94,16 +92,8 @@ public sealed class EventSourceTests
     private Trap<long> CaptureFinishedPosition()
     {
         var finishedPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionStarting(It.IsAny<long>()))
+        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
             .Callback<long>(l => finishedPosition.Value = l);
         return finishedPosition;
-    }
-
-    private Trap<long> CaptureStartingPosition()
-    {
-        var startingPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
-            .Callback<long>(l => startingPosition.Value = l);
-        return startingPosition;
     }
 }
