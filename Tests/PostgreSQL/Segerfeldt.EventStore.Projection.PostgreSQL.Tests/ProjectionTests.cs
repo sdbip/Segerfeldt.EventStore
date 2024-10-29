@@ -34,7 +34,7 @@ public sealed class ProjectionTests
 
         eventSource = new EventSource(
             new PostgreSQLEventSourceRepository(new NpgsqlConnection(connectionString)),
-            new TargetDbConnection(targetConnection.Object),
+            new TargetDbConnection(() => targetConnection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

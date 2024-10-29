@@ -13,11 +13,10 @@ namespace Segerfeldt.EventStore.Projection.Hosting;
 public sealed class EventSourceConfigurationWithoutTarget(IServiceCollection services, string name)
 {
     /// <summary>Set the target database</summary>
-    /// <param name="connection">A connection that will be used for all accesses to the target database</param>
-    /// <returns></returns>
-    public EventSourceConfiguration SetTarget(IDbConnection connection)
+    /// <param name="connectionFactory">A function that can create connections to the target database</param>
+    public EventSourceConfiguration SetTarget(Func<IDbConnection> connectionFactory)
     {
-        services.AddSingleton(new TargetDbConnection(connection));
+        services.AddSingleton(new TargetDbConnection(connectionFactory));
         return new EventSourceConfiguration(services, name);
     }
 }

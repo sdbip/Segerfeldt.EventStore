@@ -29,7 +29,7 @@ public sealed class ProjectionTests
 
         eventSource = new EventSource(
             new SQLiteEventSourceRepository(connection),
-            new TargetDbConnection(targetConnection.Object),
+            new TargetDbConnection(() => targetConnection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

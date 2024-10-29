@@ -31,5 +31,5 @@ public static class ServiceCollectionExtension
     }
 
     public static EventSourceConfiguration SetSQLServerTarget(this EventSourceConfigurationWithoutTarget configuration, string connectionString) =>
-        configuration.SetTarget(new SqlConnection(connectionString));
+        configuration.SetTarget(() => new SqlConnection(connectionString));
 }

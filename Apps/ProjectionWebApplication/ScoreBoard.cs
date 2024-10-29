@@ -13,7 +13,7 @@ public sealed class ScoreBoard(TargetDbConnection connection) : ReceptacleBase
     {
         get
         {
-            var connection = this.connection.WithoutTransaction;
+            var connection = this.connection.CreateNonTransactional();
             var command = connection.CreateCommand("""
             SELECT * FROM Players
             """);

@@ -24,7 +24,7 @@ builder.Services.AddHostedSQLServerEventSource("events", builder.Configuration.G
 {
     Initialization = p =>
     {
-        var connection = p.GetRequiredService<TargetDbConnection>().WithoutTransaction;
+        var connection = p.GetRequiredService<TargetDbConnection>().CreateNonTransactional();
         Schema.CreateIfMissing(connection);
     }
 })

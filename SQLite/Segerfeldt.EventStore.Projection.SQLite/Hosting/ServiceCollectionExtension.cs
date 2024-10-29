@@ -31,5 +31,5 @@ public static class ServiceCollectionExtension
     }
 
     public static EventSourceConfiguration SetSQLiteTarget(this EventSourceConfigurationWithoutTarget configuration, string connectionString) =>
-        configuration.SetTarget(new SqliteConnection(connectionString));
+        configuration.SetTarget(() => new SqliteConnection(connectionString));
 }

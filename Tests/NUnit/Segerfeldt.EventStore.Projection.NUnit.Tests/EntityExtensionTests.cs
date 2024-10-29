@@ -16,7 +16,7 @@ public sealed class EventSourceExtensionTests
         receptacle = new TestReceptacle();
         eventSource = new EventSource(
             Mock.Of<IEventSourceRepository>(),
-            new TargetDbConnection(targetConnection.Object),
+            new TargetDbConnection(() => targetConnection.Object),
             new ReceptacleCollection([receptacle]),
             Mock.Of<IProjectionTracker>(),
             Mock.Of<IPollingStrategy>());

@@ -32,5 +32,5 @@ public static class ServiceCollectionExtension
     }
 
     public static EventSourceConfiguration SetPostgtreSQLTarget(this EventSourceConfigurationWithoutTarget configuration, string connectionString) =>
-        configuration.SetTarget(new NpgsqlConnection(connectionString));
+        configuration.SetTarget(() => new NpgsqlConnection(connectionString));
 }
