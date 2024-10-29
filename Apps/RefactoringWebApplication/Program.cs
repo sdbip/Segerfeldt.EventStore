@@ -30,7 +30,6 @@ builder.Services.AddAuthentication(options => {
 builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!);
 
 // EventStore: Set up the refactoring transformation
-builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.UseSQLiteRefactoring(builder.Configuration.GetConnectionString("main")!)
     .UseSQLiteTarget(builder.Configuration.GetConnectionString("transformed")!)
     .UseProjectionTracker<ProjectionTracker>()

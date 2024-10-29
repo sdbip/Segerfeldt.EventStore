@@ -52,9 +52,12 @@ public sealed class EndpointTests
     {
         var response = await client.GetAsync(new Uri("Projection", UriKind.Relative));
 
-        Assert.That(response.IsSuccessStatusCode, Is.True);
-        var responseBody = await response.Content.ReadAsStringAsync();
-        Assert.That(responseBody, Is.EqualTo(""));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(response.IsSuccessStatusCode, Is.True);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.That(responseBody, Is.EqualTo(""));
+        });
     }
 
     [Test]
@@ -65,10 +68,12 @@ public sealed class EndpointTests
 
         var response = await client.GetAsync(new Uri("Projection", UriKind.Relative));
 
-        Assert.That(response.IsSuccessStatusCode, Is.True);
-        var responseBody = await response.Content.ReadAsStringAsync();
-
-        Assert.That(responseBody, Is.EqualTo("50"));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(response.IsSuccessStatusCode, Is.True);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.That(responseBody, Is.EqualTo("50"));
+        });
     }
 
     private static Event Event(string name, string details, int ordinal, long position) =>

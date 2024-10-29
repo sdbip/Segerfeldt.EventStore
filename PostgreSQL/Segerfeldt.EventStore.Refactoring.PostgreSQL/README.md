@@ -27,28 +27,26 @@ You will need to set up a database connection for each write-model database (a.k
 ```csharp
 builder.Services.UsePostgreSQLRefactoring(builder.Configuration.GetConnectionString("old-event-model")!)
     .UsePostgreSQLTarget(builder.Configuration.GetConnectionString("new-event-model")!)
-    .UseProjectionTracker<ProjectionTracker>()
-    .UseTransformation<TransformationStrategy>();
+    .UseProjectionTracker<MyCustomProjectionTracker>()
+    .UseTransformation<MyCustomTransformationStrategy>();
 ```
 
 You do not have to have PostgreSQL on both sides of the refactoring. You can for example copy an PostgreSQL event model to your custom database:
 
 ```csharp
-builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.UsePostgreSQLRefactoring(builder.Configuration.GetConnectionString("old-event-model")!)
     .UseTarget(p => new MyCustomConnection(builder.Configuration.GetConnectionString("new-event-model")!))
-    .UseProjectionTracker<ProjectionTracker>()
-    .UseTransformation<TransformationStrategy>();
+    .UseProjectionTracker<MyCustomProjectionTracker>()
+    .UseTransformation<MyCustomTransformationStrategy>();
 ```
 
-Or you could copy from your custom database to PostgreSQL:
+Or you could copy from your custom database to SQL Server:
 
 ```csharp
-builder.Services.AddSingleton<ProjectionTracker>();
 builder.Services.UseRefactoring(p => new MyCustomConnection(builder.Configuration.GetConnectionString("old-event-model")!))
     .UsePostgreSQLTarget(builder.Configuration.GetConnectionString("new-event-model")!)
-    .UseProjectionTracker<ProjectionTracker>()
-    .UseTransformation<TransformationStrategy>();
+    .UseProjectionTracker<MyCustomProjectionTracker>()
+    .UseTransformation<MyCustomTransformationStrategy>();
 ```
 
 For step 5, revese the relationship:
@@ -56,16 +54,11 @@ For step 5, revese the relationship:
 ```csharp
 builder.Services.UsePostgreSQLRefactoring(builder.Configuration.GetConnectionString("new-event-model")!)
     .UsePostgreSQLTarget(builder.Configuration.GetConnectionString("old-event-model")!)
-    .UseProjectionTracker<ProjectionTracker>()
-    .UseTransformation<TransformationStrategy>();
-builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.UseRefactoring(p => new MyCustomConnection(builder.Configuration.GetConnectionString("new-event-model")!))
-    .UseTarget(p => new MyCustomConnection(builder.Configuration.GetConnectionString("old-event-model")!))
     // There is no need to change the ProjectionTracker; assuming that the models are in sync,
     // the reversal should be able to just pick up at the same position
-    .UseProjectionTracker<ProjectionTracker>()
+    .UseProjectionTracker<MyCustomProjectionTracker>()
     // ...but the TransformationStrategy will need to be reversed
-    .UseTransformationStrategy<ReverseTransformationStrategy>();
+    .UseTransformation<MyCustomReverseTransformationStrategy>();
 ```
 
 The `ProjectionTracker` is meant to persist the current position in the event stream so that it can be recovered after a restart.

@@ -1,11 +1,9 @@
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 using System;
 using System.Data;
-using System.Linq;
 
 namespace Segerfeldt.EventStore.Refactoring.Hosting;
 

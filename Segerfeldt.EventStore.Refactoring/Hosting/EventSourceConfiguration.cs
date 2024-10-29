@@ -41,8 +41,11 @@ public sealed class EventSourceConfiguration(IServiceCollection services)
     /// <summary>Set the <see cref="IProjectionTracker"/> used to persist the position</summary>
     /// <typeparam name="TProjectionTracker">The type of the projection tracker</typeparam>
     /// <returns>This <see cref="EventSourceConfiguration"/> for further configuration</returns>
-    public EventSourceConfiguration UseProjectionTracker<TProjectionTracker>() where TProjectionTracker : IProjectionTracker =>
-        UseProjectionTracker(provider => provider.GetRequiredService<TProjectionTracker>());
+    public EventSourceConfiguration UseProjectionTracker<TProjectionTracker>() where TProjectionTracker : class, IProjectionTracker
+    {
+        services.AddSingleton<IProjectionTracker, TProjectionTracker>();
+        return this;
+    }
 
     /// <summary>Set the <see cref="IProjectionTracker"/> used to persist the position</summary>
     /// <param name="projectionTracker">The object used for tracking</param>

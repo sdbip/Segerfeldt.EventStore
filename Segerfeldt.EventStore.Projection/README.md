@@ -23,7 +23,6 @@ If you add either of the above packages Segerfeldt.EventStore.Projection will be
 Call the extension method `IServiceCollection.AddHostedEventSource(IEventSourceProvider)` to subscribe to a write-model using your custom provider:
 
 ```c#
-builder.Services.AddSingleton<MycustomProjectionTracker>();
 builder.Services.AddKeyedSingleton("source-1", new MyCustomDbConnection(builder.Configuration.GetConnectionString("source_database")));
 builder.Services.AddHostedEventSource<MyCustomEventSourceRepository>("source-1", new EventSourceOptions
 {
@@ -40,10 +39,6 @@ builder.Services.AddHostedEventSource<MyCustomEventSourceRepository>("source-1",
 You can add multiple sources (and they don't all have to use the same provider). Just make sure that they are logically separated in the projection database (or use transactions) as they will emit events on independent threads:
 
 ```c#
-builder.Services.AddSingleton<Source1ProjectionTracker>();
-builder.Services.AddSingleton<Source2ProjectionTracker>();
-builder.Services.AddSingleton<Source3ProjectionTracker>();
-
 builder.Services.AddHostedPostgreSQLEventSource("source-1", builder.Configuration.GetConnectionString("source1_database")!)
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<Source1ProjectionTracker>();

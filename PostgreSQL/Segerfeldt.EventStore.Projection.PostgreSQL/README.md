@@ -15,7 +15,6 @@ Add Segerfeldt.EventStore.Source to another project to generate the events on th
 You will need to set up a database connection for each write-model database (a.k.a. `EventSource`) you want to project state from. Call the overloaded extension method `IServiceCollection.AddHostedPostgreSQLEventSource()` to subscribe to a PostgreSQL write-model:
 
 ```c#
-builder.Services.AddSingleton<MyCustomProjectionTracker>();
 builder.Services.AddHostedPostgreSQLEventSource("source", builder.Configuration.GetConnectionString("source_database")!, new EventSourceOptions
 {
     Initialization = (IServiceProvider provider) =>
@@ -31,10 +30,6 @@ builder.Services.AddHostedPostgreSQLEventSource("source", builder.Configuration.
 You can add multiple sources (and they don't all have to be PostgreSQL databases). Just make sure that they are logically separated in the projection database (or use transactions) as they will emit events on independent threads:
 
 ```c#
-builder.Services.AddSingleton<Source1ProjectionTracker>();
-builder.Services.AddSingleton<Source2ProjectionTracker>();
-builder.Services.AddSingleton<Source3ProjectionTracker>();
-
 builder.Services.AddHostedPostgreSQLEventSource("source-1", builder.Configuration.GetConnectionString("source1_database")!)
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<Source1ProjectionTracker>();
