@@ -9,7 +9,7 @@ namespace Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 
 /// <summary>EventStore provider for a SQLite database that automatically adds the EventStore schema if missing</summary>
 /// <param name="connectionString">the connection-string to access the database</param>
-public class SQLiteEventStoreProvider(string connectionString) : IEventStoreProvider
+public sealed class SQLiteEventStoreProvider(string connectionString) : IEventStoreProvider
 {
     public void PrepareDatabase(IServiceProvider _) { Schema.CreateIfMissing(CreateConnection()); }
     public DbConnection CreateConnection() => new SqliteConnection(connectionString);

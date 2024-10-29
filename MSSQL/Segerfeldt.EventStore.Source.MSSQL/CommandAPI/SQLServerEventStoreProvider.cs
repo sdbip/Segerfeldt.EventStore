@@ -8,7 +8,7 @@ namespace Segerfeldt.EventStore.Source.MSSQL.CommandAPI;
 
 /// <summary>EventStore provider for a MS SQL Server database that automatically adds the EventStore schema if missing</summary>
 /// <param name="connectionString">the connection-string to access the database</param>
-public class SQLServerEventStoreProvider(string connectionString) : IEventStoreProvider
+public sealed class SQLServerEventStoreProvider(string connectionString) : IEventStoreProvider
 {
     public void PrepareDatabase(IServiceProvider _) { Schema.CreateIfMissing(CreateConnection()); }
     public DbConnection CreateConnection() => new SqlConnection(connectionString);

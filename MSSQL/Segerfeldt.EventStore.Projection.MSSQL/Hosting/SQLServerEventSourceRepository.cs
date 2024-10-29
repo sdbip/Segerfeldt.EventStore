@@ -9,7 +9,7 @@ namespace Segerfeldt.EventStore.Projection.MSSQL.Hosting;
 
 /// <summary>The default <see cref="IEventSourceRepository"/> implementation</summary>
 /// <param name="connection">A connection to the source write-model</param>
-public class SQLServerEventSourceRepository(IDbConnection connection) : IEventSourceRepository
+public sealed class SQLServerEventSourceRepository(IDbConnection connection) : IEventSourceRepository
 {
     private readonly IDbConnection connection = connection;
 

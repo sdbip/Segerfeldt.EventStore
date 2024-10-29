@@ -8,7 +8,7 @@ using Segerfeldt.EventStore.Shared;
 namespace Segerfeldt.EventStore.Refactoring;
 
 /// <summary>A repository that contains the published source events.</summary>
-public class EventSourceRepository(IDbConnection connection)
+public sealed class EventSourceRepository(IDbConnection connection)
 {
     private readonly IDbConnection connection = connection;
 

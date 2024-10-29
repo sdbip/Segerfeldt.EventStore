@@ -9,7 +9,7 @@ using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Projection.PostgreSQL.Hosting;
 
-public class PostgreSQLEventSourceRepository(NpgsqlConnection connection) : IEventSourceRepository
+public sealed class PostgreSQLEventSourceRepository(NpgsqlConnection connection) : IEventSourceRepository
 {
     private readonly NpgsqlConnection connection = connection;
 

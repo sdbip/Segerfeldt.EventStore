@@ -11,7 +11,7 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class CommandParser(HttpContext context)
+internal sealed class CommandParser(HttpContext context)
 {
     private static readonly NullabilityInfoContext NullabilityContext = new();
 

@@ -11,7 +11,7 @@ public interface IConnectionFactory
     DbConnection CreateConnection();
 }
 
-internal class OnDemandConnectionFactory(Func<DbConnection> createConnection) : IConnectionFactory
+internal sealed class OnDemandConnectionFactory(Func<DbConnection> createConnection) : IConnectionFactory
 {
     public DbConnection CreateConnection() => createConnection();
 }

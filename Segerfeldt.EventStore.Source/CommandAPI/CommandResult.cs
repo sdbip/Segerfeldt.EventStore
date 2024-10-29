@@ -5,7 +5,7 @@ using System.Net;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
 
-public class InvalidStatusCodeException(string message) : Exception(message) { }
+public sealed class InvalidStatusCodeException(string message) : Exception(message) { }
 
 /// <summary>The result from a command, defining the HTTP response</summary>
 public interface ICommandResult

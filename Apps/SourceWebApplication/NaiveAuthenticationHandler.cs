@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 namespace SourceWebApplication;
 
 /// <inheritdoc />
-public class NaiveAuthenticationHandler : IAuthenticationHandler
+public sealed class NaiveAuthenticationHandler : IAuthenticationHandler
 {
     private HttpContext context = null!;
 

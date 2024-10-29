@@ -58,7 +58,7 @@ public sealed class ReceptacleBaseTests
     }
 }
 
-public class EntityTypeTestingReceptacle : ReceptacleBase
+public sealed class EntityTypeTestingReceptacle : ReceptacleBase
 {
     public const string MatchedType = "an-entity-type";
     public const string WhereReceptacleIgnoresType = "event_without_type";
@@ -79,7 +79,7 @@ public class EntityTypeTestingReceptacle : ReceptacleBase
     }
 }
 
-public class ParameterListTestingReceptacle : ReceptacleBase
+public sealed class ParameterListTestingReceptacle : ReceptacleBase
 {
     public const string WhereReceptacleAcceptsEventOnly = "WhereReceptacleAcceptsEventOnly";
     public const string WhereReceptacleAcceptsIdAndData = "WhereReceptacleAcceptsIdAndData";
@@ -102,7 +102,7 @@ public class ParameterListTestingReceptacle : ReceptacleBase
     }
 }
 
-public class AsyncTestingReceptacle : ReceptacleBase
+public sealed class AsyncTestingReceptacle : ReceptacleBase
 {
     public const string AcceptedEvent = "AcceptedEvent";
 

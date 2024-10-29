@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Segerfeldt.EventStore.Source.Tests.CommandAPI;
 
-internal class TestGenerator : SimulatedGenerator
+internal sealed class TestGenerator : SimulatedGenerator
 {
     protected override string PropertyDescription(Type modelType, PropertyInfo p) => $"Summary for [{modelType.Name}.{p.Name}]";
     protected override string TypeDescription(Type modelType) => $"Summary for [{modelType.Name}]";

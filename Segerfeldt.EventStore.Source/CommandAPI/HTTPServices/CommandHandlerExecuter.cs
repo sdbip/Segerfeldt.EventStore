@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
 /// <summary>Internal class. Only made public to be accessible by tests.</summary>
-public class CommandHandlerExecuter(object handler)
+public sealed class CommandHandlerExecuter(object handler)
 {
     private readonly object handler = handler;
 

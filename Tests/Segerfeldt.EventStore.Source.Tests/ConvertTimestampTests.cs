@@ -4,7 +4,7 @@ using System;
 
 namespace Segerfeldt.EventStore.Source.Tests;
 
-public class ConvertTimestampTests
+public sealed class ConvertTimestampTests
 {
     [TestCase(1900, -25_567)]
     [TestCase(2000, 10_957)]

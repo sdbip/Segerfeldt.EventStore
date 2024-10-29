@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class CommandInputRequest(Type handlerType, HttpContext context)
+internal sealed class CommandInputRequest(Type handlerType, HttpContext context)
 {
     private readonly HttpContext context = context;
     private readonly Type handlerType = handlerType;

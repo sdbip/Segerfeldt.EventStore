@@ -17,13 +17,13 @@ public sealed class AggregateTests
     }
 }
 
-internal class Aggregate(EntityId id, EntityVersion version) : EntityBase(id, EntityType.Name("Aggregate"), version)
+internal sealed class Aggregate(EntityId id, EntityVersion version) : EntityBase(id, EntityType.Name("Aggregate"), version)
 {
     public record ChildModifiedDetails(string id);
 
     public ChildEntity AddChild(string id) => new(id, Add);
 
-    public class ChildEntity(string id, Action<UnpublishedEvent> addEvent)
+    public sealed class ChildEntity(string id, Action<UnpublishedEvent> addEvent)
     {
         private readonly string id = id;
         private readonly Action<UnpublishedEvent> addEvent = addEvent;

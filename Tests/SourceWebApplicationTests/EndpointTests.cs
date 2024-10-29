@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SourceWebApplicationTests;
 
-public class EndpointTests
+public sealed class EndpointTests
 {
     private HttpClient client = null!;
     private WebApplicationFactory<RegisterUser> webApplicationFactory = null!;

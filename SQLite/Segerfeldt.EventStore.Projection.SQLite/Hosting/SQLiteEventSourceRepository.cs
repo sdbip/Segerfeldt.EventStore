@@ -7,7 +7,7 @@ using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Hosting;
 
-public class SQLiteEventSourceRepository(IDbConnection connection) : IEventSourceRepository
+public sealed class SQLiteEventSourceRepository(IDbConnection connection) : IEventSourceRepository
 {
     private readonly IDbConnection connection = connection;
 

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal class HistoryQueryRequest(HttpContext context)
+internal sealed class HistoryQueryRequest(HttpContext context)
 {
     private readonly HttpContext context = context;
 
