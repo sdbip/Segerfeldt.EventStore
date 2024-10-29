@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddSingleton<ScoreBoard>();
 builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnectionString("events")!, "events")
+builder.Services.AddHostedSQLServerEventSource("events", builder.Configuration.GetConnectionString("events")!)
     .AddReceptacles(Assembly.GetExecutingAssembly())
     .SetProjectionTracker<ProjectionTracker>();
 

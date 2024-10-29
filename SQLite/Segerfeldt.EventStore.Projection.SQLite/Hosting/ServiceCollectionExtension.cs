@@ -1,25 +1,32 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 
 using Segerfeldt.EventStore.Projection.Hosting;
 
 using System;
+using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Hosting;
 
 public static class ServiceCollectionExtension
 {
     /// <summary>Add an <see cref="EventSource"/> to project events from an SQLite database</summary>
-    /// <param name="connectionString">the connection-string to access the database</param>
     /// <param name="name">A unique name for the <see cref="EventSource"/></param>
+    /// <param name="connectionString">the connection-string to access the source database</param>
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
-    public static EventSourceConfiguration AddHostedSQLiteEventSource(this IServiceCollection services, string connectionString, string name) =>
-        services.AddHostedEventSource(name, new SQLiteEventSourceProvider(connectionString));
+    public static EventSourceConfiguration AddHostedSQLiteEventSource(this IServiceCollection services, string name, string connectionString, EventSourceOptions? options = null) =>
+        services.AddHostedSQLiteEventSource(name, (p, n) => new SqliteConnection(connectionString), options);
 
     /// <summary>Add an <see cref="EventSource"/> to project events from an SQLite database</summary>
-    /// <param name="connectionString">the connection-string to access the database</param>
-    /// <param name="prepareToReceive">An action to call after setup to prepare to receive event information to the target database</param>
     /// <param name="name">A unique name for the <see cref="EventSource"/></param>
+    /// <param name="connection">A connection that access the source database</param>
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
-    public static EventSourceConfiguration AddHostedSQLiteEventSource(this IServiceCollection services, string connectionString, Action<IServiceProvider> prepareToReceive, string name) =>
-        services.AddHostedEventSource(name, new SQLiteEventSourceProvider(connectionString) { PrepareToReceive = prepareToReceive });
+    public static EventSourceConfiguration AddHostedSQLiteEventSource(this IServiceCollection services, string name, SqliteConnection connection, EventSourceOptions? options = null) =>
+        services.AddHostedSQLiteEventSource(name, (p, n) => connection, options);
+
+    private static EventSourceConfiguration AddHostedSQLiteEventSource(this IServiceCollection services, string name, Func<IServiceProvider, object, IDbConnection> connectionFunc, EventSourceOptions? options)
+    {
+        services.AddKeyedSingleton(name, connectionFunc);
+        return services.AddHostedEventSource<SQLiteEventSourceRepository>(name, options);
+    }
 }
