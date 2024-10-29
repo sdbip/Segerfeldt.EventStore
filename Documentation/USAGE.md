@@ -50,17 +50,23 @@ builder.Services.UseEventStore(_ => new MyCustomDbConnection(builder.Configurati
         // Perform initialization as needed. A typical task might be to ensure that the event-sourcing schema is added to the database.
         // Use the provider to locate necessary services.
     }
-});
+})
+    .SetTarget(new MyCustomDbConnection(builder.Configuration.GetConnectionString("target_database")!));
+    .AddReceptacles()
+    .SetProjectionTracker<MyCustomProjectionTracker>();
 ```
 
 The existing database packages each define their own simpler API that you could call instead:
 
 ```csharp
-builder.Services.UsePostgreSQLEventStore(builder.Configuration.GetConnectionString("main")!);
+builder.Services.UsePostgreSQLEventStore(builder.Configuration.GetConnectionString("main")!)
+    .SetPostgreSQLTarget(builder.Configuration.GetConnectionString("target_database")!);
 
-builder.Services.UseSQLServerEventStore(builder.Configuration.GetConnectionString("main")!);
+builder.Services.UseSQLServerEventStore(builder.Configuration.GetConnectionString("main")!)
+    .SetSQLServerTarget(builder.Configuration.GetConnectionString("target_database")!);
 
-builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!);
+builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!)
+    .SetSQLiteTarget(builder.Configuration.GetConnectionString("target_database")!);
 ```
 
 Add the following code to your services setup if you want Swagger documentation of your commands:

@@ -26,7 +26,7 @@ public static class ServiceCollectionExtension
     /// <param name="options">Additional options</param>
     /// <typeparam name="TEventSourceRepository">The type of the event source repository
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
-    public static EventSourceConfiguration AddHostedEventSource<TEventSourceRepository>(this IServiceCollection services, string name, EventSourceOptions? options = null)
+    public static EventSourceConfigurationWithoutTarget AddHostedEventSource<TEventSourceRepository>(this IServiceCollection services, string name, EventSourceOptions? options = null)
         where TEventSourceRepository : class, IEventSourceRepository
     {
         services.AddKeyedSingleton(name, (p, n) => new EventSource(
@@ -50,6 +50,6 @@ public static class ServiceCollectionExtension
             return new HostedEventSource(p.GetRequiredKeyedService<EventSource>(name));
         });
 
-        return new EventSourceConfiguration(services, name);
+        return new EventSourceConfigurationWithoutTarget(services, name);
     }
 }

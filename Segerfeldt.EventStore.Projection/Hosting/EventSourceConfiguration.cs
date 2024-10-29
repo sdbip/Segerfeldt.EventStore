@@ -3,10 +3,24 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 
 namespace Segerfeldt.EventStore.Projection.Hosting;
+
+/// <summary>Builder for configuring an <see cref="EventSource"/></summary>
+public sealed class EventSourceConfigurationWithoutTarget(IServiceCollection services, string name)
+{
+    /// <summary>Set the target database</summary>
+    /// <param name="connection">A connection that will be used for all accesses to the target database</param>
+    /// <returns></returns>
+    public EventSourceConfiguration SetTarget(IDbConnection connection)
+    {
+        services.AddSingleton(new TargetDbConnection(connection));
+        return new EventSourceConfiguration(services, name);
+    }
+}
 
 /// <summary>Builder for configuring an <see cref="EventSource"/></summary>
 public sealed class EventSourceConfiguration(IServiceCollection services, string name)

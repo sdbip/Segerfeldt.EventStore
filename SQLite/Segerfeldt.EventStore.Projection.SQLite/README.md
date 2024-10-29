@@ -23,6 +23,7 @@ builder.Services.AddHostedSQLiteEventSource("source", builder.Configuration.GetC
         // Use the provider locate necessary services.
     }
 })
+    .SetSQLiteTarget(builder.Configuration.GetConnectionString("target_database")!)
     .AddReceptacles()
     .SetProjectionTracker<MyCustomProjectionTracker>();
 ```
@@ -31,14 +32,17 @@ You can add multiple sources (and they don't all have to be SQLite databases). J
 
 ```c#
 builder.Services.AddHostedPostgreSQLEventSource("source-1", builder.Configuration.GetConnectionString("source1_database")!)
+    .SetSQLiteTarget(builder.Configuration.GetConnectionString("target_database")!)
     .AddReceptacles()
     .SetProjectionTracker<Source1ProjectionTracker>();
 
 builder.Services.AddHostedSQLServerEventSource("source-2", builder.Configuration.GetConnectionString("source2_database")!)
+    .SetSQLiteTarget(builder.Configuration.GetConnectionString("target_database")!)
     .AddReceptacles()
     .SetProjectionTracker<Source2ProjectionTracker>();
 
 builder.Services.AddHostedSQLiteEventSource("source-3", builder.Configuration.GetConnectionString("source3_database")!)
+    .SetSQLiteTarget(builder.Configuration.GetConnectionString("target_database")!)
     .AddReceptacles()
     .SetProjectionTracker<Source3ProjectionTracker>();
 ```
