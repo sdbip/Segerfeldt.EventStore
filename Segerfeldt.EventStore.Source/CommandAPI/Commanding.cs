@@ -39,6 +39,8 @@ public static class Commanding
     /// <param name="assemblies">assemblies to search for command definitions</param>
     /// <param name="swaggerOptions">the Swagger configuration to modify</param>
     {
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
         swaggerOptions.DocumentFilter<HistoryDocumentFilter>();
         swaggerOptions.DocumentFilter<CommandsDocumentFilter>(assemblies.AsEnumerable());
         return swaggerOptions;
@@ -49,6 +51,8 @@ public static class Commanding
     /// <param name="assemblies">assemblies to search for command definitions</param>
     public static IEndpointRouteBuilder MapCommands(this IEndpointRouteBuilder builder, params Assembly[] assemblies)
     {
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
         builder.MapHistory();
         builder.MapCommandHandlers(assemblies);
         return builder;

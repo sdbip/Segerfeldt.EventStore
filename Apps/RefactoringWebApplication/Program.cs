@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(options =>
 {
     // EventStore: Add Commands to Swagger documentation
-    options.DocumentCommands(Assembly.GetExecutingAssembly());
+    options.DocumentCommands();
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "SourceWebApplication.xml"));
 });
 
@@ -49,6 +49,6 @@ app.UseRouting();
 
 // EventStore: Map command-handlers
 app.MapControllers();
-app.MapCommands(Assembly.GetExecutingAssembly());
+app.MapCommands();
 
 app.Run();

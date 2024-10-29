@@ -17,7 +17,7 @@ Add the following line to your Program.cs to automatically find and map endpoint
 ```csharp
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-app.MapCommands(Assembly.GetExecutingAssembly());
+app.MapCommands();
 ```
 
 You can optionally define your endpoints in a different assembly (or in several). Just make sure to pass them as arguments to the `MapCommands` call:
@@ -68,7 +68,7 @@ Add the following code to your services setup if you want Swagger documentation 
 ```csharp
 services.AddSwaggerGen(options =>
 {
-    options.DocumentCommands(Assembly.GetExecutingAssembly());
+    options.DocumentCommands();
     options.IncludeXmlComments(Path.Combine(
         AppContext.BaseDirectory,
         "<application name>.xml"));
