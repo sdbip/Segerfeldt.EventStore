@@ -45,7 +45,7 @@ public sealed class RefactoringTests
             h => h.Authorization = new("Username", "test-user"));
         var eventSource = webApplicationFactory.Services.GetRequiredService<EventSource>();
         eventSource.GetPositionFromTracker();
-        eventSource.PollEventsTableOnce();
+        eventSource.EmitEventsAtNextPosition();
 
         var response = await client.GetAsync(new Uri("projection", UriKind.Relative));
 

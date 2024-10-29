@@ -38,73 +38,39 @@ public sealed class EventSource(EventSourceRepository repository, EventPublisher
     private void PollEventsTable()
     {
         currentDelay?.Cancel();
-        var numNotified = PollEventsTableOnce();
-
-        var nextDelay = pollingStrategy.NextDelay(numNotified);
-        currentDelay = new CancellationTokenSource();
-        Task.Delay(nextDelay, currentDelay.Token).ContinueWith(t =>
+        while (true)
         {
-            if (!t.IsCanceled) PollEventsTable();
-        });
+            var numNotified = EmitEventsAtNextPosition();
+            var nextDelay = pollingStrategy.NextDelay(numNotified);
+            if (nextDelay > 0)
+            {
+                currentDelay = new CancellationTokenSource();
+                Task.Delay(nextDelay, currentDelay.Token).ContinueWith(_ => PollEventsTable());
+                break;
+            }
+        }
     }
 
-    public int PollEventsTableOnce()
-    {
-        var readEvents = repository.GetEvents(lastReadPosition);
-        return Emit(readEvents);
-    }
+    public int EmitEventsAtNextPosition() => Emit(repository.GetEventsAtNextPosition(lastReadPosition));
 
     public int Emit(IEnumerable<Event> unsortedEvents)
     {
-        var eventGroups = GroupByPosition(unsortedEvents);
-        var batch = new List<(long position, List<Event> events)>();
-        var count = 0;
-        foreach (var (position, events) in eventGroups)
-        {
-            count += events.Count;
-            batch.Add((position, events.ToList()));
-            if (count > 100) break;
-        }
+        var events = unsortedEvents.Select(e => e.SourceEvent).ToList();
+        events.Sort((e1, e2) => e1.Ordinal - e2.Ordinal);
+        if (events.Count == 0) return 0;
 
-        foreach (var (position, events) in batch)
-        {
-            var currentEvents = events.Select(e => e.SourceEvent);
-            var translatedEvents = strategy.TransformPublishedBatch(currentEvents);
-            eventPublisher.Publish(translatedEvents, events[0].Metadata);
+        var metadata = unsortedEvents.First().Metadata;
+        var translatedEvents = strategy.TransformPublishedBatch(events);
+        eventPublisher.Publish(translatedEvents, metadata);
 
-            lastReadPosition = position;
-            tracker?.OnProjectionFinished(position);
-        }
+        lastReadPosition = metadata.Position;
+        tracker?.OnProjectionFinished(lastReadPosition);
 
-        return count;
-    }
-
-    private static IEnumerable<(long position, IImmutableList<Event> events)> GroupByPosition(IEnumerable<Event> events)
-    {
-        var currentPosition = -1L;
-        var nextBatch = new List<Event>();
-        foreach (var @event in events)
-        {
-            if (@event.Metadata.Position != currentPosition)
-            {
-                if (nextBatch.Count > 0)
-                    yield return (currentPosition, nextBatch.ToImmutableList());
-                nextBatch.Clear();
-                currentPosition = @event.Metadata.Position;
-            }
-
-            nextBatch.Add(@event);
-        }
-
-        if (nextBatch.Count > 0)
-        {
-            nextBatch.Sort(Event.SortOrder);
-            yield return (currentPosition, nextBatch.ToImmutableList());
-        }
+        return events.Count;
     }
 
     private sealed class DefaultPollingStrategy : IPollingStrategy
     {
-        public int NextDelay(int count) => count == 0 ? 60_000 : 1_000;
+        public int NextDelay(int count) => count == 0 ? 60_000 : 0;
     }
 }

@@ -14,12 +14,15 @@ public sealed class EventSourceRepository(IDbConnection connection)
 
     /// <summary>Gets events publiished after a given position.</summary>
     /// <param name="afterPosition">The last position to skip as it has already been processed.</param>
-    public IEnumerable<Event> GetEvents(long afterPosition)
+    public IEnumerable<Event> GetEventsAtNextPosition(long afterPosition)
     {
         using var command = connection.CreateCommand("""
+            WITH positions AS (
+                SELECT DISTINCT position FROM Events WHERE position > @position
+            )
             SELECT Events.*, Entities.type AS entity_type FROM Events
             JOIN Entities ON Entities.id = Events.entity_id
-                WHERE position > @position
+                WHERE position = (SELECT MIN(position) FROM positions)
             """);
         command.AddParameter("@position", afterPosition);
 
