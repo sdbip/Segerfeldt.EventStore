@@ -32,23 +32,17 @@ You will need to set up a database connection so that the commands know where to
 
 If you add either of the above packages Segerfeldt.EventStore.Source will be added implicitly.
 
-Call the extension method `IServiceCollection.UseEventStore(IEventStoreProvider)` to enable your custom provider:
+Call the extension method `IServiceCollection.UseEventStore(Func<IServiceProvider, DbConnection>)` to enable your custom provider:
 
 ```csharp
-builder.Services.UseEventStore(new MyCustomEventStoreProvider(builder.Configuration.GetConnectionString("main")!));
-
-internal class MyCustomEventStoreProvider(string connectionString) : IEventStoreProvider
+builder.Services.UseEventStore(_ => new MyCustomDbConnection(builder.Configuration.GetConnectionString("main")!), new EventStoreOptions
 {
-    // This method is called once only. At startup.
-    public void PrepareDatabase(IServiceProvider p)
+    PrepareDatabase = (IServiceProvider provider) =>
     {
-        // If the EventStore schema isn't already added, this would be a good opportunity do do so.
-        Schema.CreateIfMissing(CreateConnection());
+        // Perform initialization as needed. A typical task might be to ensure that the event-sourcing schema is added to the database.
+        // Use the provider to locate necessary services.
     }
-
-    // This method creates a connection to your database.
-    public DbConnection CreateConnection() => new MyCustomConnection(connectionString);
-}
+});
 ```
 
 Add the following code to your services setup if you want Swagger documentation of your commands:

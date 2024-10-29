@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
+using Segerfeldt.EventStore.Source.CommandAPI;
+
 using MS = Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Segerfeldt.EventStore.Source.NUnit;
@@ -28,7 +30,7 @@ public class WebApplicationFactory<TEntryPoint> : MS.WebApplicationFactory<TEntr
 
     public void ClearSourceTables()
     {
-        var connectionFactory = Services.GetRequiredService<IConnectionFactory>();
+        var connectionFactory = Services.GetRequiredService<EventStoreConnectionFactory>();
         var connection = connectionFactory.CreateConnection();
         using var command = connection.CreateCommand();
         command.CommandText = "DELETE FROM Events; DELETE FROM Entities";

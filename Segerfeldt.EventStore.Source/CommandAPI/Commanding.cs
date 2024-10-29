@@ -12,11 +12,26 @@ using Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 using System;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI;
+
+public class EventStoreOptions
+{
+    public Action<IServiceProvider> PrepareDatabase { get; init; } = _ => {};
+}
+
+public class EventStoreConnectionFactory
+{
+    public required Func<DbConnection> FactoryFunc { get; init; }
+    public static EventStoreConnectionFactory Singleton(DbConnection connection) => new() { FactoryFunc = () => connection};
+
+    public DbConnection CreateConnection() => FactoryFunc.Invoke();
+}
 
 [PublicAPI]
 public static class Commanding
@@ -24,12 +39,12 @@ public static class Commanding
     /// <summary>Add a custom EventStore write-model database</summary>
     /// <param name="services">the Web API builder services</param>
     /// <param name="provider">an object that knows how to create connections to the write-model database</param>
-    public static IServiceCollection UseEventStore(this IServiceCollection services, IEventStoreProvider provider)
+    public static IServiceCollection UseEventStore(this IServiceCollection services, Func<IServiceProvider, DbConnection> connectionFunc, EventStoreOptions? options = null)
     {
-        services.AddSingleton<IConnectionFactory>(p =>
+        services.AddSingleton(p =>
         {
-            provider.PrepareDatabase(p);
-            return new OnDemandConnectionFactory(() => provider.CreateConnection());
+            options?.PrepareDatabase(p);
+            return new EventStoreConnectionFactory { FactoryFunc = () => connectionFunc(p) };
         });
         return services;
     }

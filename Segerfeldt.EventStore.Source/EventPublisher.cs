@@ -1,4 +1,5 @@
-﻿using Segerfeldt.EventStore.Source.Internals;
+﻿using Segerfeldt.EventStore.Source.CommandAPI;
+using Segerfeldt.EventStore.Source.Internals;
 
 using System.Collections.Generic;
 using System.Data.Common;
@@ -9,14 +10,14 @@ namespace Segerfeldt.EventStore.Source;
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 public sealed class EventPublisher
 {
-    private readonly IConnectionFactory connectionFactory;
+    private readonly EventStoreConnectionFactory connectionFactory;
 
-    internal EventPublisher(IConnectionFactory connectionFactory)
+    internal EventPublisher(EventStoreConnectionFactory connectionFactory)
     {
         this.connectionFactory = connectionFactory;
     }
 
-    public EventPublisher(DbConnection connection) : this(new OnDemandConnectionFactory(() => connection)) { }
+    public EventPublisher(DbConnection connection) : this(EventStoreConnectionFactory.Singleton(connection)) { }
 
     /// <summary>Publish all new changes since reconstituting an entity</summary>
     /// <param name="entities">the entities whose events to publish</param>

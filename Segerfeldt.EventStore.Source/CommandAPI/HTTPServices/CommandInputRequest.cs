@@ -43,7 +43,7 @@ public static class ServiceProviderExtension
 {
     internal static CommandContext CreateCommandContext(this IServiceProvider serviceProvider, HttpContext httpContext)
     {
-        var factory = serviceProvider.GetRequiredService<IConnectionFactory>();
+        var factory = serviceProvider.GetRequiredService<EventStoreConnectionFactory>();
         return new CommandContext
         {
             EventPublisher = new EventPublisher(factory),

@@ -1,4 +1,5 @@
-﻿using Segerfeldt.EventStore.Source.Internals;
+﻿using Segerfeldt.EventStore.Source.CommandAPI;
+using Segerfeldt.EventStore.Source.Internals;
 
 using System.Data.Common;
 using System.Threading;
@@ -9,11 +10,11 @@ namespace Segerfeldt.EventStore.Source;
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 public sealed class EntityStore
 {
-    private readonly IConnectionFactory connectionFactory;
+    private readonly EventStoreConnectionFactory connectionFactory;
 
-    internal EntityStore(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory;
+    internal EntityStore(EventStoreConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory;
 
-    public EntityStore(DbConnection connection) : this(new OnDemandConnectionFactory(() => connection)) { }
+    public EntityStore(DbConnection connection) : this(EventStoreConnectionFactory.Singleton(connection)) { }
 
     /// <summary>Finds all the events, and the current version, of an entity. Everything needed to reconstitute its state.</summary>
     /// <param name="entityId">the id of the entity</param>

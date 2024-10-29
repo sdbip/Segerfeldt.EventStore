@@ -12,11 +12,11 @@ public static class ServiceCollectionExtension
 {
     /// <summary>Set up an <see cref="EventSource"/> to project events for refactoring</summary>
     /// <param name="services">the Web API builder services</param>
-    /// <param name="provider">an object that knows how to create connections to the write-model database</param>
+    /// <param name="sourceConnectionFactory">an function that creates connections to the write-model database</param>
     /// <returns>An <see cref="EventSourceConfiguration"/> for allowing additional configuration</returns>
-    public static EventSourceConfiguration UseRefactoring(this IServiceCollection services, Func<IServiceProvider, IDbConnection> sourceConnection)
+    public static EventSourceConfiguration UseRefactoring(this IServiceCollection services, Func<IServiceProvider, IDbConnection> sourceConnectionFactory)
     {
-        services.AddSingleton(p => new EventSourceRepository(sourceConnection(p)));
+        services.AddSingleton(p => new EventSourceRepository(sourceConnectionFactory(p)));
         services.AddSingleton<EventSource>();
         services.AddHostedService<HostedEventSource>();
         return new EventSourceConfiguration(services);
