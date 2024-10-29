@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace ProjectionWebApplication;
 
-public sealed class ScoreBoard(TargetDbConnection connection) : ReceptacleBase
+public sealed class ScoreBoard(TargetDatabase connection) : ReceptacleBase
 {
-    private readonly TargetDbConnection connection = connection;
+    private readonly TargetDatabase connection = connection;
 
     public IEnumerable<(string name, int score)> PlayerScores
     {
         get
         {
-            var connection = this.connection.CreateNonTransactional();
+            var connection = this.connection.CreateConnection();
             var command = connection.CreateCommand("""
             SELECT * FROM Players
             """);

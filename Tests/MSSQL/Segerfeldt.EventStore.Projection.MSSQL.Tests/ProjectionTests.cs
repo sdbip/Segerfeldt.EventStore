@@ -34,7 +34,7 @@ public sealed class ProjectionTests
 
         eventSource = new EventSource(
             new SQLServerEventSourceRepository(new SqlConnection(connectionString)),
-            new TargetDbConnection(() => connection.Object),
+            new TargetDatabase(() => connection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

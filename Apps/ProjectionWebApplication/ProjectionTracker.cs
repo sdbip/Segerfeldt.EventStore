@@ -4,9 +4,9 @@ using System.Data;
 
 namespace ProjectionWebApplication;
 
-public sealed class ProjectionTracker(TargetDbConnection connection) : IProjectionTracker
+public sealed class ProjectionTracker(TargetDatabase connection) : IProjectionTracker
 {
-    private readonly TargetDbConnection connection = connection;
+    private readonly TargetDatabase connection = connection;
 
     public long? Position { get; private set; }
 

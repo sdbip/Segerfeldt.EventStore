@@ -14,10 +14,10 @@ namespace Segerfeldt.EventStore.Projection;
 /// <param name="receptacles"/></param>
 /// <param name="tracker"></param>
 /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-public sealed class EventSource(IEventSourceRepository repository, TargetDbConnection targetConnection, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+public sealed class EventSource(IEventSourceRepository repository, TargetDatabase targetConnection, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
 {
     private readonly IEventSourceRepository repository = repository;
-    private readonly TargetDbConnection targetConnection = targetConnection;
+    private readonly TargetDatabase targetConnection = targetConnection;
     private readonly IProjectionTracker? tracker = tracker;
     private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
     private long lastReadPosition = -1;

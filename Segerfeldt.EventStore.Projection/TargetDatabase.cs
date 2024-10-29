@@ -5,12 +5,12 @@ using System.Data;
 
 namespace Segerfeldt.EventStore.Projection;
 
-public class TargetDbConnection(Func<IDbConnection> connectionFactory)
+public class TargetDatabase(Func<IDbConnection> connectionFactory)
 {
-    private readonly IDbConnection transactionalConnection = connectionFactory();
+    private readonly IDbConnection transactionalConnection = connectionFactory.Invoke();
     private IDbTransaction? transaction;
 
-    public IDbConnection CreateNonTransactional() => connectionFactory.Invoke();
+    public IDbConnection CreateConnection() => connectionFactory.Invoke();
 
     public void BeginTransaction()
     {
