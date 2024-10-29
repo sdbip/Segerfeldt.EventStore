@@ -1,3 +1,9 @@
+<!--
+    This comment only exists to disable the Markdownlint rule
+    MD025/single-title/single-h1: Multiple top-level headings in the same document
+    This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
+-->
+
 # Segerfeldt.EventSourcing Usage
 
 This document is meant to help develop clients that employ the Segerfeldt.EventSourcing NuGet packages. If you are not familiar with event sourcing, you should probably read the [documentation describing the concepts](./ES.md) first.
@@ -264,6 +270,12 @@ public sealed class Counter : EntityBase
 }
 ```
 
+# Segerfeldt.EventStore.Projection
+
+A NuGet package for implementing the Query/Read-Model side of a CQRS application with your custom database.
+
+Add Segerfeldt.EventStore.Source to another project to generate the events on the Command/Write-Model side.
+
 ## Projection Setup
 
 The Projection library is meant to implement the Command-to-Query side synchronisation for a CQRS system.
@@ -276,44 +288,38 @@ You will need to set up a database connection for each write-model database (a.k
 
 If you add either of the above packages Segerfeldt.EventStore.Projection will be added implicitly.
 
-Call the extension method `IServiceCollection.AddHostedEventSource(IEventSourceProvider)` to enable the provider of you have selected:
+Call the extension method `IServiceCollection.AddHostedEventSource<TEventSourceRepository>(string, EventSourceOptions)` to subscribe to a write-model using your custom provider:
 
 ```c#
-using Segerfeldt.EventStore.Projection.Hosting;
-using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
-
-builder.Services.AddSingleton<ProjectionTracker>();
-builder.Services.AddHostedEventSource(new MyCustomEventSourceProvider(builder.Configuration.GetConnectionString("source_database")!), "source1")
-    .AddReceptacles()
-    .SetProjectionTracker<ProjectionTracker>();
-
-internal class MyCustomEventSourceProvider : IEventSourceProvider
+builder.Services.AddKeyedSingleton("source-1", new MyCustomDbConnection(builder.Configuration.GetConnectionString("source_database")));
+builder.Services.AddHostedEventSource<MyCustomEventSourceRepository>("source-1", new EventSourceOptions
 {
-    // This method is called once only. At startup.
-    public void PrepareDatabase(IServiceProvider p)
+    Initialization = (IServiceProvider provider) =>
     {
-        // You might want to add your own schema to the database.
-        // Specifically, you might want to add a table for storing your current position in the stream(s).
-        Schema.CreateIfMissing(CreateConnection());
+        // Perform initialization as needed. A typical task might be to update the schema of the target database.
+        // Use the provider locate necessary services.
     }
-
-    // This method creates a connection to your database.
-    public DbConnection CreateConnection() => new MyCustomConnection(connectionString);
-}
+})
+    .AddReceptacles(Assembly.GetExecutingAssembly())
+    .SetProjectionTracker<MyCustomProjectionTracker>();
 ```
+
+You can add multiple sources (and they don't all have to use the same provider). But you will need to supply unique identifiers (injection system keys) for each of them.
 
 The existing database packages each define their own simpler API that you could call instead:
 
-```csharp
-builder.Services.AddHostedPostgreSQLEventSource(builder.Configuration.GetConnectionString("events")!, "events");
+```c#
+builder.Services.AddHostedPostgreSQLEventSource("source-1", builder.Configuration.GetConnectionString("source1_database")!)
+    .AddReceptacles()
+    .SetProjectionTracker<Source1ProjectionTracker>();
 
-builder.Services.AddHostedSQLServerEventSource(builder.Configuration.GetConnectionString("events")!, "events");
+builder.Services.AddHostedSQLServerEventSource("source-2", builder.Configuration.GetConnectionString("source2_database")!)
+    .AddReceptacles()
+    .SetProjectionTracker<Source2ProjectionTracker>();
 
-builder.Services.AddHostedSQLiteEventSource(builder.Configuration.GetConnectionString("events")!, "events");
-
-// You will still need to add receptacles and (optinally) a position tracker
-//    .AddReceptacles()
-//    .SetProjectionTracker<ProjectionTracker>();
+builder.Services.AddHostedSQLiteEventSource("source-3", builder.Configuration.GetConnectionString("source3_database")!)
+    .AddReceptacles()
+    .SetProjectionTracker<Source3ProjectionTracker>();
 ```
 
 See the [ProjectionWebApplication](../Apps/ProjectionWebApplication/Program.cs) for a functioning example.
