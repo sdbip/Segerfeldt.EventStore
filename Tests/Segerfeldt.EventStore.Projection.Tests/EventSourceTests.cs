@@ -23,6 +23,7 @@ public sealed class EventSourceTests
         projectionTracker = new Mock<IProjectionTracker>();
         repository = new Mock<IEventSourceRepository>();
         var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.CreateCommand()).Returns(Mock.Of<IDbCommand>());
         targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
 
         eventSource = new EventSource(repository.Object, new TargetDatabase(() => targetConnection.Object), receptacles, projectionTracker.Object, delayConfiguration.Object);

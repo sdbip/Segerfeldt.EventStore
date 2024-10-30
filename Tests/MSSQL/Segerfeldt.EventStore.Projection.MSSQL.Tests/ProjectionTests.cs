@@ -23,17 +23,18 @@ public sealed class ProjectionTests
         Assert.That(connectionString, Is.Not.Null,
             "MSSQL_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
 
-        this.connection = new SqlConnection(connectionString);
+        connection = new SqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
         projectionTracker = new Mock<IProjectionTracker>();
         receptacles = new ReceptacleCollection();
 
-        var connection = new Mock<IDbConnection>();
-        connection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
+        var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.CreateCommand()).Returns(Mock.Of<IDbCommand>());
+        targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
 
         eventSource = new EventSource(
             new SQLServerEventSourceRepository(new SqlConnection(connectionString)),
-            new TargetDatabase(() => connection.Object),
+            new TargetDatabase(() => targetConnection.Object),
             receptacles,
             projectionTracker.Object,
             delayConfiguration.Object);

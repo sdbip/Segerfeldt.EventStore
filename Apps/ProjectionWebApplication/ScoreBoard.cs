@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace ProjectionWebApplication;
 
-public sealed class ScoreBoard(TargetDatabase connection) : ReceptacleBase
+public sealed class ScoreBoard(TargetDatabase database) : ReceptacleBase
 {
-    private readonly TargetDatabase connection = connection;
+    private readonly TargetDatabase database = database;
 
     public IEnumerable<(string name, int score)> PlayerScores
     {
         get
         {
-            var connection = this.connection.CreateConnection();
+            var connection = this.database.CreateConnection();
             var command = connection.CreateCommand("""
             SELECT * FROM Players
             """);
@@ -27,7 +27,8 @@ public sealed class ScoreBoard(TargetDatabase connection) : ReceptacleBase
     [ReceivesEvent("PlayerRegistered")]
     public void ReceivePlayerRegistered(string entityId, PlayerRegistration details)
     {
-        using var command = connection.CreateCommand("""
+        var transaction = database.Transaction ?? throw new Exception("No transaction??");
+        using var command = transaction.Connection.CreateCommand("""
             INSERT INTO Players VALUES (@id, @name, 0)
             """);
         command.AddParameter("@id", entityId);
@@ -38,7 +39,8 @@ public sealed class ScoreBoard(TargetDatabase connection) : ReceptacleBase
     [ReceivesEvent("ScoreIncreased")]
     public void ReceiveScoreIncreased(string entityId, ScoreIncrement details)
     {
-        using var command = connection.CreateCommand("""
+        var transaction = database.Transaction ?? throw new Exception("No transaction??");
+        using var command = transaction.Connection.CreateCommand("""
             UPDATE Players SET score = score + @points
                 WHERE id = @id
             """);

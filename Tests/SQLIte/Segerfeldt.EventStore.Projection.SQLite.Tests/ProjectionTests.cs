@@ -25,6 +25,7 @@ public sealed class ProjectionTests
         receptacles = new ReceptacleCollection();
 
         var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.CreateCommand()).Returns(Mock.Of<IDbCommand>());
         targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
 
         eventSource = new EventSource(
