@@ -1,7 +1,5 @@
 using Segerfeldt.EventStore.Projection;
 
-using System.Data;
-
 namespace ProjectionWebApplication;
 
 public sealed class ProjectionTracker(TargetDatabase connection) : IProjectionTracker
@@ -12,15 +10,9 @@ public sealed class ProjectionTracker(TargetDatabase connection) : IProjectionTr
 
     public long? GetLastFinishedPosition() => null;
 
-    public void OnProjectionStarting(long position) { }
 
-    public void OnProjectionFinished(long position)
+    public void OnProjectionFinished(long position, Transaction transaction)
     {
         Position = position;
-    }
-
-    public void OnProjectionError(long position)
-    {
-        throw new System.NotImplementedException();
     }
 }

@@ -16,5 +16,5 @@ public interface IProjectionTracker
     /// <summary>Signals that projection has completed emitting all events at the current position</summary>
     /// This would be a good place to COMMIT the transacion if you have one.
     /// <param name="position">the position of the last emitted events</param>
-    void OnProjectionFinished(long position);
+    void OnProjectionFinished(long position, Transaction transaction);
 }

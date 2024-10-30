@@ -93,8 +93,8 @@ public sealed class EventSourceTests
     private Trap<long> CaptureFinishedPosition()
     {
         var finishedPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>()))
-            .Callback<long>(l => finishedPosition.Value = l);
+        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>(), It.IsAny<Transaction>()))
+            .Callback<long, Transaction>((l, _) => finishedPosition.Value = l);
         return finishedPosition;
     }
 }

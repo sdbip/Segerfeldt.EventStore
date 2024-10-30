@@ -78,7 +78,7 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
                 throw;
             }
             lastReadPosition = position;
-            tracker?.OnProjectionFinished(position);
+            tracker?.OnProjectionFinished(position, transaction);
             transaction.Commit();
         }
 
