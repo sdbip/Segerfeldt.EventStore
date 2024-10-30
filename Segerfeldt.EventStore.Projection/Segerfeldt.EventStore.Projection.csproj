@@ -15,9 +15,6 @@
       <Compile Include="..\Segerfeldt.EventStore.Shared\JSON.cs">
         <Link>Shared/JSON.cs</Link>
       </Compile>
-      <Compile Include="..\Segerfeldt.EventStore.Shared\ConnectionExtension.cs">
-        <Link>Shared/ConnectionExtension.cs</Link>
-      </Compile>
     </ItemGroup>
 
     <ItemGroup>

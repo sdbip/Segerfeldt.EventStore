@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Shared;
-
 using System;
 using System.Data;
 

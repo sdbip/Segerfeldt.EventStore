@@ -1,5 +1,4 @@
 using Segerfeldt.EventStore.Projection;
-using Segerfeldt.EventStore.Shared;
 
 using System.Collections.Generic;
 

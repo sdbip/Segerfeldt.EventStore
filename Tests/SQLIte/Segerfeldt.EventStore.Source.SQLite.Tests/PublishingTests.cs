@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming

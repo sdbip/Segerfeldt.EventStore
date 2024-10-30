@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 
-namespace Segerfeldt.EventStore.Shared;
+namespace Segerfeldt.EventStore.Refactoring;
 
 public static class ConnectionExtension
 {

@@ -2,10 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.NUnit;
-using Segerfeldt.EventStore.Shared;
 
 using System;
-using System.Data;
 using System.Net.Http;
 using System.Threading.Tasks;
 

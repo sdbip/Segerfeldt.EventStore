@@ -1,7 +1,7 @@
 using Segerfeldt.EventStore.Projection.Hosting;
-using Segerfeldt.EventStore.Shared;
 
 using Segerfeldt.EventStore.Projection.SQLite.Hosting;
+
 using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Tests;

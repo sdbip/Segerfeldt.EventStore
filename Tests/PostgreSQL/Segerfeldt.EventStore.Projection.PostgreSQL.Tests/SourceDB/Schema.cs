@@ -1,8 +1,6 @@
 using System.Data;
 using System.IO;
 
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Projection.PostgreSQL.Tests.SourceDB;
 
 // ReSharper disable once InconsistentNaming

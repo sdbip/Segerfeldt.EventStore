@@ -1,7 +1,5 @@
 using Npgsql;
 
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Source.PostgreSQL.Tests;
 
 public sealed class PublishingTests

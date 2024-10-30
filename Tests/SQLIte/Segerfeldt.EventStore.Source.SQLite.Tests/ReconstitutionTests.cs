@@ -1,7 +1,6 @@
 using Segerfeldt.EventStore.Source.Internals;
-using System.Collections.Immutable;
 
-using Segerfeldt.EventStore.Shared;
+using System.Collections.Immutable;
 
 namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 

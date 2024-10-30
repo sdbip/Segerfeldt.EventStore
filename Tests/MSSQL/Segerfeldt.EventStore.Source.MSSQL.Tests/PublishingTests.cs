@@ -1,7 +1,5 @@
 using System.Data.SqlClient;
 
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Source.MSSQL.Tests;
 
 public sealed class PublishingTests

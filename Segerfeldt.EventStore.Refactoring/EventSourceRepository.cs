@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Refactoring;
 
 /// <summary>A repository that contains the published source events.</summary>

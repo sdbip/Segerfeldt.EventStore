@@ -2,8 +2,6 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Source.Internals;
 
 internal sealed class LookupEntityTypeOperation(EntityId entityId)

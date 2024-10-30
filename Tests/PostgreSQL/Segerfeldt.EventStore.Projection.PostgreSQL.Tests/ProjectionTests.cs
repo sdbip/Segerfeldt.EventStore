@@ -2,7 +2,6 @@ using Npgsql;
 
 using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Projection.PostgreSQL.Hosting;
-using Segerfeldt.EventStore.Shared;
 
 using System.Data;
 

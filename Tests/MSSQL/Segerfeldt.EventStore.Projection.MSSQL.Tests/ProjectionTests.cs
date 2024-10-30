@@ -3,7 +3,6 @@ using System.Data.SqlClient;
 
 using Segerfeldt.EventStore.Projection.Hosting;
 using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
-using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Projection.MSSQL.Tests;
 
