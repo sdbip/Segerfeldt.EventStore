@@ -9,7 +9,7 @@ using ProjectionWebApplication.Schema;
 
 using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.Hosting;
-using Segerfeldt.EventStore.Projection.MSSQL.Hosting;
+using Segerfeldt.EventStore.Projection.SQLite.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddSingleton<ScoreBoard>();
-builder.Services.AddHostedSQLServerEventSource("events", builder.Configuration.GetConnectionString("events")!, new EventSourceOptions
+builder.Services.AddHostedSQLiteEventSource("events", builder.Configuration.GetConnectionString("events")!, new EventSourceOptions
 {
     Initialization = p =>
     {
@@ -28,7 +28,7 @@ builder.Services.AddHostedSQLServerEventSource("events", builder.Configuration.G
         Schema.CreateIfMissing(connection);
     }
 })
-    .SetSQLServerTarget(builder.Configuration.GetConnectionString("projection")!)
+    .SetSQLiteTarget(builder.Configuration.GetConnectionString("projection")!)
     .AddReceptacles()
     .SetProjectionTracker<ProjectionTracker>();
 

@@ -53,9 +53,12 @@ public sealed class EndpointTests
 
         var response = await client.GetAsync(new Uri("Player", UriKind.Relative));
 
-        Assert.That(response.IsSuccessStatusCode, Is.True);
-        var responseBody = await response.Content.ReadAsStringAsync();
-        Assert.That(responseBody, Is.EqualTo(@"[{""name"":""Johan"",""score"":2}]"));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(response.IsSuccessStatusCode, Is.True);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.That(responseBody, Is.EqualTo(@"[{""name"":""Johan"",""score"":2}]"));
+        });
     }
 
     [Test]

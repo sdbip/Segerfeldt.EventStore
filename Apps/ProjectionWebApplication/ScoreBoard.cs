@@ -1,5 +1,6 @@
 using Segerfeldt.EventStore.Projection;
 
+using System;
 using System.Collections.Generic;
 
 namespace ProjectionWebApplication;
@@ -18,7 +19,7 @@ public sealed class ScoreBoard(TargetDatabase connection) : ReceptacleBase
             """);
 
             connection.Open();
-            try { return command.ExecuteReader().AllRowsAs(r => ((string)r["name"], (int)r["score"])); }
+            try { return command.ExecuteReader().AllRowsAs(r => ((string)r["name"], Convert.ToInt32(r["score"]))); }
             finally { connection.Close(); }
         }
     }
