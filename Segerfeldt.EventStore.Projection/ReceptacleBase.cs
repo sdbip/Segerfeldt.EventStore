@@ -20,6 +20,8 @@ public abstract class ReceptacleBase : IReceptacle
     /// <inheritdoc/>
     public IEnumerable<string> AcceptedEvents => lazyMethods.Value.Keys;
 
+    protected Transaction Transaction { get; private set; } = null!;
+
     protected ReceptacleBase()
     {
         lazyMethods = new Lazy<Dictionary<string, IEnumerable<MethodInfo>>>(
@@ -32,8 +34,9 @@ public abstract class ReceptacleBase : IReceptacle
     }
 
     /// <inheritdoc/>
-    public void Update(Event @event)
+    public void Update(Event @event, Transaction transaction)
     {
+        Transaction = transaction;
         if (!lazyMethods.Value.TryGetValue(@event.Name, out var methods)) return;
 
         foreach (var method in methods.Where(m => m.GetCustomAttribute<ReceivesEventAttribute>()!.Accepts(@event)))
@@ -49,7 +52,7 @@ public abstract class ReceptacleBase : IReceptacle
         return method.Invoke(this, arguments);
     }
 
-    private IEnumerable<MethodInfo> GetPublicInstanceMethods() => GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance);
+    private MethodInfo[] GetPublicInstanceMethods() => GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
     [AttributeUsage(AttributeTargets.Method)]
     [MeansImplicitUse]

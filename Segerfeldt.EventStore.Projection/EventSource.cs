@@ -69,17 +69,17 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
         var count = 0;
         foreach (var (position, events) in eventGroups)
         {
-            database.BeginTransaction();
+            var transaction = database.BeginTransaction();
             count += events.Count;
-            try { foreach (var @event in events) Emit(@event); }
+            try { foreach (var @event in events) Emit(@event, transaction); }
             catch
             {
-                database.Rollback();
+                transaction.Rollback();
                 throw;
             }
             lastReadPosition = position;
             tracker?.OnProjectionFinished(position);
-            database.Commit();
+            transaction.Commit();
         }
 
         return count;
@@ -99,9 +99,9 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
         }
     }
 
-    private void Emit(Event @event)
+    private void Emit(Event @event, Transaction transaction)
     {
-        foreach (var receptacle in GetReceptacles(@event)) receptacle.Update(@event);
+        foreach (var receptacle in GetReceptacles(@event)) receptacle.Update(@event, transaction);
     }
 
     private IEnumerable<IReceptacle> GetReceptacles(Event @event) => receptacles.GetReceptacles(@event.Name);

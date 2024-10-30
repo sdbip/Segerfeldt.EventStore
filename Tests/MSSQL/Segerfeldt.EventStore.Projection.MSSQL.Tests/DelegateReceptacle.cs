@@ -24,5 +24,5 @@ public sealed class DelegateReceptacle : IReceptacle
         this.@delegate = @delegate;
     }
 
-    public void Update(Event @event) => @delegate(@event);
+    public void Update(Event @event, Transaction transaction) => @delegate(@event);
 }

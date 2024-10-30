@@ -27,7 +27,7 @@ public sealed class ScoreBoard(TargetDatabase database) : ReceptacleBase
     [ReceivesEvent("PlayerRegistered")]
     public void ReceivePlayerRegistered(string entityId, PlayerRegistration details)
     {
-        var transaction = database.Transaction ?? throw new Exception("No transaction??");
+        var transaction = Transaction ?? throw new Exception("No transaction??");
         using var command = transaction.CreateCommand("""
             INSERT INTO Players VALUES (@id, @name, 0)
             """);
@@ -39,7 +39,7 @@ public sealed class ScoreBoard(TargetDatabase database) : ReceptacleBase
     [ReceivesEvent("ScoreIncreased")]
     public void ReceiveScoreIncreased(string entityId, ScoreIncrement details)
     {
-        var transaction = database.Transaction ?? throw new Exception("No transaction??");
+        var transaction = Transaction ?? throw new Exception("No transaction??");
         using var command = transaction.CreateCommand("""
             UPDATE Players SET score = score + @points
                 WHERE id = @id

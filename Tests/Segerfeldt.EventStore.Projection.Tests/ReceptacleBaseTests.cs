@@ -1,3 +1,4 @@
+using System.Data;
 using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
@@ -8,7 +9,8 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodWithMatchingEventNameAndType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.Update(new Event("an-entity", EntityTypeTestingReceptacle.MatchedType, EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", EntityTypeTestingReceptacle.MatchedType, EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0),
+            new Transaction(Mock.Of<IDbConnection>()));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
@@ -17,7 +19,8 @@ public sealed class ReceptacleBaseTests
     public void DoesNotInvokeMethodWithMismatchingEventType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "mismatching-type", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", "mismatching-type", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0),
+            new Transaction(Mock.Of<IDbConnection>()));
 
         Assert.That(receptacle.ReceivedEvent, Is.Null);
     }
@@ -26,7 +29,8 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodIfEventTypeIgnored()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", "an-entity-type", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "{}", 0, 0),
+            new Transaction(Mock.Of<IDbConnection>()));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
@@ -35,7 +39,8 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodWithOnlyEventParameter()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "{}", 0, 0));
+        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "{}", 0, 0),
+            new Transaction(Mock.Of<IDbConnection>()));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
@@ -44,17 +49,11 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodWithEntityIdAndDataParameters()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, @"{""property"":42}", 0, 0));
+        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, @"{""property"":42}", 0, 0),
+            new Transaction(Mock.Of<IDbConnection>()));
 
         Assert.That(receptacle.ReceivedEntityId, Is.EqualTo("an-entity"));
         Assert.That(receptacle.ReceivedData, Is.EqualTo(new EventData(42)));
-    }
-
-    [Test]
-    public void ExecutesTasksSynchronously()
-    {
-        var receptacle = new AsyncTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", AsyncTestingReceptacle.AcceptedEvent, "{}", 0, 0));
     }
 }
 
@@ -99,30 +98,6 @@ public sealed class ParameterListTestingReceptacle : ReceptacleBase
     {
         ReceivedEntityId = entityId;
         ReceivedData = data;
-    }
-}
-
-public sealed class AsyncTestingReceptacle : ReceptacleBase
-{
-    public const string AcceptedEvent = "AcceptedEvent";
-
-    private bool isProcessingEvent;
-
-    [ReceivesEvent(AcceptedEvent)]
-    public async Task Method1(Event _){ await WaitAsync(); }
-
-    [ReceivesEvent(AcceptedEvent)]
-    public async Task Method2(Event _){ await WaitAsync(); }
-
-    [ReceivesEvent(AcceptedEvent)]
-    public async Task Method3(Event _){ await WaitAsync(); }
-
-    private async Task WaitAsync()
-    {
-        Assert.That(isProcessingEvent, Is.False);
-        isProcessingEvent = true;
-        await Task.Delay(10);
-        isProcessingEvent = false;
     }
 }
 

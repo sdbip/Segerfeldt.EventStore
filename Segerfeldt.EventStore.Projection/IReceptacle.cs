@@ -9,5 +9,5 @@ public interface IReceptacle
 
     /// <summary>Updates the receptacle with an event</summary>
     /// <param name="event">an emitted <see cref="Event"/></param>
-    void Update(Event @event);
+    void Update(Event @event, Transaction transaction);
 }
