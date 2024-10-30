@@ -7,8 +7,23 @@ namespace Segerfeldt.EventStore.Projection;
 /// <param name="connection"></param>
 public class Transaction(IDbConnection connection)
 {
-    /// <summary>The connection that is participating in the transaction</summary>
-    public IDbConnection Connection { get; } = connection;
+    private readonly IDbConnection connection = connection;
+
+    /// <summary>Create a database command with a command text</summary>
+    /// <param name="commandText">The command text to execute</param>
+    public IDbCommand CreateCommand(string commandText) => connection.CreateCommand(commandText);
+
+    internal void Commit()
+    {
+        try { connection.CreateCommand("COMMIT").ExecuteNonQuery(); }
+        finally { connection.Close(); }
+    }
+
+    internal void Rollback()
+    {
+        try { connection.CreateCommand("ROLLBACK").ExecuteNonQuery(); }
+        finally { connection.Close(); }
+    }
 }
 
 public class TargetDatabase(Func<IDbConnection> connectionFactory)
@@ -34,17 +49,15 @@ public class TargetDatabase(Func<IDbConnection> connectionFactory)
     /// <exception cref="InvalidOperationException">If there is no transaction in progress</exception>
     public void Commit()
     {
-        if (Transaction is null) throw new InvalidOperationException("There is no transaction in progress");
-        try { Transaction.Connection.CreateCommand("COMMIT").ExecuteNonQuery(); }
-        finally { Transaction.Connection.Close(); Transaction = null; }
+        try { Transaction?.Commit(); }
+        finally { Transaction = null; }
     }
 
     /// <summary>Rolls back and ends the current transaction</summary>
     /// <exception cref="InvalidOperationException">If there is no transaction in progress</exception>
     public void Rollback()
     {
-        if (Transaction is null) throw new InvalidOperationException("There is no transaction in progress");
-        try { Transaction.Connection.CreateCommand("ROLLBACK").ExecuteNonQuery(); }
-        finally { Transaction.Connection.Close(); Transaction = null; }
+        try { Transaction?.Rollback(); }
+        finally { Transaction = null; }
     }
 }
