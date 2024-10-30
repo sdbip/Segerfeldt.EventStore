@@ -43,8 +43,10 @@ public abstract class ReceptacleBase : IReceptacle
             if (InvokeMethod(method, @event) is Task task) task.Wait();
     }
 
-    private object? InvokeMethod(MethodBase method, Event @event)
+    private object? InvokeMethod(MethodInfo method, Event @event)
     {
+        if (method.ReturnType != typeof(void)) throw new InvalidOperationException($"Invalid return type {method.ReturnType}. Receptacle methods must return void.");
+
         var parameters = method.GetParameters();
         object?[] arguments = parameters.Length == 2
             ? [@event.EntityId, @event.DetailsAs(parameters[1].ParameterType)]
