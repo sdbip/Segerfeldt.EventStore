@@ -10,14 +10,14 @@ namespace Segerfeldt.EventStore.Projection;
 
 /// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
 /// <param name="repository"></param>
-/// <param name="targetConnection"></param>
+/// <param name="database"></param>
 /// <param name="receptacles"/></param>
 /// <param name="tracker"></param>
 /// <param name="pollingStrategy">a strategy for how often to poll for new events</param>
-public sealed class EventSource(IEventSourceRepository repository, TargetDatabase targetConnection, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
+public sealed class EventSource(IEventSourceRepository repository, TargetDatabase database, ReceptacleCollection receptacles, IProjectionTracker? tracker = null, IPollingStrategy? pollingStrategy = null)
 {
     private readonly IEventSourceRepository repository = repository;
-    private readonly TargetDatabase targetConnection = targetConnection;
+    private readonly TargetDatabase database = database;
     private readonly IProjectionTracker? tracker = tracker;
     private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
     private long lastReadPosition = -1;
@@ -69,17 +69,17 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
         var count = 0;
         foreach (var (position, events) in eventGroups)
         {
-            targetConnection.BeginTransaction();
+            database.BeginTransaction();
             count += events.Count;
             try { foreach (var @event in events) Emit(@event); }
             catch
             {
-                targetConnection.Rollback();
+                database.Rollback();
                 throw;
             }
             lastReadPosition = position;
             tracker?.OnProjectionFinished(position);
-            targetConnection.Commit();
+            database.Commit();
         }
 
         return count;
