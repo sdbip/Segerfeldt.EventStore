@@ -145,4 +145,24 @@ The events table is the main storage space for entity state. The `entity_id` col
 
 The `name` and `details` (JSON) columns define what changed for the entity. The `ordinal` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
 
-The `actor` and `timestamp` columns are metadata that can be used for auditing. The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
+The `actor` and `timestamp` columns are metadata that can be used for auditing. The `actor` is a simple username, but the `timestamp` is more interesting. It is stored as a floating-pont value representing the number of days that have passed since midnight UTC on Jan 1, 1970 (the Unix Epoch). In other words it's simply the Unix timestamp divided by 86,400 (the number of seconds in a day). The following queries will return the same values:
+
+```sql
+-- PostgreSQL
+SELECT
+  CURRENT_TIMESTAMP AT TIME ZONE 'UTC' as "Readable date",
+  EXTRACT(EPOCH FROM CURRENT_TIMESTAMP AT TIME ZONE 'UTC') as "Unix timestamp",
+  EXTRACT(EPOCH FROM CURRENT_TIMESTAMP AT TIME ZONE 'UTC') / 86400 as "EventStore timestamp";
+
+-- SQLite
+SELECT
+  CURRENT_TIMESTAMP as "Readable date",
+  (JulianDay(CURRENT_TIMESTAMP) - 2440587.5) * 86400 as "Unix timestamp",
+  JulianDay(CURRENT_TIMESTAMP) - 2440587.5 as "ES timestamp"
+
+-- SQL Server
+SELECT
+  CURRENT_TIMESTAMP as "Readable date",
+  DATEDIFF(s, '1970-01-01 00:00:00', CURRENT_TIMESTAMP) as "Unix timestamp",
+  CAST(DATEDIFF(s, '1970-01-01 00:00:00', CURRENT_TIMESTAMP) as decimal) / 86400 as "EventStore timestamp";
+```
