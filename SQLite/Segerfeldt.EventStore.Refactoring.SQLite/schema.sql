@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Events (
     name TEXT NOT NULL,
     details TEXT NOT NULL,
     actor TEXT NOT NULL,
-    timestamp DECIMAL(12,7) DEFAULT (strftime('%s', CURRENT_TIMESTAMP) / 86400.0),
+    timestamp DECIMAL(12,7) DEFAULT (JulianDay(CURRENT_TIMESTAMP) - 2440587.5),
     ordinal INT NOT NULL,
     position BIGINT NOT NULL
 );
