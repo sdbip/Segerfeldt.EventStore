@@ -1,7 +1,10 @@
 # TODO
 
-Maybe this:
+## Icebox Issues & Ideas
 
+- Add more user manual stuff
+  - How to define `[ReceivesEvent(eventName, Entity = typeName)]` methods
+  - How to define `[ReplaysEvent(eventName)]` methods
 - Integrate better with the authentication handler.
   - `Forbid()` in a controller calls `Forbid()` on the handler.
   - The `AuthorizeAttribute` triggers the authorization handler(s) before even instantiating the controller. If the auth handler doesn't accept the user credentials the endpoint is not executed.
@@ -9,13 +12,8 @@ Maybe this:
   - Is it because of the support for multiple handlers (that could all accept) that the `IPrincipal` has multiple `Identities`?
   - What else?
 - Automate the `actor` and create methods (possibly extension-methods) that publish changes.
-
-Or this:
-
+- But how do authentication schemes work??
 - Make `EventPublisher` aware of the transaction (if projecting into another write-model).
-
-## Icebox Issues & Ideas
-
 - Add more tests for commanding and hosting.
 - Add tests for documentation.
 - There are almost no tests at all for Refactoring.
