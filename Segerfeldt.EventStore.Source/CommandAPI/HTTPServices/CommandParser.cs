@@ -11,16 +11,13 @@ using Segerfeldt.EventStore.Shared;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 
-internal sealed class CommandParser(HttpContext context)
+internal sealed class CommandParser(Type parameterType, CommandSerializationMode serializationMode)
 {
     private static readonly NullabilityInfoContext NullabilityContext = new();
 
-    private readonly HttpContext context = context;
-
-    public async Task<object> GetCommandDTOAsync(MethodBase handleMethod, ModifiesEntityAttribute attribute)
+    public async Task<object> GetCommandDTOAsync(HttpRequest request)
     {
-        var handleMethodParameters = handleMethod.GetParameters();
-        var command = await DeserializeCommand(handleMethodParameters[0].ParameterType, attribute)
+        var command = await DeserializeCommand(parameterType, request)
             ?? throw new ParseException("Command is null");
         var missingProperties = GetMissingProperties(command);
         if (missingProperties.Any())
@@ -45,23 +42,23 @@ internal sealed class CommandParser(HttpContext context)
         return command;
     }
 
-    private async Task<object> DeserializeCommand(Type commandType, ModifiesEntityAttribute attribute) =>
-        attribute.SerializationType == CommandSerializationMode.URLQuery
-            ? DeserializeQueryCommand(commandType)
-            : await DeserializeJSONCommand(commandType);
+    private async Task<object> DeserializeCommand(Type commandType, HttpRequest request) =>
+        serializationMode == CommandSerializationMode.URLQuery
+            ? DeserializeQueryCommand(commandType, request)
+            : await DeserializeJSONCommand(commandType, request);
 
-    private object DeserializeQueryCommand(Type commandType)
+    private static object DeserializeQueryCommand(Type commandType, HttpRequest request)
     {
         var dict = new Dictionary<string, string>();
-        foreach (var (key, value) in context.Request.Query) dict.Add(key, (string)value!);
+        foreach (var (key, value) in request.Query) dict.Add(key, (string)value!);
         var json = JSON.Serialize(dict);
 
         return JSON.Deserialize(json, commandType)
             ?? throw new Exception($"The type {commandType.Name} cannot be instantiated from an empty constructor.");
     }
 
-    private async Task<object> DeserializeJSONCommand(Type commandType) =>
-        await JSON.DeserializeAsync(context.Request.Body, commandType)
+    private static async Task<object> DeserializeJSONCommand(Type commandType, HttpRequest request) =>
+        await JSON.DeserializeAsync(request.Body, commandType)
             ?? throw new ParseException($"Unable to parse body as {commandType.Name}");
 
     private static IEnumerable<KeyValuePair<string, string?>> GetInvalidProperties(object command) =>

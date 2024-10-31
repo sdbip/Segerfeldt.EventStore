@@ -15,11 +15,14 @@ internal sealed class CommandInputRequest(Type handlerType, HttpContext context)
 
     public async Task<ActionResult> Execute()
     {
+        var commandParser = new CommandParser(
+            handlerType.GetMethod(nameof(ICommandHandler<object>.Handle))!.GetParameters()[0].ParameterType,
+            handlerType.GetCustomAttribute<ModifiesEntityAttribute>()!.SerializationType);
+
         object command;
         try
         {
-            command = await new CommandParser(context)
-                .GetCommandDTOAsync(handlerType.GetMethod(nameof(ICommandHandler<object>.Handle))!, handlerType.GetCustomAttribute<ModifiesEntityAttribute>()!);
+            command = await commandParser.GetCommandDTOAsync(context.Request);
         }
         catch (ParseException exception)
         {
