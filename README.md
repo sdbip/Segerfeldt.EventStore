@@ -6,7 +6,7 @@
 
 # Segerfeldt.EventStore
 
-A set of NuGet packages for employing event-sourcing in applications. It is particularly useful when employing the CQRS architecture style. The Command side would reference the `Source` package, and the Query side would use the `Projection` package.
+A set of NuGet packages for employing event-sourcing in applications. It is particularly useful when employing the CQRS architecture style. The Command side would reference the [Source](Segerfeldt.EventStore.Source/README.md) package, and the Query side would use the [Projection](Segerfeldt.EventStore.Projection/README.md) package.
 
 State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL. See the [Tables](#tables) section for schema details.
 
@@ -16,7 +16,7 @@ This document is meant to help developers contribute to the source code and test
 
 Run tests from your IDE or by using `dotnet test`.
 
-Tests need databases and environment variables to run. Copy the sample.runsettings file to a new file named .runsettings and edit that file to match your setup. This file will not be tracked by Git so you can enter your secrets without worrying that they might be exposed on GitHub.
+Tests need databases and environment variables to run. Copy the sample.runsettings file to a new file named .runsettings (yes: only the filename extension) and edit that file to match your setup. This file will not be tracked by Git so you can enter your secrets without worrying that they might be exposed on GitHub.
 
 ## PostgreSQL
 
@@ -43,26 +43,44 @@ First set up a local NuGet store as described here:
 
 Update the `<PackageVersion>` value in the .csproj file(s) and build for Release. Then run one or more of the following commands to deploy the output:
 
+Source:
+
+```shell
+nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
+
+nuget add PostgreSQL/Segerfeldt.EventStore.Source.PostgreSQL/bin/Release/Segerfeldt.EventStore.Source.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add MSSQL/Segerfeldt.EventStore.Source.MSSQL/bin/Release/Segerfeldt.EventStore.Source.MSSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add SQLite/Segerfeldt.EventStore.Source.SQLite/bin/Release/Segerfeldt.EventStore.Source.SQLite.<version>.nupkg -source path/to/nuget-packages
+
+nuget add NUnit/Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
+```
+
+Projection:
+
 ```shell
 nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Projection.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Projection.PostgreSQL/bin/Release/Segerfeldt.EventStore.Projection.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
+nuget add PostgreSQL/Segerfeldt.EventStore.Projection.PostgreSQL/bin/Release/Segerfeldt.EventStore.Projection.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Projection.MSSQL/bin/Release/Segerfeldt.EventStore.Projection.MSSQL.<version>.nupkg -source path/to/nuget-packages
+nuget add MSSQL/Segerfeldt.EventStore.Projection.MSSQL/bin/Release/Segerfeldt.EventStore.Projection.MSSQL.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Projection.SQLite/bin/Release/Segerfeldt.EventStore.Projection.SQLite.<version>.nupkg -source path/to/nuget-packages
+nuget add SQLite/Segerfeldt.EventStore.Projection.SQLite/bin/Release/Segerfeldt.EventStore.Projection.SQLite.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Projection.NUnit/bin/Release/Segerfeldt.EventStore.Projection.NUnit.<version>.nupkg -source path/to/nuget-packages
+nuget add NUnit/Segerfeldt.EventStore.Projection.NUnit/bin/Release/Segerfeldt.EventStore.Projection.NUnit.<version>.nupkg -source path/to/nuget-packages
+```
 
-nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.<version>.nupkg -source path/to/nuget-packages
+Refactoring:
 
-nuget add Segerfeldt.EventStore.Source.PostgreSQL/bin/Release/Segerfeldt.EventStore.Source.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
+```shell
+nuget add Segerfeldt.EventStore.Refactoring/bin/Release/Segerfeldt.EventStore.Refactoring.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Source.MSSQL/bin/Release/Segerfeldt.EventStore.Source.MSSQL.<version>.nupkg -source path/to/nuget-packages
+nuget add PostgreSQL/Segerfeldt.EventStore.Refactoring.PostgreSQL/bin/Release/Segerfeldt.EventStore.Refactoring.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Source.SQLite/bin/Release/Segerfeldt.EventStore.Source.SQLite.<version>.nupkg -source path/to/nuget-packages
+nuget add MSSQL/Segerfeldt.EventStore.Refactoring.MSSQL/bin/Release/Segerfeldt.EventStore.Refactoring.MSSQL.<version>.nupkg -source path/to/nuget-packages
 
-nuget add Segerfeldt.EventStore.Source.NUnit/bin/Release/Segerfeldt.EventStore.Source.NUnit.<version>.nupkg -source path/to/nuget-packages
+nuget add SQLite/Segerfeldt.EventStore.Refactoring.SQLite/bin/Release/Segerfeldt.EventStore.Refactoring.SQLite.<version>.nupkg -source path/to/nuget-packages
 ```
 
 To reference the NuGet packages in another solution, you will first need to configure NuGet to find your local repo.
@@ -109,7 +127,7 @@ If the stored version number is different from what was read at reconstitution, 
 
 ## Type Checking
 
-Every entity in the system has a `Type` property. The `Type` property indicates what specific `EntityType` the entity has. The `EntityType` name should uniquely identify the class that implements this particular type of entity. (This is however not enforced.) When the first version (0) of an entity is added to the system, a row is added to the `Entities` table (see [the Tables Section](#tables) below). That row will include the name of the `EntityType` in the `type` column. When the entity is reconstituted by the `EventStore` that stored `type` is checked against the expected `EntityType`. If the values do not match, the `EntityStore` will return `null`.
+Every entity in the system has a `Type` property. The `Type` property indicates what specific `EntityType` the entity has. The `EntityType` name should uniquely identify the class that implements this particular type of entity. (This is however not enforced.) When the first version (0) of an entity is added to the system, a row is added to the `Entities` table (see [the Tables Section](#tables) below). That row will include the name of the `EntityType` in the `type` column. When the entity is reconstituted by the `EventStore` that stored `type` is checked against the expected `EntityType`. If the values do not match, the `EntityStore` will return `null`. In other words, there is no entity *of the exepected type* with the given id. Even if there is *an entity* with that id.
 
 Do not use `nameof(MyEntity)`, `entity.GetType().Name` or any other reference to the actual class name. The name of the `EntityType` must never change, even if the relevant class is renamed. The name needs to always match the `type` column for already added entities. If the `EntityType` is changed, those entities can never be reconstituted (or worse: they may be reconstituted as instances of the wrong class).
 
@@ -127,7 +145,7 @@ The `Entities` table:
 "version" INT
 ```
 
-The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, an error will be thrown.
+The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, the requested entity is not found.
 
 The `Events` table:
 
