@@ -58,7 +58,7 @@ internal sealed class InsertMultipleEventsOperation(IEnumerable<IEntity> entitie
                 if (currentVersion.IsNew) await InsertEntityAsync(entity.Id, entity.Type, entity.Version);
             }
 
-            return await InsertEventsForEntities(operation.entities.Select(e => new EntityData(e.Id, e.Type, e.Version, e.UnpublishedEvents)));
+            return await InsertEventsForEntities(operation.entities.Select(e => new EntityData(e.Id, e.Version, e.UnpublishedEvents)));
         }
     }
 }

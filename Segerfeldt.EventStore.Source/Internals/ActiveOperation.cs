@@ -61,7 +61,7 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
         var entityVersions = await Task.WhenAll(
             entities.Select(async entity =>
             {
-                var (id, _, currentVersion, events) = entity;
+                var (id, currentVersion, events) = entity;
                 var currentOrdinal = await GetNextOrdinalAsync(entity);
                 var incrementingOrdinals = InfiniteOrdinalsFrom(currentOrdinal);
                 var tuples = events.Zip(incrementingOrdinals).ToList();
@@ -105,5 +105,5 @@ internal abstract class ActiveOperation(DbTransaction transaction, string actor)
         return result as long? ?? 0;
     }
 
-    internal sealed record EntityData(EntityId Id, EntityType Type, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);
+    internal sealed record EntityData(EntityId Id, EntityVersion Version, IEnumerable<UnpublishedEvent> Events);
 }

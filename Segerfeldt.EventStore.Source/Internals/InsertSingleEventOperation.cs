@@ -42,7 +42,7 @@ internal sealed class InsertSingleEventOperation(UnpublishedEvent @event, Entity
             var currentVersion = await GetCurrentVersionAsync();
             if (currentVersion.IsNew) await InsertEntityAsync(operation.entityId, operation.type, EntityVersion.Zero);
 
-            return await InsertEventsForEntities([new EntityData(operation.entityId, operation.type, currentVersion, [operation.@event])]);
+            return await InsertEventsForEntities([new EntityData(operation.entityId, currentVersion, [operation.@event])]);
         }
 
         private async Task<EntityVersion> GetCurrentVersionAsync()
