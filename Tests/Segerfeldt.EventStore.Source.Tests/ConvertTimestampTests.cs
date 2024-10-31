@@ -10,7 +10,7 @@ public sealed class ConvertTimestampTests
     [TestCase(2000, 10_957)]
     public void FromDateTimeOffset(int year, double timestamp)
     {
-        Assert.That(ConvertTimestamp.ToOADate(MidnightOnJanFirstUTC(year).ToOffset(TimeSpan.FromHours(3))), Is.EqualTo(timestamp).Within(1e-4));
+        Assert.That(ConvertTimestamp.FromDateTime(MidnightOnJanFirstUTC(year).ToOffset(TimeSpan.FromHours(3))), Is.EqualTo(timestamp).Within(1e-4));
     }
 
     [TestCase(-25_567, 1900)]

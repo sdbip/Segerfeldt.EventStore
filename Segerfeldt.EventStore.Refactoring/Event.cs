@@ -27,5 +27,5 @@ public record SourceEvent(Entity Entity, string Name, string Details, int Ordina
 /// <summary>Fixed metadata that is attached to a batch of events and maintained in the transformation</summary>
 /// <param name="Position">The position in the stream whh the event (and potentially others) were added.</param>
 /// <param name="Actor">The actor whose action caused the event (and its friends) to be published</param>
-/// <param name="Timestamp">The point in time (as OADate) when the event was published.</param>
+/// <param name="Timestamp">The point in time (in days since the Unix Epoch) when the event was published.</param>
 public record EventMetadata(long Position, string Actor, double Timestamp);
