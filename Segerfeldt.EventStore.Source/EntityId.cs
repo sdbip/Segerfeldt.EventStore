@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
@@ -11,6 +13,7 @@ namespace Segerfeldt.EventStore.Source;
 /// An Entityid is essentially a <c cref="string">String</c> with validation rules.
 /// You can use it wherever strings are accepted.
 /// </summary>
+[JsonConverter(typeof(EntityIdStringConverter))]
 public sealed class EntityId : ValueObject<EntityId>
 {
     private readonly string value;
@@ -53,4 +56,19 @@ public sealed class EntityId : ValueObject<EntityId>
 
     #pragma warning disable SYSLIB1045 // Don't want partial classes
     private static bool IsValidId(string entityId) => Regex.IsMatch(entityId, "^[a-zA-Z0-9_-]+=*$");
+
+    private class EntityIdStringConverter : JsonConverter<EntityId>
+    {
+        public override EntityId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (typeToConvert != typeof(EntityId)) throw new ArgumentOutOfRangeException(nameof(typeToConvert), $"Unsupported type {typeToConvert}");
+            if (reader.GetString() is not {} value) throw new Exception("Expected string value");
+            return Value(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, EntityId value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value);
+        }
+    }
 }
