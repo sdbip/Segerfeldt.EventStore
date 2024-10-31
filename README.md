@@ -158,7 +158,7 @@ SELECT
 SELECT
   CURRENT_TIMESTAMP as "Readable date",
   (JulianDay(CURRENT_TIMESTAMP) - 2440587.5) * 86400 as "Unix timestamp",
-  JulianDay(CURRENT_TIMESTAMP) - 2440587.5 as "ES timestamp"
+  JulianDay(CURRENT_TIMESTAMP) - 2440587.5 as "EventStore timestamp"
 
 -- SQL Server
 SELECT
