@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
+using Segerfeldt.EventStore.Source.Internals;
+
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -49,7 +51,7 @@ public static class ServiceProviderExtension
         var factory = serviceProvider.GetRequiredService<EventStoreConnectionFactory>();
         return new CommandContext
         {
-            EventPublisher = new EventPublisher(factory),
+            EventPublisher = new EventPublisher(new EventPublisherRepository(factory)),
             EntityStore = new EntityStore(factory),
             HttpContext = httpContext
         };
