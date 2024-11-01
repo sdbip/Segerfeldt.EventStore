@@ -1,3 +1,5 @@
+using Segerfeldt.EventStore.Source.CommandAPI;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,13 +9,24 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source.Internals;
 
-internal sealed class GetHistoryOperation(EntityId entityId, EventOrdinal? after)
+public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory) : IEntityStoreRepository
 {
-    private readonly EntityId entityId = entityId;
-    private readonly EventOrdinal? after = after;
-
-    public async Task<EntityHistory?> ExecuteAsync(DbConnection connection, CancellationToken cancellationToken)
+    public async Task<EntityType?> GetTypeAsync(EntityId entityId, CancellationToken cancellationToken)
     {
+        // TODO await using
+        var connection = connectionFactory.CreateConnection();
+        using var command = connection.CreateCommand("SELECT type FROM Entities WHERE id = @entityId");
+        command.AddParameter("@entityId", entityId.ToString());
+
+        await connection.OpenAsync(cancellationToken);
+        return await command.ExecuteScalarAsync(cancellationToken) is string type
+            ? EntityType.Safe(type) : null;
+    }
+
+    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, CancellationToken cancellationToken = default)
+    {
+        // await using
+        var connection = connectionFactory.CreateConnection();
         using var command = connection.CreateCommand(
             "SELECT type, version FROM Entities WHERE id = @entityId;" +
             "SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @after ORDER BY ordinal");

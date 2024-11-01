@@ -7,12 +7,19 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Source;
 
-/// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
-public sealed class EntityStore
+public interface IEntityStoreRepository
 {
-    private readonly EventStoreConnectionFactory connectionFactory;
+    Task<EntityType?> GetTypeAsync(EntityId entityId, CancellationToken cancellationToken);
+    Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, CancellationToken cancellationToken);
+}
 
-    internal EntityStore(EventStoreConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory;
+/// <summary>An object that represents the “source of truth” write model of an event-sourced CQRS architecture</summary>
+public sealed class EntityStore(IEntityStoreRepository repository)
+{
+    private readonly IEntityStoreRepository repository = repository;
+
+    public EntityStore(EventStoreConnectionFactory connectionFactory)
+        : this(new EntityStoreRepository(connectionFactory)) { }
 
     public EntityStore(DbConnection connection) : this(EventStoreConnectionFactory.Singleton(connection)) { }
 
@@ -22,12 +29,12 @@ public sealed class EntityStore
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
     public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, CancellationToken cancellationToken = default) =>
-        await new GetHistoryOperation(entityId, after).ExecuteAsync(connectionFactory.CreateConnection(), cancellationToken);
+        await repository.GetHistoryAsync(entityId, after, cancellationToken);
 
     /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>
     /// <param name="entityId">the id to verify</param>
     /// <param name="cancellationToken"></param>
     /// <returns>the type of the entity, or null</returns>
     public async Task<EntityType?> GetEntityTypeAsync(EntityId entityId, CancellationToken cancellationToken = default) =>
-        await new LookupEntityTypeOperation(entityId).ExecuteAsync(connectionFactory.CreateConnection(), cancellationToken);
+        await repository.GetTypeAsync(entityId, cancellationToken);
 }
