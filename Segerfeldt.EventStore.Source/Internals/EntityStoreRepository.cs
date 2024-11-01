@@ -11,7 +11,7 @@ namespace Segerfeldt.EventStore.Source.Internals;
 
 public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory) : IEntityStoreRepository
 {
-    public async Task<EntityType?> GetTypeAsync(EntityId entityId, CancellationToken cancellationToken)
+    public async Task<string?> GetTypeAsync(EntityId entityId, CancellationToken cancellationToken)
     {
         // TODO await using
         var connection = connectionFactory.CreateConnection();
@@ -19,11 +19,10 @@ public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory
         command.AddParameter("@entityId", entityId.ToString());
 
         await connection.OpenAsync(cancellationToken);
-        return await command.ExecuteScalarAsync(cancellationToken) is string type
-            ? EntityType.Safe(type) : null;
+        return await command.ExecuteScalarAsync(cancellationToken) as string;
     }
 
-    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, CancellationToken cancellationToken = default)
+    public async Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, CancellationToken cancellationToken = default)
     {
         // await using
         var connection = connectionFactory.CreateConnection();
@@ -35,39 +34,55 @@ public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory
 
         await connection.OpenAsync(cancellationToken);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        var entityData = ReadEntityData(reader);
-        if (entityData is null)
+        var entity = ReadEntityData(reader);
+        if (entity is null)
         {
             await connection.CloseAsync();
             return null;
         }
 
-        var events = await reader.NextResultAsync(cancellationToken) ? ReadEvents(reader).ToImmutableList() : [];
+        var events = await reader.NextResultAsync(cancellationToken)
+            ? ReadEvents(reader).ToImmutableList()
+            : [];
 
         await connection.CloseAsync();
 
-        var (type, version) = entityData.Value;
-        return new EntityHistory(type, version, events);
+        return new HistoryDAO
+        {
+            Type = entity.Value.Type,
+            Version = entity.Value.Version,
+            Events = [.. events],
+        };
     }
 
-    private static (EntityType, EntityVersion)? ReadEntityData(DbDataReader reader)
+    private static EntityDAO? ReadEntityData(DbDataReader reader)
     {
-        if (reader.Read())
-            return (EntityType.Safe(reader.GetString(0)), EntityVersion.Safe(reader.GetInt32(1)));
-        else
-            return null;
+        return !reader.Read() ? null : new EntityDAO
+        {
+            Type = reader.GetString(0),
+            Version = reader.GetInt32(1),
+        };
     }
 
-    private static IEnumerable<PublishedEvent> ReadEvents(DbDataReader reader)
+    private static IEnumerable<PublishedEventDAO> ReadEvents(DbDataReader reader)
     {
         while (reader.Read())
         {
-            yield return new PublishedEvent(
-                (string)reader["name"],
-                (string)reader["details"],
-                (string)reader["actor"],
-                ConvertTimestamp.ToDateTime(Convert.ToDouble(reader["timestamp"]))
-            );
+            yield return new PublishedEventDAO
+            {
+                Name = (string)reader["name"],
+                Details = (string)reader["details"],
+                Actor = (string)reader["actor"],
+                Ordinal = Convert.ToInt32(reader["ordinal"]),
+                Timestamp = Convert.ToDouble(reader["timestamp"])
+            };
         }
+    }
+
+
+    private readonly struct EntityDAO
+    {
+        public required string Type { get; init; }
+        public required int Version { get; init; }
     }
 }
