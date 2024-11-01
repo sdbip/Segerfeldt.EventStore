@@ -4,28 +4,21 @@ namespace Segerfeldt.EventStore.Source.Tests;
 
 public sealed class EntityIdTests
 {
-    [Test]
-    public void IsValidId(
-        [Values(
-            "lowercase",
-            "UPPERCASE",
-            "hyphen-",
-            "underscore_",
-            "numbers123"
-        )]
-    string id)
+    [TestCase("lowercase")]
+    [TestCase("UPPERCASE")]
+    [TestCase("hyphen-")]
+    [TestCase("underscore_")]
+    [TestCase("numbers123")]
+    public void IsValidId(string id)
     {
         Assert.That(() => EntityId.Value(id), Throws.Nothing);
     }
 
-    [Test]
-    public void IsNotValidId(
-        [Values(
-            "this contains spaces",
-            "{brace}",
-            "no.dots.allowed",
-            ""
-        )] string id)
+    [TestCase("this contains spaces")]
+    [TestCase("{brace}")]
+    [TestCase("no.dots.allowed")]
+    [TestCase("")]
+    public void IsNotValidId(string id)
     {
         Assert.That(() => EntityId.Value(id), Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
@@ -36,23 +29,17 @@ public sealed class EntityIdTests
         Assert.That(() => IsValidId(EntityId.Value("id")), Throws.Nothing);
     }
 
-    [Test]
-    public void GuidIsValid(
-        [Values(
-            "b11ba185-7ea6-4654-b350-60e0c189683f",
-            "a5fa1cd1-3c46-45f4-a2b7-6fae3b5ce0c1"
-        )] string guid)
+    [TestCase("b11ba185-7ea6-4654-b350-60e0c189683f")]
+    [TestCase("a5fa1cd1-3c46-45f4-a2b7-6fae3b5ce0c1")]
+    public void GuidIsValid(string guid)
     {
-        Assert.That(() => IsValidId(EntityId.Value(guid)), Throws.Nothing);
+        Assert.That(() => EntityId.Value(guid), Throws.Nothing);
     }
 
-    [Test]
-    public void Base64EncodedGuidIsValid(
-        [Values(
-            "haEbsaZ-VEazUGDgwYloPw==",
-            "0Rz6pUY89EWit2-uO1zgwQ==",
-            "a9UE_UYuLE63M7MwiPNHrg=="
-        )] string encoded)
+    [TestCase("haEbsaZ-VEazUGDgwYloPw==")]
+    [TestCase("0Rz6pUY89EWit2-uO1zgwQ==")]
+    [TestCase("a9UE_UYuLE63M7MwiPNHrg==")]
+    public void Base64EncodedGuidIsValid(string encoded)
     {
         Assert.That(() => IsValidId(EntityId.Value(encoded)), Throws.Nothing);
     }
