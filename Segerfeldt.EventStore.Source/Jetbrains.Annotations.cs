@@ -22,6 +22,8 @@ SOFTWARE. */
 
 using System;
 
+#pragma warning disable CA1069 // Enums values should not be duplicated
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 #pragma warning disable 1591
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global

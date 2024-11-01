@@ -10,26 +10,21 @@ public record RegisterUser(EntityId Username);
 
 /// <inheritdoc/>
 [AddsEntity("User")]
-public sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUser>
+public sealed class RegisterUserCommandHandler : CommandHandlerBase<RegisterUser>
 {
     /// <inheritdoc/>
-    public async Task<CommandResult> Handle(RegisterUser command, CommandContext context)
+    protected override async Task<CommandResult> Execute(RegisterUser command)
     {
-        // Get the identity of the authenticated user.
-        var actor = context.HttpContext.User.Identity?.Name;
-        // Return 401 UNAUTHORIZED if the user cnnot be idetified securely.
-        if (actor is null) return CommandResult.Unauthorized();
-
         // Check for duplications.
         var username = command.Username;
-        if (context.EntityStore.ContainsEntity(username))
+        if (await EntityStore.ContainsEntityAsync(username))
             return CommandResult.Forbidden($"The username [{username}] is already in use");
 
         // Perform operation(s) related to this command.
         var user = User.New(username);
 
         // Publish the changes to the entity.
-        await context.EventPublisher.PublishChangesAsync(user, actor);
+        await PublishChangesAsync(user);
         return CommandResult.NoContent();
     }
 }

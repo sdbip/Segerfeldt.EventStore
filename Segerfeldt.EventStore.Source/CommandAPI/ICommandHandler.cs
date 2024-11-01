@@ -4,7 +4,7 @@ namespace Segerfeldt.EventStore.Source.CommandAPI;
 
 /// <summary>Interface that marks a command handler without response DTO</summary>
 /// <typeparam name="TCommand">DTO type for the command input</typeparam>
-public interface ICommandHandler<in TCommand>
+public interface ICommandHandler<in TCommandDTO>
 {
     /// <summary>Handles the command</summary>
     /// Access the <see cref="EntityStore"/> and <see cref="EventPublisher"/>
@@ -13,13 +13,13 @@ public interface ICommandHandler<in TCommand>
     /// information about the request.
     /// <param name="command">a DTO that has been deserialized as JSON from the request data</param>
     /// <param name="context">the context of executing the command</param>
-    public Task<CommandResult> Handle(TCommand command, CommandContext context);
+    public Task<CommandResult> Handle(TCommandDTO command, CommandContext context);
 }
 
 /// <summary>Interface that marks a command handler with response DTO</summary>
-/// <typeparam name="TCommand">DTO type for the command input</typeparam>
+/// <typeparam name="TCommandDTO">DTO type for the command input</typeparam>
 /// <typeparam name="TResponseDTO">DTO type for the command output</typeparam>
-public interface ICommandHandler<in TCommand, TResponseDTO> where TResponseDTO : class
+public interface ICommandHandler<in TCommandDTO, TResponseDTO> where TResponseDTO : class
 {
     /// <summary>Handles the command</summary>
     /// Access the <see cref="EntityStore"/> and <see cref="EventPublisher"/>
@@ -29,7 +29,7 @@ public interface ICommandHandler<in TCommand, TResponseDTO> where TResponseDTO :
     /// <param name="command">a DTO that has been deserialized as JSON from the request data</param>
     /// <param name="context">the context of executing the command</param>
     /// <returns>a dto that will be serialized as JSON in the response data</returns>
-    public Task<CommandResult<TResponseDTO>> Handle(TCommand command, CommandContext context);
+    public Task<CommandResult<TResponseDTO>> Handle(TCommandDTO command, CommandContext context);
 }
 
 public record EmptyCommand();

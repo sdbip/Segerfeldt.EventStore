@@ -10,25 +10,20 @@ public record SetEmailAddress(string EmailAddress);
 
 /// <inheritdoc/>
 [ModifiesEntity("User", Property = "emailAddress")]
-public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddress, string>
+public sealed class SetEmailAddressCommandHandler : CommandHandlerBase<SetEmailAddress, string>
 {
     /// <inheritdoc/>
-    public async Task<CommandResult<string>> Handle(SetEmailAddress command, CommandContext context)
+    protected override async Task<CommandResult<string>> Execute(SetEmailAddress command)
     {
-        // Get the identity of the authenticated user.
-        var actor = context.HttpContext.User.Identity?.Name;
-        // Return 401 UNAUTHORIZED if the user cnnot be idetified securely.
-        if (actor is null) return CommandResult.Unauthorized();
-
         // Validate command properties.
         EmailAddress emailAddress;
         try { emailAddress = EmailAddress.Of(command.EmailAddress); }
         catch (ArgumentOutOfRangeException exeption) { return CommandResult.BadRequest(exeption.Message); }
 
         // Retrieve the entities that matter for this command.
-        var availability = await EmailAddressAvailability.GetAsync(context.EntityStore);
-        var user = await context.EntityStore.ReconstituteAsync<User>(User.AddType(context.GetEntityId()));
-        if (user is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
+        var availability = await EmailAddressAvailability.GetAsync(EntityStore);
+        var user = await EntityStore.ReconstituteAsync<User>(User.AddType(Context.GetEntityId()));
+        if (user is null) return CommandResult.NotFound($"There is no user with username [{Context.GetEntityId()}]");
 
         // Perform operation(s) related to this command.
         try { availability.Claim(emailAddress); }
@@ -36,7 +31,7 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
         user.SetEmailAddress(emailAddress);
 
         // Publish all the changes in a single atomic operation.
-        await context.EventPublisher.PublishChangesAsync([user, availability], actor);
+        await PublishChangesAsync(user, availability);
         return CommandResult.NoContent<string>();
     }
 }

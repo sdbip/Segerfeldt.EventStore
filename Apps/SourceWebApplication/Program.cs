@@ -1,5 +1,3 @@
-using System.Reflection;
-
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 

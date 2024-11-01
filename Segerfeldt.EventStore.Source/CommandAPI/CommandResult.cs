@@ -67,6 +67,12 @@ public sealed class CommandResult : ICommandResult
     /// <param name="content">The body content for the HTTP response</param>
     public static CommandError Error(HttpStatusCode statusCode, object? content = null) => new(statusCode, content);
 
+    internal static CommandResult? Cast(object result)
+    {
+        if (result is CommandError error) return error;
+        return result as CommandResult;
+    }
+
     public static implicit operator CommandResult(CommandError errorResult) =>
         new(errorResult.StatusCode, errorResult.Content);
 }
@@ -87,6 +93,12 @@ public sealed class CommandResult<T> : ICommandResult where T : class
     public static CommandResult<T> Ok(T value) => new(HttpStatusCode.OK, value, value);
     /// <summary>204 NO CONTENT</summary>
     public static CommandResult<T> NoContent() => new(HttpStatusCode.NoContent, null, null);
+
+    internal static CommandResult<T>? Cast(object result)
+    {
+        if (result is CommandError error) return error;
+        return result as CommandResult<T>;
+    }
 
     private CommandResult(HttpStatusCode statusCode, T? value, object? content)
     {

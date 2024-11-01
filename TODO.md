@@ -11,7 +11,6 @@
   - How do auth-schemes work? Should the auth scheme be detected and used to select which handler(s) to use?
   - Is it because of the support for multiple handlers (that could all accept) that the `IPrincipal` has multiple `Identities`?
   - What else?
-- Automate the `actor` and create methods (possibly extension-methods) that publish changes.
 - But how do authentication schemes work??
 - Make `EventPublisher` aware of the transaction (if projecting into another write-model).
 - Add more tests for commanding and hosting.
