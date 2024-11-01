@@ -1,10 +1,7 @@
 using Segerfeldt.EventStore.Source.Internals;
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data.SqlClient;
-using System.Linq;
 
 namespace Segerfeldt.EventStore.Source.MSSQL.Tests;
 
@@ -51,7 +48,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-1"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-1", "a-type"));
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
@@ -60,7 +57,7 @@ public sealed class ReconstitutionTests
     [Test]
     public void ReturnsNullIfNoEntity()
     {
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-2"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-2", "a-type"));
 
         Assert.That(entity, Is.Null);
     }
@@ -79,7 +76,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-3"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-3", "a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -110,7 +107,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-4"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-4", "a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -184,7 +181,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity-7"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-7", "a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.First().Timestamp, Is.EqualTo(DateTimeOffset.UtcNow).Within(TimeSpan.FromSeconds(1)));

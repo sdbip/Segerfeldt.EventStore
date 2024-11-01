@@ -6,6 +6,7 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
 {
     public static readonly EntityType EntityType = EntityType.Name("EmailAddressAvailability");
     private static readonly EntityId SingletonEntityId = EntityId.Value("usernames");
+    private static readonly TypedEntityId TypedSingletonEntityId = SingletonEntityId.TypedWith(EntityType);
 
     private const string EmailAddressClaimed = "EmailAddressClaimed";
     private const string EmailAddressReleased = "EmailAddressReleased";
@@ -14,7 +15,7 @@ internal sealed class EmailAddressAvailability(EntityId id, EntityVersion versio
 
     internal static async Task<EmailAddressAvailability> GetAsync(EntityStore entityStore)
     {
-        var existingAvailability = await entityStore.ReconstituteAsync<EmailAddressAvailability>(SingletonEntityId, EntityType);
+        var existingAvailability = await entityStore.ReconstituteAsync<EmailAddressAvailability>(TypedSingletonEntityId);
         return existingAvailability ?? new EmailAddressAvailability(SingletonEntityId, EntityVersion.New);
     }
 

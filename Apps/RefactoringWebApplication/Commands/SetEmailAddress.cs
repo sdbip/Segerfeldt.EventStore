@@ -27,7 +27,7 @@ public sealed class SetEmailAddressCommandHandler : ICommandHandler<SetEmailAddr
 
         // Retrieve the entities that matter for this command.
         var availability = await EmailAddressAvailability.GetAsync(context.EntityStore);
-        var user = await context.EntityStore.ReconstituteAsync<User>(context.GetEntityId(), User.EntityType);
+        var user = await context.EntityStore.ReconstituteAsync<User>(User.AddType(context.GetEntityId()));
         if (user is null) return CommandResult.NotFound($"There is no user with username [{context.GetEntityId()}]");
 
         // Perform operation(s) related to this command.

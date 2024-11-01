@@ -6,6 +6,7 @@ internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, 
 {
     public static readonly EntityType EntityType = EntityType.Name("User");
 
+    public static TypedEntityId AddType(EntityId entityId) => entityId.TypedWith(EntityType);
     internal static User New(EntityId entityId, EmailAddress? emailAddress = null)
     {
         var user = new User(entityId, EntityVersion.New);

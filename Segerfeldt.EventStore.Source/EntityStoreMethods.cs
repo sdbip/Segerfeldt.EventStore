@@ -26,8 +26,8 @@ public static class EntityStoreMethods
     /// <param name="type"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     /// <returns>the entity with the specified <paramref name="id"/></returns>
-    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, EntityId id, EntityType type) where TEntity : class, IEntity =>
-        entityStore.ReconstituteAsync<TEntity>(id, type).Result;
+    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, TypedEntityId id) where TEntity : class, IEntity =>
+        entityStore.ReconstituteAsync<TEntity>(id).Result;
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
     /// <param name="entityStore"></param>
@@ -36,8 +36,8 @@ public static class EntityStoreMethods
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     /// <returns>the entity with the specified <paramref name="id"/></returns>
-    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, EntityId id, EntityType type, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
-        await entityStore.ReconstituteAsync(new NeverSnapshot<TEntity>(id, type), cancellationToken);
+    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, TypedEntityId id, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+        await entityStore.ReconstituteAsync(new NeverSnapshot<TEntity>(id.Value, id.Type), cancellationToken);
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
     /// <param name="entityStore"></param>

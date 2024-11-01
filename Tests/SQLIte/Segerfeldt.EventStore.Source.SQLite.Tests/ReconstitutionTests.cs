@@ -25,7 +25,7 @@ public sealed class ReconstitutionTests
     {
         GivenEntity("an-entity", "a-type", 3);
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity", "a-type"));
 
         Assert.That(entity, Is.Not.Null);
         Assert.That(entity?.Version, Is.EqualTo(EntityVersion.Of(3)));
@@ -34,7 +34,7 @@ public sealed class ReconstitutionTests
     [Test]
     public void ReturnsNullIfNoEntity()
     {
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity", "a-type"));
 
         Assert.That(entity, Is.Null);
     }
@@ -45,7 +45,7 @@ public sealed class ReconstitutionTests
         GivenEntity("an-entity", "a-type");
         GivenEvent("an-entity", "a-type", "an-event", @"{""meaning"":42}");
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity", "a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.Select(e => new
@@ -68,7 +68,7 @@ public sealed class ReconstitutionTests
         GivenEvent("an-entity", "a-type", "third-event", ordinal: 3);
         GivenEvent("an-entity", "a-type", "second-event", ordinal: 2);
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity", "a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
 
@@ -141,7 +141,7 @@ public sealed class ReconstitutionTests
             connection.Close();
         }
 
-        var entity = store.Reconstitute<MyEntity>(EntityId.Value("an-entity"), EntityType.Name("a-type"));
+        var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity", "a-type"));
 
         Assert.That(entity?.ReplayedEvents, Is.Not.Null);
         Assert.That(entity?.ReplayedEvents?.First().Timestamp - DateTimeOffset.UtcNow, Is.LessThan(TimeSpan.FromSeconds(1)));

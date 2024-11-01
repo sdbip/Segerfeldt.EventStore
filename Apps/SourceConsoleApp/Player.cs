@@ -16,7 +16,7 @@ internal sealed class Player(EntityId id, EntityVersion version) : EntityBase(id
     public int Score { get; private set; }
 
     public static async Task<Player?> ReconstituteAsync(EntityId entityId, EntityStore store) =>
-        await store.ReconstituteAsync<Player>(entityId, EntityType);
+        await store.ReconstituteAsync<Player>(entityId.TypedWith(EntityType));
 
     public static Player RegisterNew(EntityId id, string name)
     {

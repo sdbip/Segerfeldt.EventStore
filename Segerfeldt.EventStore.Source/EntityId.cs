@@ -46,6 +46,8 @@ public sealed class EntityId : ValueObject<EntityId>
         return new EntityId(Convert.ToBase64String(guid.ToByteArray()).Replace('+', '-').Replace("/", "_"));
     }
 
+    public TypedEntityId TypedWith(EntityType type) => new(this, type);
+
     /// <inheritdoc />
     protected override IEnumerable<object> GetEqualityComponents() => ImmutableArray.Create(value);
 
