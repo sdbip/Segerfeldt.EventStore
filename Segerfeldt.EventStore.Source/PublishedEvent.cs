@@ -1,11 +1,12 @@
 using System;
 
 using Segerfeldt.EventStore.Shared;
+using Segerfeldt.EventStore.Source.Internals;
 
 namespace Segerfeldt.EventStore.Source;
 
 /// <summary>An event that has been published and is part of the official state of an entity</summary>
-public sealed class PublishedEvent(string name, string details, string actor, DateTimeOffset timestamp)
+public sealed class PublishedEvent(string name, string details, string actor, Timestamp timestamp)
 {
     /// <summary>A name identifying what aspect of the entity changed</summary>
     public string Name { get; } = name;
@@ -14,7 +15,7 @@ public sealed class PublishedEvent(string name, string details, string actor, Da
     /// <summary>The user that published this event</summary>
     public string Actor { get; } = actor;
     /// <summary>The instant this event was published</summary>
-    public DateTimeOffset Timestamp { get; } = timestamp;
+    public Timestamp Timestamp { get; } = timestamp;
 
     /// <summary>Parses the JSON details as a specific type</summary>
     /// <typeparam name="T">The desired type</typeparam>

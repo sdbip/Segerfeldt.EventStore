@@ -104,19 +104,6 @@ public sealed class EventStoreRepositoryTests
         command.ExecuteNonQuery();
     }
 
-    private void GivenEvent(string entityId, string eventName, string actor, DateTimeOffset timestamp)
-    {
-        var commandText =
-            @"INSERT INTO Events (entity_id, name, details, actor, timestamp, ordinal, position)
-                    VALUES (@entityId, @eventName, '{}', @actor, @timestamp, 1, 1)";
-        var command = connection.CreateCommand(commandText);
-        command.AddParameter("@entityId", entityId);
-        command.AddParameter("@eventName", eventName);
-        command.AddParameter("@actor", actor);
-        command.AddParameter("@timestamp", ConvertTimestamp.FromDateTime(timestamp));
-        command.ExecuteNonQuery();
-    }
-
     private void GivenEvent(string entityId, string eventName, string details = "{}", int ordinal = 1)
     {
         var command = connection.CreateCommand(

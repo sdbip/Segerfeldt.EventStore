@@ -28,5 +28,5 @@ public sealed record Event
 
     internal static Event From(PublishedEvent @event) =>
         new(@event.Name, @event.Details,
-            @event.Actor, @event.Timestamp);
+            @event.Actor, @event.Timestamp.UTCDateTime);
 }

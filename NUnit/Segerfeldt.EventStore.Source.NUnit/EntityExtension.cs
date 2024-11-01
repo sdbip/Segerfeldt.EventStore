@@ -1,6 +1,5 @@
-using System;
-
 using Segerfeldt.EventStore.Shared;
+using Segerfeldt.EventStore.Source.Internals;
 
 namespace Segerfeldt.EventStore.Source.NUnit;
 
@@ -12,6 +11,6 @@ public static class EntityExtension
     /// <param name="details">The details of the event (to be serialized as JSON)</param>
     public static void MockPublishedEvent(this IEntity entity, string name, object details)
     {
-        entity.ReplayEvents([new PublishedEvent(name, JSON.Serialize(details), "", DateTimeOffset.UnixEpoch)]);
+        entity.ReplayEvents([new PublishedEvent(name, JSON.Serialize(details), "", Timestamp.UnixEpoch)]);
     }
 }

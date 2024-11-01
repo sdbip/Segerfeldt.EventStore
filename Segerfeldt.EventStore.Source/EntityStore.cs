@@ -35,7 +35,7 @@ public sealed class EntityStore(IEntityStoreRepository repository)
             EntityVersion.Safe(dao.Version),
             dao.Events
                 .Order(GenericComparer.Create<PublishedEventDAO>((e1, e2) => e1.Ordinal.CompareTo(e2.Ordinal)))
-                .Select(e => new PublishedEvent(e.Name, e.Details, e.Actor, ConvertTimestamp.ToDateTime(e.Timestamp))));
+                .Select(e => new PublishedEvent(e.Name, e.Details, e.Actor, Timestamp.DaysSinceUnixEpoch(e.Timestamp))));
     }
 
     /// <summary>Looks up the type of an entity. Useful for quickly checking if an entity id is taken.</summary>

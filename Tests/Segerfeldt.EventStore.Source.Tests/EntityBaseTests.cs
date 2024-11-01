@@ -20,12 +20,12 @@ public sealed class EntityBaseTests
     public void ReplaysEventData()
     {
         var entity = new TestEntity(EntityId.Value("entity"), EntityVersion.New);
-        entity.ReplayEvents(new[] {PublishedEvent(TestEntity.ReplayAsData, @"{""string"":""string"", ""int"":42}")});
+        entity.ReplayEvents([PublishedEvent(TestEntity.ReplayAsData, @"{""string"":""string"", ""int"":42}")]);
 
         Require.That(entity.ReplayedData, Is.EqualTo(new TestData("string", 42)));
     }
 
-    private static PublishedEvent PublishedEvent(string name, string details) => new(name, details, "actor", DateTimeOffset.UtcNow);
+    private static PublishedEvent PublishedEvent(string name, string details) => new(name, details, "actor", Timestamp.UnixEpoch);
 
     private class TestEntity(EntityId id, EntityVersion version) : EntityBase(id, EntityType.Name("Test"), version)
     {

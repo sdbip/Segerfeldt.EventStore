@@ -107,7 +107,7 @@ public sealed class EntityStoreTests
 
         var replayedEvents = history!.Events.ToList();
         Assert.That(replayedEvents[0].Actor, Is.EqualTo("johan"));
-        Assert.That(replayedEvents[0].Timestamp, Is.EqualTo(timestamp).Within(TimeSpan.FromMilliseconds(1)));
+        Assert.That(replayedEvents[0].Timestamp.UTCDateTime, Is.EqualTo(timestamp).Within(TimeSpan.FromMilliseconds(1)));
     }
 
     [Test]
@@ -131,10 +131,10 @@ public sealed class EntityStoreTests
     }
 
     private static PublishedEventDAO PublishedEvent(string eventName, string actor, DateTimeOffset timestamp) =>
-        new() { Name = eventName, Details = "{}", Actor = actor, Ordinal = 0, Timestamp = ConvertTimestamp.FromDateTime(timestamp) };
+        new() { Name = eventName, Details = "{}", Actor = actor, Ordinal = 0, Timestamp = Timestamp.FromDateTime(timestamp).Value };
 
     private static PublishedEventDAO PublishedEvent(string eventName, string details = "{}", int ordinal = 0) =>
-        new() { Name = eventName, Details = details, Ordinal = ordinal, Actor = "test", Timestamp = ConvertTimestamp.FromDateTime(DateTimeOffset.UnixEpoch) };
+        new() { Name = eventName, Details = details, Ordinal = ordinal, Actor = "test", Timestamp = 0 };
 
     // ReSharper disable once ClassNeverInstantiated.Local
     private class MyEntity(EntityId id, EntityVersion version) : IEntity
