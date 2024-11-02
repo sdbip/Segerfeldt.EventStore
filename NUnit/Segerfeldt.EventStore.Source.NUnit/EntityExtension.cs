@@ -1,4 +1,3 @@
-using Segerfeldt.EventStore.Shared;
 using Segerfeldt.EventStore.Source.Internals;
 
 namespace Segerfeldt.EventStore.Source.NUnit;

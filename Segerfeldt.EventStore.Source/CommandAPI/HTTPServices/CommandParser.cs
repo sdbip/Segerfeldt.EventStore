@@ -6,8 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
-using Segerfeldt.EventStore.Shared;
+using Segerfeldt.EventStore.Source.Internals;
 
 namespace Segerfeldt.EventStore.Source.CommandAPI.HTTPServices;
 

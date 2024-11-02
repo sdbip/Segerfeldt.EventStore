@@ -11,7 +11,7 @@
   - How do auth-schemes work? Should the auth scheme be detected and used to select which handler(s) to use?
   - Is it because of the support for multiple handlers (that could all accept) that the `IPrincipal` has multiple `Identities`?
   - What else?
-- But how do authentication schemes work??
+  - But how do authentication schemes work??
 - Add more tests for commanding and hosting.
 - Add tests for documentation.
 - There are almost no tests at all for Refactoring.
@@ -24,7 +24,3 @@
   - It may be possible to analyse all the commands and find discrepancies
     among them, but it is probably impossible to know if there are conflicting
     endpoints that were setup through other means.
-- Convert file imports to a shared project import (Segerfeldt.EventStore.Shared.shproj).
-  - Unfortunately this is difficult outside of Visual Studio proper.
-    And VS For Mac has been discontinued, so a Windows machine may be needed.
-    (Or maybe JetBrains Rider has the ability?)

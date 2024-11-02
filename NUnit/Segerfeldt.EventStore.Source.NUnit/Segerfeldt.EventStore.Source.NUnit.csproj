@@ -21,9 +21,6 @@
 
     <ItemGroup>
       <None Include="README.md" Pack="true" PackagePath=""/>
-      <Compile Include="..\..\Segerfeldt.EventStore.Shared\JSON.cs">
-        <Link>JSON.cs</Link>
-      </Compile>
     </ItemGroup>
 
     <ItemGroup>

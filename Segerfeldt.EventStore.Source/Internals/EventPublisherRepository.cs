@@ -1,4 +1,3 @@
-using Segerfeldt.EventStore.Shared;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 using System;

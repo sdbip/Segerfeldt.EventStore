@@ -1,12 +1,10 @@
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Refactoring;
 
 /// <summary>An event notifying that the state of an entity has changed at the source</summary>
 /// <param name="SourceEvent">The event data that will need to be transformed</param>
 /// <param name="Metadata">Metadata that will be kept as-is</param>
-    /// Note: It is assumed that all events published with the
-    /// same position will have the same metadata in total.
+/// Note: It is assumed that all events published with the
+/// same position will have the same metadata in total.
 public record Event(SourceEvent SourceEvent, EventMetadata Metadata)
 {
     internal static int SortOrder(Event left, Event right) => left.SourceEvent.Ordinal - right.SourceEvent.Ordinal;

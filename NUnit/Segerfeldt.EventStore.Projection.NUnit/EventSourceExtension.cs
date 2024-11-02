@@ -1,5 +1,3 @@
-using Segerfeldt.EventStore.Shared;
-
 namespace Segerfeldt.EventStore.Projection.NUnit;
 
 public static class EventSourceExtension

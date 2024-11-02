@@ -1,6 +1,4 @@
-﻿using Segerfeldt.EventStore.Shared;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
