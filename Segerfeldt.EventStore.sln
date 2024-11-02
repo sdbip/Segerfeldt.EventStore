@@ -103,6 +103,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MySQL", "MySQL", "{07EAD537
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Source.MySQL.Tests", "Tests\MySQL\Segerfeldt.EventStore.Source.MySQL.Tests\Segerfeldt.EventStore.Source.MySQL.Tests.csproj", "{87176D3A-E795-4B4B-AA6B-4847B6076FF6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.MySQL", "MySQL\Segerfeldt.EventStore.Projection.MySQL\Segerfeldt.EventStore.Projection.MySQL.csproj", "{09C0AB2E-0DB9-4890-AEB8-31DA301A6876}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.MySQL.Tests", "Tests\MySQL\Segerfeldt.EventStore.Projection.MySQL.Tests\Segerfeldt.EventStore.Projection.MySQL.Tests.csproj", "{D093AA55-E74D-4395-B376-94F6E568D414}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -245,6 +249,14 @@ Global
 		{87176D3A-E795-4B4B-AA6B-4847B6076FF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87176D3A-E795-4B4B-AA6B-4847B6076FF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87176D3A-E795-4B4B-AA6B-4847B6076FF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09C0AB2E-0DB9-4890-AEB8-31DA301A6876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09C0AB2E-0DB9-4890-AEB8-31DA301A6876}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09C0AB2E-0DB9-4890-AEB8-31DA301A6876}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09C0AB2E-0DB9-4890-AEB8-31DA301A6876}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D093AA55-E74D-4395-B376-94F6E568D414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D093AA55-E74D-4395-B376-94F6E568D414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D093AA55-E74D-4395-B376-94F6E568D414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D093AA55-E74D-4395-B376-94F6E568D414}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -286,5 +298,7 @@ Global
 		{7F5F646A-B156-4B96-871F-E0D3EBFD283D} = {56AB2DC7-0FEE-4254-98CA-2F196E26E653}
 		{07EAD537-FD53-43B1-90B6-7171CE1A3F05} = {C71FE7ED-1EAC-4644-8675-E7DFF78E5BB5}
 		{87176D3A-E795-4B4B-AA6B-4847B6076FF6} = {07EAD537-FD53-43B1-90B6-7171CE1A3F05}
+		{09C0AB2E-0DB9-4890-AEB8-31DA301A6876} = {56AB2DC7-0FEE-4254-98CA-2F196E26E653}
+		{D093AA55-E74D-4395-B376-94F6E568D414} = {07EAD537-FD53-43B1-90B6-7171CE1A3F05}
 	EndGlobalSection
 EndGlobal

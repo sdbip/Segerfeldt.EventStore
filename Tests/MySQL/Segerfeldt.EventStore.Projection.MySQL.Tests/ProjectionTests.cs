@@ -1,0 +1,213 @@
+using MySql.Data.MySqlClient;
+
+using Segerfeldt.EventStore.Projection.Hosting;
+using Segerfeldt.EventStore.Projection.MySQL.Hosting;
+
+using System.Data;
+
+namespace Segerfeldt.EventStore.Projection.MySQL.Tests;
+
+public sealed class ProjectionTests
+{
+    private readonly string? connectionString = Environment.GetEnvironmentVariable("MYSQL_TEST_CONNECTION_STRING");
+
+    private MySqlConnection connection = null!;
+    private EventSource eventSource = null!;
+    private Mock<IPollingStrategy> delayConfiguration = null!;
+    private Mock<IProjectionTracker> projectionTracker = null!;
+    private ReceptacleCollection receptacles = null!;
+
+    [SetUp]
+    public void Setup()
+    {
+        Assert.That(connectionString, Is.Not.Null,
+            "MYSQL_TEST_CONNECTION_STRING not set. Add to .runsettings file in solution root.");
+
+        connection = new MySqlConnection(connectionString);
+        delayConfiguration = new Mock<IPollingStrategy>();
+        projectionTracker = new Mock<IProjectionTracker>();
+        receptacles = new ReceptacleCollection();
+
+        var targetConnection = new Mock<IDbConnection>();
+        targetConnection.Setup(c => c.CreateCommand()).Returns(Mock.Of<IDbCommand>());
+        targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
+
+        eventSource = new EventSource(
+            new MySQLEventSourceRepository(new MySqlConnection(connectionString)),
+            new TargetDatabase(() => targetConnection.Object),
+            receptacles,
+            projectionTracker.Object,
+            delayConfiguration.Object);
+
+        delayConfiguration
+            .Setup(c => c.NextDelay(It.IsAny<int>()))
+            .Returns(Timeout.Infinite);
+
+        SourceDB.Schema.CreateIfMissing(connection);
+        ClearTables();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        ClearTables();
+    }
+
+    [Test]
+    public void ReportsEventsWithEntityIdAndDetails()
+    {
+        GivenEntity("an-entity");
+        GivenEvent("an-entity", "first-event", @"{""value"":42}");
+
+        var notifiedEvents = CaptureNotifiedEvents("first-event");
+
+        ProjectionTester.EmitInitialEvents(eventSource);
+
+        Assert.That(notifiedEvents, Is.Not.Empty);
+        Assert.Multiple(() =>
+        {
+            Assert.That(notifiedEvents[0].EntityId, Is.EqualTo("an-entity"));
+            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[0].Details, Is.EqualTo(@"{""value"":42}"));
+        });
+    }
+
+    [Test]
+    public void ReportsEventsOrderedByVersion()
+    {
+        GivenEntity("an-entity");
+        GivenEvent("an-entity", "first-event", ordinal: 1);
+        GivenEvent("an-entity", "third-event", ordinal: 3);
+        GivenEvent("an-entity", "second-event", ordinal: 2);
+
+        var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event", "third-event");
+
+        ProjectionTester.EmitInitialEvents(eventSource);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "first-event", "second-event", "third-event" }));
+            Assert.That(notifiedEvents[0].Name, Is.EqualTo("first-event"));
+            Assert.That(notifiedEvents[1].Name, Is.EqualTo("second-event"));
+            Assert.That(notifiedEvents[2].Name, Is.EqualTo("third-event"));
+        });
+    }
+
+    [Test]
+    public void NotifiesNewEvents()
+    {
+        var delay = new[] { 0 };
+        delayConfiguration.Setup(c => c.NextDelay(It.IsAny<int>())).Returns(() => delay[0]);
+
+        var notifiedEvents = CaptureNotifiedEvents("an-event");
+        GivenEntity("an-entity");
+
+        GivenEvent("an-entity", "an-event", ordinal: 1, position: 1);
+
+        ProjectionTester.EmitInitialEvents(eventSource);
+        notifiedEvents.Clear();
+
+        GivenEvent("an-entity", "an-event", ordinal: 2, position: 2);
+
+        ProjectionTester.EmitNewEvents(eventSource);
+
+        Assert.That(notifiedEvents.Select(e => e.Position), Is.EquivalentTo(new[] { 2L }));
+    }
+
+    [Test]
+    public void AllowsSettingStartPosition()
+    {
+        GivenEntity("an-entity");
+        GivenEvent("an-entity", "first-event", position: 32);
+        GivenEvent("an-entity", "second-event", position: 33);
+        projectionTracker.Setup(t => t.GetLastFinishedPosition()).Returns(32);
+
+        var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
+
+        ProjectionTester.EmitInitialEvents(eventSource);
+
+        Assert.That(notifiedEvents.Select(e => e.Name), Is.EquivalentTo(new[] { "second-event" }));
+    }
+
+    [Test]
+    public void ReportsNewPosition()
+    {
+        var finishedPosition = CaptureFinishedPosition();
+
+        GivenEntity("an-entity");
+        GivenEvent("an-entity", "an-event", position: 1);
+
+        ProjectionTester.EmitInitialEvents(eventSource);
+
+        Assert.That(finishedPosition.Value, Is.EqualTo(1));
+    }
+
+    private void GivenEntity(string entityId, int version = 1)
+    {
+        connection.Open();
+        try
+        {
+            using var command = connection
+                .CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@entityId, 'a-type', @version)");
+            command.AddParameter("@entityId", entityId);
+            command.AddParameter("@version", version);
+            command.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    private void GivenEvent(string entityId, string eventName, string details = "{}", int ordinal = 1, long position = 1)
+    {
+        connection.Open();
+        try
+        {
+            using var command = connection.CreateCommand(
+                @"INSERT INTO Events (entity_id, name, details, actor, ordinal, position)
+                    VALUES (@entityId, @eventName, @details, 'test', @ordinal, @position)");
+            command.AddParameter("@entityId", entityId);
+            command.AddParameter("@eventName", eventName);
+            command.AddParameter("@details", details);
+            command.AddParameter("@ordinal", ordinal);
+            command.AddParameter("@position", position);
+            command.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    private List<Event> CaptureNotifiedEvents(params string[] eventNames)
+    {
+        var events = new List<Event>();
+        foreach (var eventName in eventNames)
+            receptacles.Add(new DelegateReceptacle(events.Add, eventName));
+
+        return events;
+    }
+
+    private Trap<long> CaptureFinishedPosition()
+    {
+        var finishedPosition = new Trap<long>();
+        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>(), It.IsAny<Transaction>()))
+            .Callback<long, Transaction>((l, _) => finishedPosition.Value = l);
+        return finishedPosition;
+    }
+
+    private void ClearTables()
+    {
+        connection.Open();
+        try
+        {
+            using var command = connection.CreateCommand("DELETE FROM Events; DELETE FROM Entities;");
+            command.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+}
