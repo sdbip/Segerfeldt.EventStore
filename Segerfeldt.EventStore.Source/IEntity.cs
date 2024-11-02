@@ -2,15 +2,16 @@ using System.Collections.Generic;
 
 namespace Segerfeldt.EventStore.Source;
 
-/// <summary>An entity in the system. Entities are the carriers of system state</summary>
+/// <summary>An (aggregate root) entity in the system.</summary>
+/// Or rather the state of the entity at a specific point in time, with changes meant to be applied to that state.
 public interface IEntity : IIdentifiable
 {
-    /// <summary>The type of the entity</summary>
+    /// <summary>The type of this entity, used for type-checking by the <see cref="EntityStore"/></summary>
     EntityType Type { get; }
-    /// <summary>The version of this entity when reconstituted from storage.</summary>
-    /// If this value is stored different in the database, there will have been concurrent changes outside
-    /// this process, which invalidate any changes done here. Either the current operation will have to be
-    /// aborted, or the entity must be reconstituted to the updated state, and the operation repeated.
+    /// <summary>The version (optimistic concurrency lock) of this entity when last reconstituted.</summary>
+    /// If this value is different in the database, there will have been concurrent changes outside this
+    /// process. Those changes invalidate any changes done here. The current operation will have to be aborted
+    /// unless the entity can be reconstituted to the updated state and the operation replayed from there.
     EntityVersion Version { get; }
     /// <summary>Events that should be published when publishing changes in the <see cref="EntityStore"/></summary>
     IEnumerable<UnpublishedEvent> UnpublishedEvents { get; }

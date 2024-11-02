@@ -18,10 +18,6 @@
 - Command-line `dotnet test` fails sporadically.
 - `SourceWebApplicationTests` deletes all data stored by `SourceWebApplication`.
   This data should however not be important so it might be okay.
-- Explain somewhere that an *entity* is not a code object. It is the actual thing being modelled.
-  The `IEntity` object represents *a specific version* of the entity and will not change by publishing.
-  When events are published, the entity's version is incremented, but the `IEntity` remains as it was.
-- Should it be possible to publish multiple times with the same `IEntity`?
 - Rename MSSQL packages to SQLServer.
 - No error when adding two command handlers with the same entry-point.
   - This should be handled by the `MapEndpoints` call, not by `Commanding`.
