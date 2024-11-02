@@ -107,6 +107,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Proje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Projection.MySQL.Tests", "Tests\MySQL\Segerfeldt.EventStore.Projection.MySQL.Tests\Segerfeldt.EventStore.Projection.MySQL.Tests.csproj", "{D093AA55-E74D-4395-B376-94F6E568D414}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Segerfeldt.EventStore.Refactoring.MySQL", "MySQL\Segerfeldt.EventStore.Refactoring.MySQL\Segerfeldt.EventStore.Refactoring.MySQL.csproj", "{56B839EA-3DB4-4C70-8787-6EB1BB1A5C74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -257,6 +259,10 @@ Global
 		{D093AA55-E74D-4395-B376-94F6E568D414}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D093AA55-E74D-4395-B376-94F6E568D414}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D093AA55-E74D-4395-B376-94F6E568D414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56B839EA-3DB4-4C70-8787-6EB1BB1A5C74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56B839EA-3DB4-4C70-8787-6EB1BB1A5C74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56B839EA-3DB4-4C70-8787-6EB1BB1A5C74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56B839EA-3DB4-4C70-8787-6EB1BB1A5C74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -300,5 +306,6 @@ Global
 		{87176D3A-E795-4B4B-AA6B-4847B6076FF6} = {07EAD537-FD53-43B1-90B6-7171CE1A3F05}
 		{09C0AB2E-0DB9-4890-AEB8-31DA301A6876} = {56AB2DC7-0FEE-4254-98CA-2F196E26E653}
 		{D093AA55-E74D-4395-B376-94F6E568D414} = {07EAD537-FD53-43B1-90B6-7171CE1A3F05}
+		{56B839EA-3DB4-4C70-8787-6EB1BB1A5C74} = {56AB2DC7-0FEE-4254-98CA-2F196E26E653}
 	EndGlobalSection
 EndGlobal
