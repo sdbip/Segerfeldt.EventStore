@@ -8,7 +8,7 @@
 
 A set of NuGet packages for employing event-sourcing in applications. It is particularly useful when employing the CQRS architecture style. The Command side would reference the [Source](Segerfeldt.EventStore.Source/README.md) package, and the Query side would use the [Projection](Segerfeldt.EventStore.Projection/README.md) package.
 
-State is stored in a relational database with built-in support for MS SQL Server, SQLite and PostgreSQL. See the [Tables](#tables) section for schema details.
+State is stored in a relational database with built-in support for MS SQL Server, SQLite, MySQL and PostgreSQL. See the [Tables](#tables) section for schema details.
 
 This document is meant to help developers contribute to the source code and test their changes. There is separate documentation describing [the concept of event-sourcing](./Documentation/ES.md) and [usage in applications](./Documentation/USAGE.md).
 
@@ -25,6 +25,14 @@ The tests will fail without write-access to a running PostgreSQL test-database. 
 You can download [Postgres.app](https://postgresapp.com) which is probably the easiest to run PostgreSQL on a Mac. It is also available as a [Docker image](https://hub.docker.com/_/postgres/) and by [direct installation](https://www.postgresql.org/download/).
 
 Edit the `POSTGRES_TEST_CONNECTION_STRING` variable in .runsettings to match your PostgreSQL setup.
+
+## MySQL
+
+The tests will fail without write-access to a running MySQL test-database. Ensure that the MySQL server is started and that a test database has been created before running tests.
+
+You can download [Postgres.app](https://postgresapp.com) which is probably the easiest to run MySQL on a Mac. It is also available as a [Docker image](https://hub.docker.com/_/postgres/) and by [direct installation](https://www.postgresql.org/download/).
+
+Edit the `MYSQL_TEST_CONNECTION_STRING` variable in .runsettings to match your MySQL setup.
 
 ## MS SQL Server
 
@@ -50,6 +58,8 @@ nuget add Segerfeldt.EventStore.Source/bin/Release/Segerfeldt.EventStore.Source.
 
 nuget add PostgreSQL/Segerfeldt.EventStore.Source.PostgreSQL/bin/Release/Segerfeldt.EventStore.Source.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
 
+nuget add MySQL/Segerfeldt.EventStore.Source.MySQL/bin/Release/Segerfeldt.EventStore.Source.MySQL.<version>.nupkg -source path/to/nuget-packages
+
 nuget add MSSQL/Segerfeldt.EventStore.Source.MSSQL/bin/Release/Segerfeldt.EventStore.Source.MSSQL.<version>.nupkg -source path/to/nuget-packages
 
 nuget add SQLite/Segerfeldt.EventStore.Source.SQLite/bin/Release/Segerfeldt.EventStore.Source.SQLite.<version>.nupkg -source path/to/nuget-packages
@@ -64,6 +74,8 @@ nuget add Segerfeldt.EventStore.Projection/bin/Release/Segerfeldt.EventStore.Pro
 
 nuget add PostgreSQL/Segerfeldt.EventStore.Projection.PostgreSQL/bin/Release/Segerfeldt.EventStore.Projection.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
 
+nuget add MySQL/Segerfeldt.EventStore.Projection.MySQL/bin/Release/Segerfeldt.EventStore.Projection.MySQL.<version>.nupkg -source path/to/nuget-packages
+
 nuget add MSSQL/Segerfeldt.EventStore.Projection.MSSQL/bin/Release/Segerfeldt.EventStore.Projection.MSSQL.<version>.nupkg -source path/to/nuget-packages
 
 nuget add SQLite/Segerfeldt.EventStore.Projection.SQLite/bin/Release/Segerfeldt.EventStore.Projection.SQLite.<version>.nupkg -source path/to/nuget-packages
@@ -77,6 +89,8 @@ Refactoring:
 nuget add Segerfeldt.EventStore.Refactoring/bin/Release/Segerfeldt.EventStore.Refactoring.<version>.nupkg -source path/to/nuget-packages
 
 nuget add PostgreSQL/Segerfeldt.EventStore.Refactoring.PostgreSQL/bin/Release/Segerfeldt.EventStore.Refactoring.PostgreSQL.<version>.nupkg -source path/to/nuget-packages
+
+nuget add MySQL/Segerfeldt.EventStore.Refactoring.MySQL/bin/Release/Segerfeldt.EventStore.Refactoring.MySQL.<version>.nupkg -source path/to/nuget-packages
 
 nuget add MSSQL/Segerfeldt.EventStore.Refactoring.MSSQL/bin/Release/Segerfeldt.EventStore.Refactoring.MSSQL.<version>.nupkg -source path/to/nuget-packages
 
@@ -183,4 +197,10 @@ SELECT
   CURRENT_TIMESTAMP as "Readable date",
   DATEDIFF(s, '1970-01-01 00:00:00', CURRENT_TIMESTAMP) as "Unix timestamp",
   CAST(DATEDIFF(s, '1970-01-01 00:00:00', CURRENT_TIMESTAMP) as decimal) / 86400 as "EventStore timestamp";
+
+-- MySQL
+SELECT
+  CURRENT_TIMESTAMP as "Readable date",
+  UNIX_TIMESTAMP() as "Unix timestamp",
+  UNIX_TIMESTAMP() / 86400 as "EventStore timestamp";
 ```
