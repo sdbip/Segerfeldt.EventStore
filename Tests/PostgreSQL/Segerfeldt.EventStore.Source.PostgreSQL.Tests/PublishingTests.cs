@@ -146,6 +146,52 @@ public sealed class PublishingTests
         Assert.That(async () => await publisher.PublishChangesAsync(entity.Object, "johan"), Throws.Exception);
     }
 
+    [Test]
+    public void CommitsChanges()
+    {
+        var entity = new Mock<IEntity>();
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.New);
+        entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
+
+        connection.Open();
+        try
+        {
+            var transaction = connection.BeginTransaction();
+
+            publisher.PublishChanges([entity.Object], "johan", transaction);
+            transaction.Commit();
+
+            using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+            Assert.That(reader.Read(), Is.True);
+        }
+        finally { connection.Close(); }
+    }
+
+    [Test]
+    public void RollsBackChanges()
+    {
+        var entity = new Mock<IEntity>();
+        entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
+        entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
+        entity.Setup(e => e.Version).Returns(EntityVersion.New);
+        entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { })]);
+
+        connection.Open();
+        try
+        {
+            var transaction = connection.BeginTransaction();
+
+            publisher.PublishChanges([entity.Object], "johan", transaction);
+            transaction.Rollback();
+
+            using var reader = connection.CreateCommand("SELECT * FROM Events").ExecuteReader();
+            Assert.That(reader.Read(), Is.False);
+        }
+        finally { connection.Close(); }
+    }
+
     private void GivenEntity(string id, EntityVersion version)
     {
         connection.Open();
