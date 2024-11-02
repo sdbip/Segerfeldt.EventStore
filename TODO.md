@@ -12,7 +12,6 @@
   - Is it because of the support for multiple handlers (that could all accept) that the `IPrincipal` has multiple `Identities`?
   - What else?
 - But how do authentication schemes work??
-- Make `EventPublisher` aware of the transaction (if projecting into another write-model).
 - Add more tests for commanding and hosting.
 - Add tests for documentation.
 - There are almost no tests at all for Refactoring.

@@ -2,6 +2,7 @@ using Segerfeldt.EventStore.Shared;
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 
@@ -11,9 +12,12 @@ public interface IEventPublisherRepository
 {
     DbConnection CreateConnection();
     Task<IAtomicOperation> BeginAtomicOperationAsync();
+    IAtomicOperation CreateOperation(IDbTransaction transaction);
+
     Task<int?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation);
     Task<int?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation);
     Task<long?> GetLastPositionAsync(IAtomicOperation operation);
+
     Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation);
     Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, EventOrdinal ordinal, long position, IAtomicOperation operation);
     Task UpdateVersionAsync(EntityId id, EntityVersion version, IAtomicOperation operation);
@@ -53,6 +57,8 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
         var transaction = await connection.BeginTransactionAsync();
         return new Transaction(connection, transaction);
     }
+    public IAtomicOperation CreateOperation(IDbTransaction transaction) =>
+        new Transaction((DbConnection)transaction.Connection!, (DbTransaction)transaction);
 
     public async Task<int?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation)
     {
