@@ -109,24 +109,15 @@ public record IncrementCounter(int amount);
 // Implement one of the ICommandHandler interfaces to declare a command handler. The
 // `ModifiesEntityAttribute` (and its subclasses) defines the path pattern and the
 // verb/method for the command's HTTP endpoint.
-[ModifiesEntity("Counter", AddEntityId = true)]
-public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCounter>
+[ModifiesEntity("Counter")]
+public sealed class IncrementCounterCommandHandler : CommandHandlerBase<IncrementCounter>
 {
-    public async Task<CommandResult> Handle(IncrementCounter command, CommandContext context)
+    protected override async Task<CommandResult> Execute(IncrementCounter command, CommandContext context)
     {
-        // The actor is the user that executes the command.
-        // The name of the current principal is usually a good choice.
-        var actor = context.HttpContext.User.Identity?.Name;
-
-        // Return status 401 UNAUTHORIZED if authentication fails.
-        if (actor is null) return CommandResult.Unauthorized();
-
         // Return 403 FORBIDDEN if the (authenticated) user doesn't have access to run this command.
         // You might use context.HttpContext.User.IsInRole() to determine access.
         // Or you might make authorisation a part of your domain model.
-        if (!IsAuthorized(actor)) return CommandResult.Forbidden();
-
-        // See http://httpstatuses.com/ for details about response status codes.
+        if (!IsAuthorized(Actor)) return CommandResult.Forbidden();
 
         // Convert command properties to domain value objects.
         Amount amount;
@@ -143,7 +134,7 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         // The path of the request will contain the id when modifying an existing entity.
         var id = context.GetEntityId();
         // Retrieve the referenced entity from the EntityStore.
-        var counter = await context.EntityStore.ReconstituteAsync<Counter>(id, Counter.EntityType);
+        var counter = await EntityStore.ReconstituteAsync<Counter>(id.TypedWith(Counter.EntityType));
         // Return 404 NOT FOUND if the entity doesn't exist.
         if (counter is null) return CommandResult.NotFound($"There is no counter with id [{id}]");
 
@@ -151,7 +142,7 @@ public sealed class IncrementCounterCommandHandler : ICommandHandler<IncrementCo
         counter.IncrementBy(amount);
 
         // The entity will add new events to define its new state. Publish them using the EventPublisher.
-        await context.EventPublisher.PublishChangesAsync(counter, actor);
+        await PublishChangesAsync(counter);
         // Return 204 NO CONTENT (or 200 OK if there is a payload) if the command was successful.
         return CommandResult.NoContent();
     }
