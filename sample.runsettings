@@ -4,6 +4,7 @@
 <RunSettings>
   <RunConfiguration>
     <EnvironmentVariables>
+      <MYSQL_TEST_CONNECTION_STRING>Server=localhost;Database=test</MYSQL_TEST_CONNECTION_STRING>
       <POSTGRES_TEST_CONNECTION_STRING>Server=localhost;Database=test;Include Error Detail=True</POSTGRES_TEST_CONNECTION_STRING>
       <MSSQL_TEST_CONNECTION_STRING>Server=localhost;Database=test;User Id=sa;Password=**********;</MSSQL_TEST_CONNECTION_STRING>
     </EnvironmentVariables>
