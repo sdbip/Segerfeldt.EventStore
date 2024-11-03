@@ -8,18 +8,18 @@ namespace Segerfeldt.EventStore.Source.CommandAPI;
 public abstract class CommandHandlerBase
 {
     /// <summary>The command context</summary>
-    protected CommandContext Context { get; private set; } = null!;
+    public CommandContext Context { get; private set; } = null!;
     /// <summary>The HTTP context with access to the <see cref="HttpRequest"/> object</summary>
-    protected HttpContext HttpContext => Context.HttpContext;
+    public HttpContext HttpContext => Context.HttpContext;
     /// <summary>The <see cref="EntityStore"/> for accessing persisted entities</summary>
-    protected EntityStore EntityStore => Context.EntityStore;
+    public EntityStore EntityStore => Context.EntityStore;
     /// <summary>
     ///     The <see cref="EventPublisher"/> for advanced publishing of events.
     ///     Prefer <see cref="PublishChangesAsync(IEntity[])"/> which autimatically assigns the actor.
     /// </summary>
-    protected EventPublisher EventPublisher => Context.EventPublisher;
+    public EventPublisher EventPublisher => Context.EventPublisher;
     /// <summary>The username of the authenticated user</summary>
-    protected string Actor => Context.HttpContext.User.Identity?.Name!;
+    public string Actor => Context.HttpContext.User.Identity?.Name!;
 
     protected async Task<object> Execute<TCommandDTO, TResult>(TCommandDTO command, CommandContext context, Func<TCommandDTO, Task<TResult>> x) where TResult : class
     {
