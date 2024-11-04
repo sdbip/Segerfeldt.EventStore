@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace Segerfeldt.EventStore.Source;
 public interface IEntityStoreRepository
 {
     Task<string?> GetTypeAsync(EntityId entityId, CancellationToken cancellationToken);
-    Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, CancellationToken cancellationToken);
+    Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, DbTransaction? transaction, CancellationToken cancellationToken);
 }
 
 public readonly struct HistoryDAO

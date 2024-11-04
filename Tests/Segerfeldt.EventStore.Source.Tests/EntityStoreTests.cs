@@ -3,6 +3,7 @@ using Segerfeldt.EventStore.Source.Internals;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data.Common;
 using System.Linq;
 using System.Threading;
 
@@ -23,7 +24,7 @@ public sealed class EntityStoreTests
     [Test]
     public void ReconstitutesEntities()
     {
-        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-1"), It.IsAny<EventOrdinal>(), It.IsAny<CancellationToken>()))
+        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-1"), It.IsAny<EventOrdinal>(), It.IsAny<DbTransaction>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HistoryDAO { Type = "a-type", Version = 3, Events = [] });
 
         var entity = store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-1", "a-type"));
@@ -35,7 +36,7 @@ public sealed class EntityStoreTests
     [Test]
     public void ThrowsIfWrongType()
     {
-        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-1"), It.IsAny<EventOrdinal>(), It.IsAny<CancellationToken>()))
+        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-1"), It.IsAny<EventOrdinal>(), It.IsAny<DbTransaction>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HistoryDAO { Type = "a-type", Version = 3, Events = [] });
 
         Assert.That(() => store.Reconstitute<MyEntity>(new TypedEntityId("an-entity-1", "wrong-type")), Throws.Exception);
@@ -52,7 +53,7 @@ public sealed class EntityStoreTests
     [Test]
     public void ReplaysEvent()
     {
-        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-3"), It.IsAny<EventOrdinal>(), It.IsAny<CancellationToken>()))
+        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-3"), It.IsAny<EventOrdinal>(), It.IsAny<DbTransaction>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HistoryDAO { Type = "a-type", Version = 3, Events = [
                 PublishedEvent("an-event", @"{""meaning"":42}")
             ]});
@@ -75,7 +76,7 @@ public sealed class EntityStoreTests
     [Test]
     public void ReplaysMultipleEventsInOrder()
     {
-        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-4"), It.IsAny<EventOrdinal>(), It.IsAny<CancellationToken>()))
+        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-4"), It.IsAny<EventOrdinal>(), It.IsAny<DbTransaction>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HistoryDAO { Type = "a-type", Version = 3, Events = [
                 PublishedEvent("first-event", ordinal: 1),
                 PublishedEvent("third-event", ordinal: 3),
@@ -96,7 +97,7 @@ public sealed class EntityStoreTests
     public void CanReadHistoryOnly()
     {
         var timestamp = new DateTimeOffset(2021, 08, 12, 17, 22, 35, TimeSpan.Zero);
-        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-5"), It.IsAny<EventOrdinal>(), It.IsAny<CancellationToken>()))
+        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-5"), It.IsAny<EventOrdinal>(), It.IsAny<DbTransaction>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HistoryDAO { Type = "a-type", Version = 3, Events = [
                 PublishedEvent("first-event", "johan", timestamp)
             ]});
@@ -113,7 +114,7 @@ public sealed class EntityStoreTests
     [Test]
     public void ReadsHistoryInOrder()
     {
-        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-6"), It.IsAny<EventOrdinal>(), It.IsAny<CancellationToken>()))
+        repository.Setup(r => r.GetHistoryAsync(EntityId.Value("an-entity-6"), It.IsAny<EventOrdinal>(), It.IsAny<DbTransaction>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HistoryDAO { Type = "a-type", Version = 3, Events = [
                 PublishedEvent("first-event", ordinal: 1),
                 PublishedEvent("third-event", ordinal: 3),

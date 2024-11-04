@@ -3,6 +3,7 @@ using Segerfeldt.EventStore.Source.CommandAPI;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,22 +23,23 @@ public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory
         return await command.ExecuteScalarAsync(cancellationToken) as string;
     }
 
-    public async Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, CancellationToken cancellationToken = default)
+    public async Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, DbTransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         // await using
         var connection = connectionFactory.CreateConnection();
-        using var command = connection.CreateCommand(
-            "SELECT type, version FROM Entities WHERE id = @entityId;" +
-            "SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @after ORDER BY ordinal");
+        using var command = CreateCommand(transaction, connection, """
+            SELECT type, version FROM Entities WHERE id = @entityId;
+            SELECT * FROM Events WHERE entity_id = @entityId AND ordinal > @after ORDER BY ordinal
+            """);
         command.AddParameter("@entityId", entityId.ToString());
         command.AddParameter("@after", after?.Value ?? -1);
 
-        await connection.OpenAsync(cancellationToken);
+        if (transaction is null) await connection.OpenAsync(cancellationToken);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var entity = ReadEntityData(reader);
         if (entity is null)
         {
-            await connection.CloseAsync();
+            if (transaction is null) await connection.CloseAsync();
             return null;
         }
 
@@ -45,7 +47,7 @@ public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory
             ? ReadEvents(reader).ToImmutableList()
             : [];
 
-        await connection.CloseAsync();
+        if (transaction is null) await connection.CloseAsync();
 
         return new HistoryDAO
         {
@@ -53,6 +55,9 @@ public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory
             Version = entity.Value.Version,
             Events = [.. events],
         };
+
+        static DbCommand CreateCommand(DbTransaction? transaction, DbConnection connection, string commandText) =>
+            transaction?.CreateCommand(commandText) ?? connection.CreateCommand(commandText);
     }
 
     private static EntityDAO? ReadEntityData(DbDataReader reader)

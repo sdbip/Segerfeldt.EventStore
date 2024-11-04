@@ -4,6 +4,8 @@ using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.Internals;
 
+using System.Data.Common;
+
 namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 
 public sealed class EventStoreRepositoryTests
@@ -56,6 +58,26 @@ public sealed class EventStoreRepositoryTests
     }
 
     [Test]
+    public async Task ReconstitutesEntitiesInTransaction()
+    {
+        connection.Open();
+        var transaction = connection.BeginTransaction();
+        GivenEntity("an-entity-1", "a-type", 3, transaction);
+
+        var history = await repository.GetHistoryAsync(EntityId.Value("an-entity-1"), transaction: transaction);
+
+        transaction.Rollback();
+        connection.Close();
+        Assert.Multiple(() =>
+        {
+            Assert.That(history.HasValue, Is.True);
+            Assert.That(history?.Type, Is.EqualTo("a-type"));
+            Assert.That(history?.Version, Is.EqualTo(3));
+        });
+
+    }
+
+    [Test]
     public async Task ReturnsNullIfNoEntity()
     {
         var history = await repository.GetHistoryAsync(EntityId.Value("an-entity-2"));
@@ -91,9 +113,10 @@ public sealed class EventStoreRepositoryTests
         });
     }
 
-    private void GivenEntity(string entityId, string entityType, int version = 1)
+    private void GivenEntity(string entityId, string entityType, int version = 1, DbTransaction? transaction = null)
     {
-        var command = connection.CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@entityId, @entityType, @version)");
+        var command = transaction?.CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@entityId, @entityType, @version)");
+        command ??= connection.CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@entityId, @entityType, @version)");
         command.AddParameter("@entityId", entityId);
         command.AddParameter("@entityType", entityType);
         command.AddParameter("@version", version);

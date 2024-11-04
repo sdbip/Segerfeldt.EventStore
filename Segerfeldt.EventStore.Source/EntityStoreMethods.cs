@@ -1,6 +1,7 @@
 using Segerfeldt.EventStore.Source.Snapshots;
 
 using System;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,8 +27,8 @@ public static class EntityStoreMethods
     /// <param name="type"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     /// <returns>the entity with the specified <paramref name="id"/></returns>
-    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, TypedEntityId id) where TEntity : class, IEntity =>
-        entityStore.ReconstituteAsync<TEntity>(id).Result;
+    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, TypedEntityId id, IDbTransaction? transaction = null) where TEntity : class, IEntity =>
+        entityStore.ReconstituteAsync<TEntity>(id, transaction).Result;
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
     /// <param name="entityStore"></param>
@@ -36,27 +37,27 @@ public static class EntityStoreMethods
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
     /// <returns>the entity with the specified <paramref name="id"/></returns>
-    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, TypedEntityId id, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
-        await entityStore.ReconstituteAsync(new NeverSnapshot<TEntity>(id.Value, id.Type), cancellationToken);
+    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, TypedEntityId id, IDbTransaction? transaction = null, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+        await entityStore.ReconstituteAsync(new NeverSnapshot<TEntity>(id.Value, id.Type), transaction, cancellationToken);
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
     /// <param name="entityStore"></param>
     /// <param name="snapshot">the snapshot of the entity</param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
-    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot) where TEntity : class, IEntity =>
-        entityStore.ReconstituteAsync(snapshot).Result;
+    public static TEntity? Reconstitute<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, IDbTransaction? transaction = null) where TEntity : class, IEntity =>
+        entityStore.ReconstituteAsync(snapshot, transaction).Result;
 
     /// <summary>Reconstitute the state of an entity from published events</summary>
     /// <param name="entityStore"></param>
     /// <param name="snapshot">the snapshot of the entity</param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity">the type of the entity</typeparam>
-    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
-        await ReconstituteAsync(entityStore, SnapshotRestorer<TEntity>.Applying(snapshot), cancellationToken);
+    public static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, ISnapshot<TEntity> snapshot, IDbTransaction? transaction = null, CancellationToken cancellationToken = default) where TEntity : class, IEntity =>
+        await ReconstituteAsync(entityStore, SnapshotRestorer<TEntity>.Applying(snapshot), transaction, cancellationToken);
 
-    private static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, SnapshotRestorer<TEntity> snapshot, CancellationToken cancellationToken = default) where TEntity : class, IEntity
+    private static async Task<TEntity?> ReconstituteAsync<TEntity>(this EntityStore entityStore, SnapshotRestorer<TEntity> snapshot, IDbTransaction? transaction = null, CancellationToken cancellationToken = default) where TEntity : class, IEntity
     {
-        var history = await entityStore.GetHistoryAsync(snapshot.Id, snapshot.Ordinal, cancellationToken);
+        var history = await entityStore.GetHistoryAsync(snapshot.Id, snapshot.Ordinal, transaction, cancellationToken);
         if (history is null) return snapshot.Ordinal is null ? null : throw new UnknownEntityException(snapshot.Id);
         if (history.Type != snapshot.EntityType) throw new IncorrectTypeException(snapshot.EntityType, history.Type);
         return entityStore.RestoreEntity(snapshot, history);
@@ -66,16 +67,8 @@ public static class EntityStoreMethods
     /// <param name="entityStore"></param>
     /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
     /// <returns>the complete history of the entity</returns>
-    public static EntityHistory? GetHistory(this EntityStore entityStore, EntityId entityId) =>
-        entityStore.GetHistoryAsync(entityId).Result;
-
-    /// <summary>Get the historical data about an entity</summary>
-    /// <param name="entityStore"></param>
-    /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>the complete history of the entity</returns>
-    public static async Task<EntityHistory?> GetHistoryAsync(this EntityStore entityStore, EntityId entityId, CancellationToken cancellationToken = default) =>
-        await entityStore.GetHistoryAsync(entityId, null, cancellationToken);
+    public static EntityHistory? GetHistory(this EntityStore entityStore, EntityId entityId, EventOrdinal? after = null, IDbTransaction? transaction = null) =>
+        entityStore.GetHistoryAsync(entityId, after, transaction).Result;
 
 
     /// <summary>Check if an entity id is taken.</summary>

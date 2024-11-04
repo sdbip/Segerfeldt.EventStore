@@ -3,6 +3,7 @@ using Segerfeldt.EventStore.Source.Internals;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
@@ -22,12 +23,13 @@ public sealed class EntityStore(IEntityStoreRepository repository)
 
     /// <summary>Finds all the events, and the current version, of an entity. Everything needed to reconstitute its state.</summary>
     /// <param name="entityId">the id of the entity</param>
-    /// <param name="afterVersion">only events that occurred after this version (and excluding this version)  will be returned. useful if you have a snapshot.</param>
+    /// <param name="after">An ordinal where only events that occurred after this point (and excluding this version)  will be returned. useful if you have a snapshot.</param>
+    /// <param name="transaction">An active transaction (used when projecting) during which the requested entity might have been inserted</param>
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
-    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, CancellationToken cancellationToken = default)
+    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, IDbTransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        var nullableDAO = await repository.GetHistoryAsync(entityId, after, cancellationToken);
+        var nullableDAO = await repository.GetHistoryAsync(entityId, after, transaction as DbTransaction, cancellationToken);
         if (!nullableDAO.HasValue) return null;
         var dao = nullableDAO.Value;
         return new EntityHistory(
