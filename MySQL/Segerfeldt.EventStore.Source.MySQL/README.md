@@ -4,7 +4,7 @@
     This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
 -->
 
-# Segerfeldt.EventStore.MySQL
+# Segerfeldt.EventStore.Source.MySQL
 
 A NuGet package for implementing the Command/Write-Model side of a CQRS application using MySQL.
 
@@ -249,9 +249,9 @@ Do not use `nameof(MyEntity)`, `entity.GetType().Name` or any other reference to
 
 ## Tables
 
-State is stored in a MySQL Server database with two tables: `entities` and `events`.
+State is stored in a MySQL Server database with two tables: `Entities` and `Events`.
 
-The `entities` table:
+The `Entities` table:
 
 ```sql
 "id" TEXT PRIMARY KEY
@@ -259,9 +259,9 @@ The `entities` table:
 "version" INT
 ```
 
-The `entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, an error will be thrown.
+The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker (see [Type Checking](#type-checking) above).
 
-The `events` table:
+The `Events` table:
 
 ```sql
 "entity_id" TEXT
@@ -273,7 +273,7 @@ The `events` table:
 "position" BIGINT
 ```
 
-The events table is the main storage space for entity state. The `entity_id` column must match the `id` column for a row in the `entities` table. This is the entity that changed with this event.
+The `Events` table is the main storage space for entity state. The `entity_id` column must match the `id` column for a row in the `Entities` table. This is the entity that changed with this event.
 
 The `name` and `details` (JSON) columns define what changed for the entity. The `ordinal` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
 

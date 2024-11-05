@@ -4,9 +4,9 @@
     This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
 -->
 
-# Segerfeldt.EventStore.MSSQL
+# Segerfeldt.EventStore.Source.MSSQL
 
-A NuGet package for implementing the Command/Write-Model side of a CQRS application using MS SQLServer.
+A NuGet package for implementing the Command/Write-Model side of a CQRS application using SQL Server.
 
 Add Segerfeldt.EventStore.Projection.MSSQL to another project to sync the state to a Query/Read-Model database.
 
@@ -243,13 +243,13 @@ If the stored version number is different from what was read at reconstitution, 
 
 ## Type Checking
 
-Every entity in the system has a `Type` property. The `Type` property indicates what specific `EntityType` the entity has. The `EntityType` name should uniquely identify the class that implements this particular type of entity. (This is however not enforced.) When the first version (0) of an entity is added to the system, a row is added to the `Entities` table (see [the Tables Section](#tables) below). That row will include the name of the `EntityType` in the `type` column. When the entity is reconstituted by the `EventStore` that stored `type` is checked against the expected `EntityType`. If the values do not match, the `EntityStore` will return `null`.
+Every entity in the system has a `Type` property. The `Type` property indicates what specific `EntityType` the entity has. The `EntityType` name should uniquely identify the class that implements this particular type of entity. (This is however not enforced.) When the first version (0) of an entity is added to the system, a row is added to the `Entities` table (see [the Tables Section](#tables) below). That row will include the name of the `EntityType` in the `type` column. When the entity is reconstituted by the `EventStore` that stored `type` is checked against the expected `EntityType`. If the values do not match, the `EntityStore` will throw an `IncorrectTypeException`.
 
 Do not use `nameof(MyEntity)`, `entity.GetType().Name` or any other reference to the actual class name. The name of the `EntityType` must never change, even if the relevant class is renamed. The name needs to always match the `type` column for already added entities. If the `EntityType` is changed, those entities can never be reconstituted (or worse: they may be reconstituted as instances of the wrong class).
 
 ## Tables
 
-State is stored in a MS SQL Server database with two tables: `Entities` and `Events`.
+State is stored in a MySQL Server database with two tables: `entities` and `events`.
 
 The `Entities` table:
 
@@ -259,7 +259,7 @@ The `Entities` table:
 "version" INT
 ```
 
-The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, an error will be thrown.
+The `entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see [Optimistic Locking](#optimistic-locking) above). The type is used as a runtime type-checker (see [Type Checking](#type-checking) above).
 
 The `Events` table:
 
@@ -273,7 +273,7 @@ The `Events` table:
 "position" BIGINT
 ```
 
-The events table is the main storage space for entity state. The `entity_id` column must match the `id` column for a row in the `Entities` table. This is the entity that changed with this event.
+The `Events` table is the main storage space for entity state. The `entity_id` column must match the `id` column for a row in the `Entities` table. This is the entity that changed with this event.
 
 The `name` and `details` (JSON) columns define what changed for the entity. The `ordinal` column orders events per entity. The `position` column orders events globally and is mostly used for projections.
 
