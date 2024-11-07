@@ -1,3 +1,9 @@
+<!--
+    This comment only exists to disable the Markdownlint rule
+    MD025/single-title/single-h1: Multiple top-level headings in the same document
+    This behaviour was observed when using https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint
+-->
+
 # The Concept of Event Sourcing
 
 This document is meant to help understand DDD and event sourcing. There is separate documentation describing the [usage of Segerfeldt.EventStore](./USAGE.md) if you are already familiar with the concept and just want to get started building CQRS applications.
@@ -5,15 +11,27 @@ This document is meant to help understand DDD and event sourcing. There is separ
 > By focusing on how and why the state *changes*, we can better understand how our domain *works*.
 > &mdash; [Events](#events)
 
-The idea of event sourcing is to not simply store the ***current state*** of the application, but instead store ***each historical change*** to the state. We model such changes through `Events`.
+## Important Note: Event Sourcing is not Messaging
 
-There are some benefits to using this idea; the most obvious ones are perhaps immutability and auditing. Immutability, in this context, means that once an `Event` has been recorded it will remain as it is forever. Exactly the same. The recorded history and meaning of the `Events`will never change. The only allowed change is to append new `Events` to the end of the sequence. This makes referring to stored data much simpler, and handling concurrent updates becomes trivial.
+You can technically build a messaging system using event sourcing and you can build an event sourcing model on top of a messaging system. But neither approach is actually recommended.
+
+If you build a messaging system based on event sourcing you will expose data that should be considered internal to the source. You are also exposing the source database to clients who might perform invalid changes to the data. CQRS will however require you to allow a projection of the state to generate the query-side of your application. You can use this to allow other projections as well if you can guarantee that they will not perform edits on the data. Such processes should probably act under a user id that the database itself does not permit write access to.
+
+If you build event sourcing based on a messaging system, you risk carrying over the terminolgy of messaging to event sourcing. Event sourcing is not messaging. In event sourcing, the term “event” does not mean “something happened that should be signalled to clients.” It means a change has happened to the application state. It is unfortunate that the chosen term causes this confusion, but is is a different context and context often changes the meanings of words. Maybe “delta” would have been a better term if we invented the concept today? “Delta sourcing” doesn't really sound right though. Maybe because the term “event sourcing” is so established? The term *is* indeed established now and changing it is unlikely to catch on, so maybe we should just accept it and focus our attention on more important things?
+
+# What Event Sourcing Actually is
+
+The idea of event sourcing is to not simply store the ***current state*** of the application, but instead store ***each historical change*** to the state. And these changes should generally be described in abbreviated form; what is generally referred to as a “delta.” We will however not use that term because event sourcing is well established now and in its context the chosen term is `Event`.
+
+There are some benefits to this approach; the most obvious ones are perhaps immutability and auditing. Immutability, in this context, means that once an `Event` has been recorded it will remain as it is forever. Exactly the same. The recorded history and meaning of the `Events` will never change. The only allowed change is to append new `Events` to the end of the sequence. This makes referring to stored data much easier, and handling concurrent updates becomes almost trivial.
 
 Every event also records a timestamp and a username which can be very useful metadata for auditing. Who caused the change? Did they mke a mistake? Or did they have a good reason to make a change you think is weird? Can someone learn about the domain from this? Surely!
 
 Event sourcing also allows creating independent *projections* of the state. You can replay all the changes at any time, and maintain a different storage location with an alternate view into the data. For example you can gather all the current state for easy indexing and quick access. (The Q in CQRS.) You can do this repeatedly to generate multiple copies of the same read-models for scaling out. Or you can collect data to generate reports. You can ignore a lot of the information, and focus only on the data needed for your particular use case.
 
-Event Sourcing is a product of Domain-Driven Design (DDD). In DDD, we have two carriers of state: the value object and the entity.
+Event Sourcing is a product of Domain-Driven Design [^or-not] (DDD). In DDD, we have two carriers of state: the value object and the entity.
+
+[^or-not]: Or maybe DDD just coopted an already existing (perhaps very technical) solution and resculpted it for its own purposes?
 
 ## Value Objects
 
@@ -30,7 +48,7 @@ Value objects can also be used in calculations. You might for example `Add()` (o
 
 Value objects should also be encapsulated. They should have an internal representation of data and an external interface. Users of the value object should only ever couple to the interface, never to the concrete data representation. That allows the storage strategy to change without breaking references to the value object. And it also helps the programmer stay focused on the *meaning* of the value rather than its *composition*.
 
-How should you for example represent a monetary amount? $1.50 can be represented in at least three different ways: as the number `150` (cents), the number `1.5` (dollars) or the two numbers: `1` (dollar) and `50` (cents). Which representation is the right one? Maybe one is right at the beginning, but becomes a problem after new requirements come to light? Encapsulation of this amount in a `Money` value object will prevent errors in all code that refer to it; if there is an error, it will surely be located in the `Money` class itself which makes it easier to find and correct.
+Let's look at money for a concrete example: How should you represent a monetary amount, say a dollar and a half? $1.50 can be represented in at least three different ways: as the number `150` (cents), the number `1.5` (dollars) or the two numbers: `1` (dollar) and `50` (cents). Which representation is the right one? Maybe one is right at the beginning, but becomes a problem after new requirements come to light? Encapsulation of this amount in a `Money` value object will prevent errors in all code that refer to it; if there is an error, it will surely be located in the `Money` class itself which makes it easier to find and correct.
 
 Here is an interesting talk about value objects: <https://www.youtube.com/watch?v=vh-LT1mkIz4>
 
@@ -54,13 +72,13 @@ Unlike value objects, entities possess an identifier. Since the `Entity` is stat
 
 DDD teaches us to focus on how the business processes *change* the state rather than just what the state is at any given time. By focusing on how and why the state changes we can better understand how our domain works.
 
-This library employs event sourcing, which means that we define the state of an entity by listing all the changes that have been made to it since it was first added to the system/application. These changes are referred to as `Events`. Each `Event` has a name that identifies in what way the entity changed, and a fixed structure that specifies the details. It also includes which user caused the change and at what time.
+This library employs event sourcing, which means that we define the state of an entity by listing all the changes that have been made to it since it was first added to the system/application. These changes are referred to as `Events`. Each `Event` has a name that identifies in what way the entity changed, and a fixed structure (defined by the name) that specifies the details. It also includes which user caused the change and at what time.
 
-A CQRS solution can synchronise (project) the events into a searchable query database. When the projection/query database is first set up, all the existing events should be processed in order. As new events are later published, the projection server should pick them up and update the query database accordingly.
+A CQRS solution can synchronise (“project”) the events into a searchable query database. When the projection/query database is first set up, all the existing events should be processed in order. As new events are later published, the projection server should pick them up and update the query database accordingly.
+
+Projection can be used for other purposes than the Query side of CQRS. It can for example be used to communicate between bounded contexts (though that might not be recommended). Or it can be used to generate one-off reports. Or myriad other things.
 
 It is also well defined what the state was at any point of time in the past. This fact can be used to debug the system. The events up to a given point in time can be copied to a new database and then used to recreate the system state at that time. Then experimentation can find the bug allowing it to be fixed.
-
-Projection can be used for other purposes than the Query side of CQRS. It can for example be used to communicate between bounded contexts. Or it can be used to generate one-off reports. Or myriad other things.
 
 ## What About Aggregates?
 
