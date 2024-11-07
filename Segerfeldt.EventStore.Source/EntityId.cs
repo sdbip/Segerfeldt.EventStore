@@ -28,6 +28,14 @@ public sealed class EntityId : ValueObject<EntityId>
         return Safe(value);
     }
 
+    /// <summary>Initialize an identifier</summary>
+    /// <param name="value">The string value that uniquely identifies the identity (and its events)</param>
+    public static EntityId? ValueOrNull(string? value)
+    {
+        if (value is null) return null;
+        return Value(value);
+    }
+
     internal static EntityId Safe(string value) => new(value);
 
     /// <summary>Generates a new EntityId as a 36 characters long GUID string</summaryz>
