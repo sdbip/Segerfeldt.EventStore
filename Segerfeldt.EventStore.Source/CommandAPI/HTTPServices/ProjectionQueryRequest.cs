@@ -16,24 +16,18 @@ internal sealed class ProjectionQueryRequest(HttpContext context)
     public async Task<ActionResult> GetAsync()
     {
         var config = serviceProvider.GetRequiredService<ProjectionEndpointConfiguration>();
-        var afterString = context.Request.Query["after"].FirstOrDefault();
-        var after = string.IsNullOrEmpty(afterString) ? (long?)null : long.Parse(afterString);
         var repository = serviceProvider.GetService<IProjectionRepository>()
             ?? ActivatorUtilities.CreateInstance<StandardCompliantProjectionRepository>(serviceProvider);
-        var events = await repository.GetEventsAsync(after, 100, default);
-        var grouped = events.Where(config.IsPublic).GroupBy(e => e.Position).ToList();
-        if (grouped.Count > 1 && grouped.SelectMany(g => g).Count() > 100)
-            grouped.RemoveAt(grouped.Count - 1);
 
-        return new OkObjectResult(grouped.Select(g => new
-        {
-            position = g.Key,
-            events = g.OrderBy(e => e.Position).Select(e => new
-            {
-                entity = new { id = e.EntityId.ToString(), type = e.EntityType.ToString() },
-                name = e.Name,
-                details = e.Details,
-            }),
-        }));
+        var after = GetQueryValue("after", long.Parse);
+        var maxCount = GetQueryValue("maxCount", int.Parse) ?? 100;
+        var events = await repository.GetEventsAsync(after, maxCount, default);
+        return new OkObjectResult(events.Where(config.IsPublic));
+    }
+
+    private T? GetQueryValue<T>(string key, Func<string, T> parse) where T : struct
+    {
+        var str = context.Request.Query[key].FirstOrDefault();
+        return string.IsNullOrEmpty(str) ? null : parse(str);
     }
 }

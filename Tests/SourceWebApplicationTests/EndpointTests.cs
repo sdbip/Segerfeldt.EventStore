@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.ObjectModel;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 
 using Segerfeldt.EventStore.Source.CommandAPI.DTOs;
 
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace SourceWebApplicationTests;
@@ -84,16 +83,52 @@ public sealed class EndpointTests
             h => h.Authorization = new("Username", "test-user"));
 
         var response = await client.GetAsync(new Uri("history", UriKind.Relative));
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var json = await response.Content.ReadAsStringAsync();
-        var positionDTOs = JsonSerializer.Deserialize<List<ProjectionPosition>>(json, options)!;
-        Assert.That(positionDTOs, Is.Not.Null);
-        Assert.That(positionDTOs, Has.Count.EqualTo(2));
-        Assert.That(positionDTOs[0].Position, Is.EqualTo(0));
-        Assert.That(positionDTOs[1].Position, Is.EqualTo(1));
-        Assert.That(positionDTOs[0].Events, Has.Count.EqualTo(1));
-        Assert.That(positionDTOs[1].Events, Has.Count.EqualTo(1));
+        var dtos = JsonSerializer.Deserialize<List<EventDAO>>(json, options)!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(dtos, Is.Not.Null);
+            Assert.That(dtos, Has.Count.EqualTo(2));
+        });
+        Assert.Multiple(() =>
+        {
+            Assert.That(new
+            {
+                dtos[0].EntityId,
+                dtos[0].EntityType,
+                dtos[0].Name,
+                Details = dtos[0].Details.ToString(),
+                dtos[0].Ordinal,
+                dtos[0].Position
+            }, Is.EqualTo(new
+            {
+                EntityId = EntityId.Value("user"),
+                EntityType = EntityType.Name("User"),
+                Name = "Registered",
+                Details = "{}",
+                Ordinal = EventOrdinal.Zero,
+                Position = Position.Zero
+            }));
+            Assert.That(new
+            {
+                dtos[1].EntityId,
+                dtos[1].EntityType,
+                dtos[1].Name,
+                Details = dtos[1].Details.ToString(),
+                dtos[1].Ordinal,
+                dtos[1].Position
+            }, Is.EqualTo(new
+            {
+                EntityId = EntityId.Value("user"),
+                EntityType = EntityType.Name("User"),
+                Name = "EmailAddressChanged",
+                Details = @"{""emailAddress"":""user@testusers.com""}",
+                Ordinal = EventOrdinal.Of(1),
+                Position = Position.Of(1)
+            }));
+        });
     }
 
     [Test]
@@ -108,12 +143,7 @@ public sealed class EndpointTests
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var json = await response.Content.ReadAsStringAsync();
-        var positionDTOs = JsonSerializer.Deserialize<List<ProjectionPosition>>(json, options)!;
+        var positionDTOs = JsonSerializer.Deserialize<List<EventDAO>>(json, options)!;
         Assert.That(positionDTOs, Is.Not.Null);
-        Assert.That(positionDTOs, Has.Count.EqualTo(2));
-        Assert.That(positionDTOs[0].Position, Is.EqualTo(0));
-        Assert.That(positionDTOs[1].Position, Is.EqualTo(1));
-        Assert.That(positionDTOs[0].Events, Has.Count.EqualTo(1));
-        Assert.That(positionDTOs[1].Events, Has.Count.EqualTo(1));
     }
 }

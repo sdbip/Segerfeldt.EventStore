@@ -1,6 +1,7 @@
 using Segerfeldt.EventStore.Source.CommandAPI;
 
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,7 +27,7 @@ internal class SQLServerProjectionRepository(EventStoreConnectionFactory connect
         var reader = await command.ExecuteReaderAsync(cancellationToken);
         return reader.AllRowsAs(r => new EventDAO(
             Name: (string)r["name"],
-            Details: (string)r["details"],
+            Details: JsonSerializer.Deserialize<JsonElement>((string)r["details"]),
             EntityId: EntityId.Value((string)r["entity_id"]),
             EntityType: EntityType.Name((string)r["entity_type"]),
             Ordinal: EventOrdinal.Of((int)r["ordinal"]),

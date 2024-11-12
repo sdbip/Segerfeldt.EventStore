@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace Segerfeldt.EventStore.Source;
 
 /// <summary>An entity type for namespacing events and verifying the type.</summary>
+[JsonConverter(typeof(EntityTypeStringConverter))]
 public sealed class EntityType : ValueObject<EntityType>
 {
     private readonly string name;
@@ -31,4 +34,19 @@ public sealed class EntityType : ValueObject<EntityType>
 
 #pragma warning disable SYSLIB1045 // Avoid partial classes
     private static bool IsValidTypeName(string name) => Regex.IsMatch(name, "^[a-zA-Z0-9._-]+$");
+
+    private class EntityTypeStringConverter : JsonConverter<EntityType>
+    {
+        public override EntityType? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (typeToConvert != typeof(EntityType)) throw new ArgumentOutOfRangeException(nameof(typeToConvert), $"Unsupported type {typeToConvert}");
+            if (reader.GetString() is not {} value) throw new Exception("Expected string value");
+            return Name(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, EntityType value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value);
+        }
+    }
 }

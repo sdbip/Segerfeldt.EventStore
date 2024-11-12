@@ -23,8 +23,16 @@ internal sealed class ProjectionDocumentFilter : IDocumentFilter
                 Required = false,
                 Schema = new OpenApiSchema { Type = "long" }
             })
+            .AddParameter(new OpenApiParameter
+            {
+                Name = "maxCount",
+                Description = "Optional parameter that sets an upper bound on the number of returned events.",
+                In = ParameterLocation.Query,
+                Required = false,
+                Schema = new OpenApiSchema { Type = "int" }
+            })
             .AddOperationWithSuccessResponseType(
-                typeof(IEnumerable<ProjectionPosition>),
+                typeof(IEnumerable<EventDAO>),
                 "Returns public events for the next few positions (if any have been published)");
     }
 }

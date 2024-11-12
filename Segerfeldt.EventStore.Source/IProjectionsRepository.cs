@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,4 +14,4 @@ public interface IProjectionRepository
     Task<IEnumerable<EventDAO>> GetEventsAsync(long? after, int maxCount, CancellationToken cancellationToken);
 }
 
-public record EventDAO(string Name, object Details, EntityId EntityId, EntityType EntityType, EventOrdinal Ordinal, Position Position);
+public record EventDAO(string Name, JsonElement Details, EntityId EntityId, EntityType EntityType, EventOrdinal Ordinal, Position Position);

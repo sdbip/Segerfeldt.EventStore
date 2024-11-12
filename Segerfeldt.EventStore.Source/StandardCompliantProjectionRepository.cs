@@ -27,7 +27,7 @@ public class StandardCompliantProjectionRepository(EventStoreConnectionFactory c
         var reader = await command.ExecuteReaderAsync(cancellationToken);
         return reader.AllRowsAs(r => new EventDAO(
             Name: (string)r["name"],
-            Details: JsonSerializer.Deserialize<IDictionary<string, object>>((string)r["details"])!,
+            Details: JsonSerializer.Deserialize<JsonElement>((string)r["details"])!,
             EntityId: EntityId.Value((string)r["entity_id"]),
             EntityType: EntityType.Name((string)r["entity_type"]),
             Ordinal: EventOrdinal.Of(r.GetInt32(r.GetOrdinal("ordinal"))),
