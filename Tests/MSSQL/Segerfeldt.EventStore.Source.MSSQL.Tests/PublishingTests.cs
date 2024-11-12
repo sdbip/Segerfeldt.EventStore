@@ -68,12 +68,10 @@ public sealed class PublishingTests
     [Test]
     public void CanPublishNewEntity()
     {
-        GivenEntity("an-entity", version: EntityVersion.Zero);
-
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
         entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
-        entity.Setup(e => e.Version).Returns(EntityVersion.Zero);
+        entity.Setup(e => e.Version).Returns(EntityVersion.New);
         entity.Setup(e => e.UnpublishedEvents).Returns([new UnpublishedEvent("an-event", new { Meaning = 42 })]);
         publisher.PublishChanges(entity.Object, "johan");
 
