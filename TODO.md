@@ -1,12 +1,5 @@
 # TODO
 
-- Add a `GET` endpoint that queries for new events after a specified `Position`.
-  - Probably implemented in the *Source* package.
-    - That's where `Commanding` and its endpoints (including `history`) are already implemented.
-    - *Projection* on the other hand already defines `Event` and the `EventSource` emitter.
-  - But it should be filtered somehow. Make some events (and entire entities) internal and thus not visible.
-  - Full-access projections (read-model in the same BC) can still use direct-from-database Projection.
-
 ## Icebox Issues & Ideas
 
 - Add more user manual stuff
