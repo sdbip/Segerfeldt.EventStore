@@ -57,7 +57,7 @@ public static class Commanding
 
     public static ProjectionEndpointConfiguration UseProjectionEndpoint(this IServiceCollection services)
     {
-        var config = new ProjectionEndpointConfiguration(services);
+        var config = new ProjectionEndpointConfiguration();
         services.AddSingleton(config);
         return config;
     }

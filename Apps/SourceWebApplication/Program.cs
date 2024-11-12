@@ -1,7 +1,9 @@
+using Segerfeldt.EventStore.Source;
 using Segerfeldt.EventStore.Source.CommandAPI;
 using Segerfeldt.EventStore.Source.SQLite.CommandAPI;
 
 using SourceWebApplication;
+using SourceWebApplication.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +27,8 @@ builder.Services.AddAuthentication(options => {
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
 builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!);
-builder.Services.UseProjectionEndpoint();
+builder.Services.UseProjectionEndpoint()
+    .HideEntityType(EmailAddressAvailability.EntityType);
 
 var app = builder.Build();
 

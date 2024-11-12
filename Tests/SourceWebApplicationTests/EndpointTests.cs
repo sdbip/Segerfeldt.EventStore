@@ -93,7 +93,7 @@ public sealed class EndpointTests
         Assert.That(positionDTOs[0].Position, Is.EqualTo(0));
         Assert.That(positionDTOs[1].Position, Is.EqualTo(1));
         Assert.That(positionDTOs[0].Events, Has.Count.EqualTo(1));
-        Assert.That(positionDTOs[1].Events, Has.Count.EqualTo(2));
+        Assert.That(positionDTOs[1].Events, Has.Count.EqualTo(1));
     }
 
     [Test]
@@ -114,6 +114,6 @@ public sealed class EndpointTests
         Assert.That(positionDTOs[0].Position, Is.EqualTo(0));
         Assert.That(positionDTOs[1].Position, Is.EqualTo(1));
         Assert.That(positionDTOs[0].Events, Has.Count.EqualTo(1));
-        Assert.That(positionDTOs[1].Events, Has.Count.EqualTo(2));
+        Assert.That(positionDTOs[1].Events, Has.Count.EqualTo(1));
     }
 }
