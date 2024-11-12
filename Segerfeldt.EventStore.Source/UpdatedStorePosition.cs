@@ -4,10 +4,10 @@ using System.Linq;
 
 namespace Segerfeldt.EventStore.Source;
 
-public sealed class UpdatedStorePosition(long position, IEnumerable<(EntityId id, EntityVersion version)> entityVersions)
+public sealed class UpdatedStorePosition(Position position, IEnumerable<(EntityId id, EntityVersion version)> entityVersions)
 {
     /// <summary>the new position after the updaate</summary>
-    public long Position { get; } = position;
+    public Position Position { get; } = position;
 
     private readonly IReadOnlyDictionary<EntityId, EntityVersion> entityVersions = entityVersions.ToImmutableDictionary(x => x.id, x => x.version);
     /// <summary>The ids of the updated enities</summary>

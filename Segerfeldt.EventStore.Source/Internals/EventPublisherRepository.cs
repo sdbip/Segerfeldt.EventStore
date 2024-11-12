@@ -13,12 +13,12 @@ public interface IEventPublisherRepository
     Task<IAtomicOperation> BeginAtomicOperationAsync();
     IAtomicOperation CreateOperation(IDbTransaction transaction);
 
-    Task<int?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation);
-    Task<int?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation);
-    Task<long?> GetLastPositionAsync(IAtomicOperation operation);
+    Task<EntityVersion?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation);
+    Task<EventOrdinal?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation);
+    Task<Position?> GetLastPositionAsync(IAtomicOperation operation);
 
     Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation);
-    Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, EventOrdinal ordinal, long position, IAtomicOperation operation);
+    Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, EventOrdinal ordinal, Position position, IAtomicOperation operation);
     Task UpdateVersionAsync(EntityId id, EntityVersion version, IAtomicOperation operation);
 }
 
@@ -33,17 +33,20 @@ internal static class EventPublisherRepositoryExtensions
     public static async Task<EntityVersion> GetCurrentEntityVersionAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
     {
         var version = await repository.GetCurrentVersionAsync(entityId, operation);
-        return version.HasValue ? EntityVersion.Safe(version.Value) : EntityVersion.New;
+        return version ?? EntityVersion.New;
     }
 
     public static async Task<EventOrdinal> GetNextOrdinalAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
     {
         var ordinal = await repository.GetHighestOrdinalAsync(entityId, operation);
-        return ordinal.HasValue ? EventOrdinal.Safe(ordinal.Value + 1) : EventOrdinal.Zero;
+        return ordinal?.Next() ?? EventOrdinal.Zero;
     }
 
-    public static async Task<long> GetNextPositionAsync(this IEventPublisherRepository repository, IAtomicOperation operation) =>
-        await repository.GetLastPositionAsync(operation) ?? 0;
+    public static async Task<Position> GetNextPositionAsync(this IEventPublisherRepository repository, IAtomicOperation operation)
+    {
+        var position = await repository.GetLastPositionAsync(operation);
+        return position?.Next() ?? Position.Zero;
+    }
 }
 
 public sealed class EventPublisherRepository(EventStoreConnectionFactory connectionFactory) : IEventPublisherRepository
@@ -59,27 +62,27 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
     public IAtomicOperation CreateOperation(IDbTransaction transaction) =>
         new Transaction((DbConnection)transaction.Connection!, (DbTransaction)transaction);
 
-    public async Task<int?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation)
+    public async Task<EntityVersion?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation)
     {
         using var command = GetDbTransaction(operation).CreateCommand("SELECT version FROM Entities WHERE id = @entityId");
         command.AddParameter("@entityId", entityId.ToString());
         var scalar = await command.ExecuteScalarAsync();
-        return scalar is null ? null : Convert.ToInt32(scalar);
+        return IsNullResult(scalar) ? null : EntityVersion.Safe(Convert.ToInt32(scalar));
     }
 
-    public async Task<int?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation)
+    public async Task<EventOrdinal?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation)
     {
         var command = GetDbTransaction(operation).CreateCommand("SELECT max(ordinal) FROM Events WHERE entity_id = @entityId");
         command.AddParameter("@entityId", entityId.ToString());
         var result = await command.ExecuteScalarAsync();
-        return result is int v ? v : null;
+        return IsNullResult(result) ? null : EventOrdinal.Safe(Convert.ToInt32(result));
     }
 
-    public async Task<long?> GetLastPositionAsync(IAtomicOperation operation)
+    public async Task<Position?> GetLastPositionAsync(IAtomicOperation operation)
     {
         var command = GetDbTransaction(operation).CreateCommand("SELECT max(position) FROM Events");
         var result = await command.ExecuteScalarAsync();
-        return result as long?;
+        return IsNullResult(result) ? null : Position.Safe(Convert.ToInt64(result));
     }
 
     public async Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation)
@@ -99,7 +102,7 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
         await command.ExecuteNonQueryAsync();
     }
 
-    public async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, EventOrdinal ordinal, long position, IAtomicOperation operation)
+    public async Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, EventOrdinal ordinal, Position position, IAtomicOperation operation)
     {
         using var command = GetDbTransaction(operation).CreateCommand(
             "INSERT INTO Events (entity_id, name, details, actor, ordinal, position)" +
@@ -109,7 +112,7 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
         command.AddParameter("@details", JSON.Serialize(@event.Details));
         command.AddParameter("@actor", actor);
         command.AddParameter("@ordinal", ordinal.Value);
-        command.AddParameter("@position", position);
+        command.AddParameter("@position", position.Value);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -136,4 +139,6 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
             await connection.CloseAsync();
         }
     }
+
+    private static bool IsNullResult(object? o) => o is null or DBNull;
 }
