@@ -109,10 +109,10 @@ public static class Commanding
 
     private static void MapHistory(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("history/{entityId}", GetHistory);
+        endpoints.MapGet("history/{entityId}", GetHistory).WithGroupName("History");
     }
 
-    private static async Task GetHistory(HttpContext context)
+    private static async Task GetHistory(HttpContext context, string entityId)
     {
         var result = await new HistoryQueryRequest(context).Get();
         await SendResponse(context, result);

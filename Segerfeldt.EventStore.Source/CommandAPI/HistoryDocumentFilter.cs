@@ -12,10 +12,10 @@ internal sealed class HistoryDocumentFilter : IDocumentFilter
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
         swaggerDoc
-            .AddPathItem("/history/{id}")
+            .AddPathItem("/history/{entityId}")
             .AddParameter(new OpenApiParameter
             {
-                Name = "id",
+                Name = "entityId",
                 Description = "The id of the entity to look up",
                 In = ParameterLocation.Path,
                 Required = true,
