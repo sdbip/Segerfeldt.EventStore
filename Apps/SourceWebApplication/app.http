@@ -1,0 +1,25 @@
+### RegisterUser
+
+POST https://localhost:7167/user
+Authorization: Username test-user
+
+{
+    "username": "some_user"
+}
+
+### SetEmailAddress
+
+POST https://localhost:7167/user/johan/emailAddress
+Authorization: Username test-user
+
+{
+    "emailAddress": "test@test.nu"
+}
+
+### Get history for projection
+
+GET https://localhost:7167/history?after=
+
+### Get history for single entity
+
+GET https://localhost:7167/history/some_user
