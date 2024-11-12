@@ -12,7 +12,7 @@ Value-objects can indeed be aggregates! Being an aggregate does not imply having
 
 ## In this Library
 
-The term aggregate, as used by Evans, is replaced with `Entity` in this library; mostly because every aggregate, by his definitionn, *is* indeed an entity: the aggregate root is the container of all its children. There is no need to add a second word for the same concept. Even if it is to illustrate an interesting and useful rule.
+The term aggregate, as used by Evans, is replaced with `Entity` in this library; mostly because every aggregate, by his definition, *is* indeed an entity; the aggregate root is the container of all its children. There is no need to add a second word for the same concept. Even if it is to illustrate an interesting and useful rule.
 
 The aggregate *rule* still applies though. Entities that belong to an aggregate relationship should only ever be accessed through the root entity. It should not be possible to refer to a child entity without its parent nearby. Unfortunately, there is no way to enforce such a rule through generic architecture. It is up to the developers who employ the library to design against it. Or to simply maintain discipline.
 
@@ -26,6 +26,6 @@ The aggregate rule is a rule of discipline, not one that can be prevented by cle
 
 ### Aggregate as a Command Structure
 
-Other libraries often treat the `Aggregate` much like a list of commands rather than a modelling object. Commands often perform multiple operations on the same entity in one batch. It does not meaningfully allow for manipulating multiple (root) entities. This style of implementation (or the interpretation perhaps) does not make composition or operations very easy at all.
+Other libraries often treat the `Aggregate` much like a monolithic command-handler for a list of commands rather than a modelling object. Commands often perform multiple changes in one operation. And sometimes a command needs to perform changes to multiple entities; accessing one entity to change another (that isn't part of its aggregate) would make for a very odd API.
 
-Better then if a (web API) command could focus on the HTTP request/response and think of entities in more abstract terms.
+Better then if a (web API) command could focus on the HTTP request/response and think of entities in more abstract (and composable) terms.
