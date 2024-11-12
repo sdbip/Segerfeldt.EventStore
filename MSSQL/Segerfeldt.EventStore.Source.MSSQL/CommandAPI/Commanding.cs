@@ -14,6 +14,7 @@ public static class Commanding
     /// <param  name="connectionString">the connection-string to access the database</param>
     public static IServiceCollection UseSQLServerEventStore(this IServiceCollection services, string connectionString, EventStoreOptions? options = null)
     {
+        services.AddSingleton<IProjectionRepository, SQLServerProjectionRepository>();
         return services.UseEventStore(_ => CreateConnection(), options ?? new EventStoreOptions { PrepareDatabase = _ => Schema.CreateIfMissing(CreateConnection()) });
 
         DbConnection CreateConnection() => new SqlConnection(connectionString);

@@ -4,7 +4,6 @@ using Npgsql;
 
 using Segerfeldt.EventStore.Source.CommandAPI;
 
-using System;
 using System.Data.Common;
 
 namespace Segerfeldt.EventStore.Source.PostgreSQL.CommandAPI;

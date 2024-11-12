@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Segerfeldt.EventStore.Source;
 
 /// <summary>An ordinal for sorting events chronologically</summary>
+[JsonConverter(typeof(PositionStringConverter))]
 public sealed class Position : ValueObject<Position>, IComparable<Position>
 {
     /// <summary>The first ever published event</summary>
@@ -34,4 +37,18 @@ public sealed class Position : ValueObject<Position>, IComparable<Position>
     public override string ToString() => $"[{Value}]";
 
     public int CompareTo(Position? other) => Value.CompareTo(other?.Value);
+
+    private class PositionStringConverter : JsonConverter<Position>
+    {
+        public override Position? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (typeToConvert != typeof(EntityId)) throw new ArgumentOutOfRangeException(nameof(typeToConvert), $"Unsupported type {typeToConvert}");
+            return Safe(reader.GetInt64());
+        }
+
+        public override void Write(Utf8JsonWriter writer, Position value, JsonSerializerOptions options)
+        {
+            writer.WriteNumberValue(value.Value);
+        }
+    }
 }

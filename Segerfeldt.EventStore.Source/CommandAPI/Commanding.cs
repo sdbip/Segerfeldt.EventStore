@@ -49,15 +49,36 @@ public static class Commanding
         return services;
     }
 
-    public static SwaggerGenOptions DocumentCommands(this SwaggerGenOptions swaggerOptions, params Assembly[] assemblies)
+    public static ProjectionEndpointConfiguration UseProjectionEndpoint<TProjectionRepository>(this IServiceCollection services) where TProjectionRepository : class, IProjectionRepository
+    {
+        services.AddSingleton<IProjectionRepository, TProjectionRepository>();
+        return services.UseProjectionEndpoint();
+    }
+
+    public static ProjectionEndpointConfiguration UseProjectionEndpoint(this IServiceCollection services)
+    {
+        var config = new ProjectionEndpointConfiguration(services);
+        services.AddSingleton(config);
+        return config;
+    }
+
     /// <summary>Add Swagger documentation for command handlers from their XML documentation</summary>
     /// <param name="assemblies">assemblies to search for command definitions</param>
     /// <param name="swaggerOptions">the Swagger configuration to modify</param>
+    public static SwaggerGenOptions DocumentCommands(this SwaggerGenOptions swaggerOptions, params Assembly[] assemblies)
     {
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
         swaggerOptions.DocumentFilter<HistoryDocumentFilter>();
         swaggerOptions.DocumentFilter<CommandsDocumentFilter>(assemblies.AsEnumerable());
+        return swaggerOptions;
+    }
+
+    /// <summary>Add Swagger documentation for the projection/ endpoint</summary>
+    /// <param name="swaggerOptions">the Swagger configuration to modify</param>
+    public static SwaggerGenOptions DocumentProjectionEndpoint(this SwaggerGenOptions swaggerOptions)
+    {
+        swaggerOptions.DocumentFilter<ProjectionDocumentFilter>();
         return swaggerOptions;
     }
 
@@ -69,8 +90,21 @@ public static class Commanding
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
         builder.MapHistory();
+        if (builder.ServiceProvider.GetService<ProjectionEndpointConfiguration>() is not null)
+            builder.MapProjectionEndpoint();
         builder.MapCommandHandlers(assemblies);
         return builder;
+    }
+
+    private static void MapProjectionEndpoint(this IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("history/", GetProjection);
+    }
+
+    private static async Task GetProjection(HttpContext context)
+    {
+        var result = await new ProjectionQueryRequest(context).GetAsync();
+        await SendResponse(context, result);
     }
 
     private static void MapHistory(this IEndpointRouteBuilder endpoints)

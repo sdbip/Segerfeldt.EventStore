@@ -14,6 +14,8 @@ internal sealed class EmailAddress : ValueObject<EmailAddress>
         return new EmailAddress(value);
     }
 
+    public override string ToString() => value;
+
     public static EmailAddress Prevalidated(string value) => new(value);
 
     public static implicit operator string(EmailAddress value) => value.value;

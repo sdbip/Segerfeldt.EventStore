@@ -17,6 +17,6 @@ internal sealed class User(EntityId id, EntityVersion version) : EntityBase(id, 
 
     internal void SetEmailAddress(EmailAddress emailAddress)
     {
-        Add(new UnpublishedEvent("EmailAddressChanged", new { emailAddress }));
+        Add(new UnpublishedEvent("EmailAddressChanged", new { emailAddress = emailAddress.ToString() }));
     }
 }

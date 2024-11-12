@@ -14,6 +14,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     // EventStore: Add Commands to Swagger documentation
     options.DocumentCommands();
+    options.DocumentProjectionEndpoint();
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "SourceWebApplication.xml"));
 });
 
@@ -24,6 +25,7 @@ builder.Services.AddAuthentication(options => {
 
 // EventStore: A connection pool is needed to generate CommandContext for command handlers
 builder.Services.UseSQLiteEventStore(builder.Configuration.GetConnectionString("main")!);
+builder.Services.UseProjectionEndpoint();
 
 var app = builder.Build();
 
