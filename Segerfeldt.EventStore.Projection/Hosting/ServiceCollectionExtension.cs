@@ -75,10 +75,10 @@ internal class WebServiceHistoryEventSourceRepository(Uri baseURL) : IEventSourc
 {
     private readonly HttpClient client = new() { BaseAddress = baseURL };
 
-    public IEnumerable<Event> GetEvents(long afterPosition, int maxCount)
+    public async Task<IEnumerable<Event>> GetEventsAsync(long afterPosition, int maxCount)
     {
-        var response = client.GetAsync($"/history?after={afterPosition}&maxCount={maxCount}").Result;
-        var json = response.Content.ReadAsStringAsync().Result;
+        var response = await client.GetAsync($"/history?after={afterPosition}&maxCount={maxCount}");
+        var json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<IEnumerable<Event>>(json) ?? [];
     }
 }

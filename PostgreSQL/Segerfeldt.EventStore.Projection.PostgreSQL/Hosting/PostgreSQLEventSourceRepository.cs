@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.PostgreSQL.Hosting;
 
@@ -11,9 +12,9 @@ public sealed class PostgreSQLEventSourceRepository(NpgsqlConnection connection)
 {
     private readonly NpgsqlConnection connection = connection;
 
-    public IEnumerable<Event> GetEvents(long afterPosition, int maxCount)
+    public async Task<IEnumerable<Event>> GetEventsAsync(long afterPosition, int maxCount)
     {
-        using var command = connection.CreateCommand("""
+        await using var command = connection.CreateCommand("""
             SELECT Events.*, Entities.type AS entity_type FROM Events
                 JOIN Entities ON Entities.id = Events.entity_id
                 WHERE position > @position
@@ -22,8 +23,8 @@ public sealed class PostgreSQLEventSourceRepository(NpgsqlConnection connection)
         command.AddParameter("@position", afterPosition);
         command.AddParameter("@maxCount", maxCount);
 
-        connection.Open();
-        try { return command.ExecuteReader().AllRowsAs(ReadEvent); }
+        await connection.OpenAsync();
+        try { return (await command.ExecuteReaderAsync()).AllRowsAs(ReadEvent); }
         catch (DbException) { return []; } // No connection => no events.
         finally { connection.Close(); }
     }

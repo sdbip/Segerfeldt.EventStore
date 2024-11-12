@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection;
 
@@ -7,5 +8,5 @@ public interface IEventSourceRepository
 {
     /// <summary>Gets new events sorted chronologically</summary>
     /// <param name="afterPosition">The last position to skip as it has already been processed.</param>
-    IEnumerable<Event> GetEvents(long afterPosition, int maxCount);
+    Task<IEnumerable<Event>> GetEventsAsync(long afterPosition, int maxCount);
 }

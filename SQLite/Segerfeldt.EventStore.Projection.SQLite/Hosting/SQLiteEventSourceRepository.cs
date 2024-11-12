@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Hosting;
 
@@ -9,7 +10,8 @@ public sealed class SQLiteEventSourceRepository(IDbConnection connection) : IEve
 {
     private readonly IDbConnection connection = connection;
 
-    public IEnumerable<Event> GetEvents(long afterPosition, int maxCount)
+    public Task<IEnumerable<Event>> GetEventsAsync(long afterPosition, int maxCount) => Task.FromResult(GetEvents(afterPosition, maxCount));
+    private IEnumerable<Event> GetEvents(long afterPosition, int maxCount)
     {
         using var command = connection.CreateCommand("""
             SELECT Events.*, Entities.type AS entity_type FROM Events

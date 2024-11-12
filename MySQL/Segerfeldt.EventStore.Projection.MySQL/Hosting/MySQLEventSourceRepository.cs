@@ -9,7 +9,7 @@ public sealed class MySQLEventSourceRepository(MySqlConnection connection) : IEv
 {
     private readonly MySqlConnection connection = connection;
 
-    public IEnumerable<Event> GetEvents(long afterPosition, int maxCount)
+    public async Task<IEnumerable<Event>> GetEventsAsync(long afterPosition, int maxCount)
     {
         using var command = connection.CreateCommand("""
             SELECT Events.*, Entities.type AS entity_type FROM Events
@@ -20,8 +20,8 @@ public sealed class MySQLEventSourceRepository(MySqlConnection connection) : IEv
         command.AddParameter("@position", afterPosition);
         command.AddParameter("@maxCount", maxCount);
 
-        connection.Open();
-        try { return command.ExecuteReader().AllRowsAs(ReadEvent); }
+        await connection.OpenAsync();
+        try { return (await command.ExecuteReaderAsync()).AllRowsAs(ReadEvent); }
         catch (DbException) { return []; } // No connection => no events.
         finally { connection.Close(); }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +49,7 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
 
     internal int PollEventsTableOnce()
     {
-        var unsortedEvents = repository.GetEvents(lastReadPosition, maxCount: 100);
+        var unsortedEvents = repository.GetEventsAsync(lastReadPosition, maxCount: 100).Result;
         return Emit(unsortedEvents, maxCount: 100);
     }
 
