@@ -1,3 +1,5 @@
+using Microsoft.Data.Sqlite;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.SQLite.Hosting;
 
-public sealed class SQLiteEventSourceRepository(DbConnection connection) : IEventSourceRepository
+public sealed class SQLiteEventSourceRepository(SqliteConnection connection) : IEventSourceRepository
 {
     public async Task<IEnumerable<Event>> GetEventsAsync(long afterPosition, int maxCount)
     {
