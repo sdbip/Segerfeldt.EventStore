@@ -5,6 +5,7 @@
 - Add more user manual stuff
   - How to define `[ReceivesEvent(eventName, Entity = typeName)]` methods
   - How to define `[ReplaysEvent(eventName)]` methods
+  - How to set up the new `WebServiceEventSourceRepository` and endpoint.
 - Integrate better with the authentication handler.
   - `Forbid()` in a controller calls `Forbid()` on the handler.
   - The `AuthorizeAttribute` triggers the authorization handler(s) before even instantiating the controller. If the auth handler doesn't accept the user credentials the endpoint is not executed.
