@@ -125,3 +125,24 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
         }
     }
 }
+
+internal static class EventPublisherRepositoryExtensions
+{
+    public static async Task<EntityVersion> GetCurrentEntityVersionAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
+    {
+        var version = await repository.GetCurrentVersionAsync(entityId, operation);
+        return version is null ? EntityVersion.New : EntityVersion.Safe(version.Value);
+    }
+
+    public static async Task<Ordinal> GetNextOrdinalAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
+    {
+        var ordinal = await repository.GetHighestOrdinalAsync(entityId, operation);
+        return ordinal.HasValue ? Ordinal.Safe(ordinal.Value + 1) : Ordinal.Zero;
+    }
+
+    public static async Task<Position> GetNextPositionAsync(this IEventPublisherRepository repository, IAtomicOperation operation)
+    {
+        var position = await repository.GetLastPositionAsync(operation);
+        return position.HasValue ? Position.Safe(position.Value + 1) : Position.Zero;
+    }
+}
