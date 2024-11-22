@@ -30,7 +30,7 @@ internal class SQLServerProjectionRepository(EventStoreConnectionFactory connect
             Details: JsonSerializer.Deserialize<JsonElement>((string)r["details"]),
             EntityId: EntityId.Value((string)r["entity_id"]),
             EntityType: EntityType.Name((string)r["entity_type"]),
-            Ordinal: EventOrdinal.Of((int)r["ordinal"]),
+            Ordinal: Ordinal.Of((int)r["ordinal"]),
             Position: Position.Of((long)r["position"])));
     }
 }

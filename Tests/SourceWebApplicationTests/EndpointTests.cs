@@ -108,7 +108,7 @@ public sealed class EndpointTests
                 EntityType = EntityType.Name("User"),
                 Name = "Registered",
                 Details = "{}",
-                Ordinal = EventOrdinal.Zero,
+                Ordinal = Ordinal.Zero,
                 Position = Position.Zero
             }));
             Assert.That(new
@@ -125,7 +125,7 @@ public sealed class EndpointTests
                 EntityType = EntityType.Name("User"),
                 Name = "EmailAddressChanged",
                 Details = @"{""emailAddress"":""user@testusers.com""}",
-                Ordinal = EventOrdinal.Of(1),
+                Ordinal = Ordinal.Of(1),
                 Position = Position.Of(1)
             }));
         });

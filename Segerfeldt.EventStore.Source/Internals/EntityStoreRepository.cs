@@ -22,7 +22,7 @@ public class EntityStoreRepository(EventStoreConnectionFactory connectionFactory
         return await command.ExecuteScalarAsync(cancellationToken) as string;
     }
 
-    public async Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, DbTransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, Ordinal? after = null, DbTransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         // await using
         var connection = connectionFactory.CreateConnection();

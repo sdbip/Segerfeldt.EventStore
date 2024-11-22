@@ -114,7 +114,7 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
         return new UpdatedStorePosition(position, entityVersions);
 
         // ReSharper disable once IteratorNeverReturns
-        static IEnumerable<EventOrdinal> IncrementingOrdinalsFrom(EventOrdinal first)
+        static IEnumerable<Ordinal> IncrementingOrdinalsFrom(Ordinal first)
         {
             var next = first;
             while (true)

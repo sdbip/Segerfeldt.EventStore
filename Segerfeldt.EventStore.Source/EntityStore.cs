@@ -27,7 +27,7 @@ public sealed class EntityStore(IEntityStoreRepository repository)
     /// <param name="transaction">An active transaction (used when projecting) during which the requested entity might have been inserted</param>
     /// <param name="cancellationToken"></param>
     /// <returns>the complete history of the entity</returns>
-    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, EventOrdinal? after = null, IDbTransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<EntityHistory?> GetHistoryAsync(EntityId entityId, Ordinal? after = null, IDbTransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var nullableDAO = await repository.GetHistoryAsync(entityId, after, transaction as DbTransaction, cancellationToken);
         if (!nullableDAO.HasValue) return null;

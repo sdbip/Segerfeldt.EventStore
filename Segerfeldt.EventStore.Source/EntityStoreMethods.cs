@@ -67,7 +67,7 @@ public static class EntityStoreMethods
     /// <param name="entityStore"></param>
     /// <param name="entityId">the unique identifier of the entity to reconstitute</param>
     /// <returns>the complete history of the entity</returns>
-    public static EntityHistory? GetHistory(this EntityStore entityStore, EntityId entityId, EventOrdinal? after = null, IDbTransaction? transaction = null) =>
+    public static EntityHistory? GetHistory(this EntityStore entityStore, EntityId entityId, Ordinal? after = null, IDbTransaction? transaction = null) =>
         entityStore.GetHistoryAsync(entityId, after, transaction).Result;
 
 
@@ -108,11 +108,11 @@ public static class EntityStoreMethods
             : [id, version, entityStore]);
     }
 
-    private class SnapshotRestorer<TEntity>(EntityId id, EntityType entityType, EventOrdinal? ordinal, Action<TEntity> restore) where TEntity : class, IEntity
+    private class SnapshotRestorer<TEntity>(EntityId id, EntityType entityType, Ordinal? ordinal, Action<TEntity> restore) where TEntity : class, IEntity
     {
         public EntityId Id { get; } = id;
         public EntityType EntityType { get; } = entityType;
-        public EventOrdinal? Ordinal => ordinal;
+        public Ordinal? Ordinal => ordinal;
 
         public static SnapshotRestorer<TEntity> Applying(ISnapshot<TEntity> snapshot) => new(snapshot.Id, snapshot.EntityType, snapshot.Ordinal, snapshot.Restore);
 

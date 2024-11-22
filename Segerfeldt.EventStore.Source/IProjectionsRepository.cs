@@ -14,4 +14,4 @@ public interface IProjectionRepository
     Task<IEnumerable<EventDAO>> GetEventsAsync(long? after, int maxCount, CancellationToken cancellationToken);
 }
 
-public record EventDAO(string Name, JsonElement Details, EntityId EntityId, EntityType EntityType, EventOrdinal Ordinal, Position Position);
+public record EventDAO(string Name, JsonElement Details, EntityId EntityId, EntityType EntityType, Ordinal Ordinal, Position Position);

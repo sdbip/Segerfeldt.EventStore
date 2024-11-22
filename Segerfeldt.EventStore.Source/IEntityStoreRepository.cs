@@ -7,7 +7,7 @@ namespace Segerfeldt.EventStore.Source;
 public interface IEntityStoreRepository
 {
     Task<string?> GetTypeAsync(EntityId entityId, CancellationToken cancellationToken);
-    Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, EventOrdinal? after, DbTransaction? transaction, CancellationToken cancellationToken);
+    Task<HistoryDAO?> GetHistoryAsync(EntityId entityId, Ordinal? after, DbTransaction? transaction, CancellationToken cancellationToken);
 }
 
 public readonly struct HistoryDAO

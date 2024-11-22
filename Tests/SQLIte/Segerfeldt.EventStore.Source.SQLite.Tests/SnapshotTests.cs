@@ -28,7 +28,7 @@ public sealed class SnapshotTests
         var snapshot = new Snapshot(
             EntityId.Value("an-entity-1"),
             EntityType.Name("a-type"),
-            EventOrdinal.Of(13)) { Value = 19 };
+            Ordinal.Of(13)) { Value = 19 };
         var entity = store.Reconstitute(snapshot);
 
         Assert.That(new { entity?.Id, entity?.Version, entity?.SnapshotValue },
@@ -45,7 +45,7 @@ public sealed class SnapshotTests
         var snapshot = new Snapshot(
             EntityId.Value("an-entity-2"),
             EntityType.Name("a-type"),
-            EventOrdinal.Of(42));
+            Ordinal.Of(42));
         var entity = store.Reconstitute(snapshot);
 
         var expected = new[] { "after-snapshot-event" };
@@ -74,11 +74,11 @@ public sealed class SnapshotTests
         command.ExecuteNonQuery();
     }
 
-    private class Snapshot(EntityId id, EntityType entityType, EventOrdinal ordinal) : ISnapshot<MyEntity>
+    private class Snapshot(EntityId id, EntityType entityType, Ordinal ordinal) : ISnapshot<MyEntity>
     {
         public EntityId Id { get; } = id;
         public EntityType EntityType { get; } = entityType;
-        public EventOrdinal Ordinal { get; } = ordinal;
+        public Ordinal Ordinal { get; } = ordinal;
 
         public int Value { get; init; }
 

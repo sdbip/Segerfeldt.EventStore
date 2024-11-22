@@ -30,7 +30,7 @@ public class StandardCompliantProjectionRepository(EventStoreConnectionFactory c
             Details: JsonSerializer.Deserialize<JsonElement>((string)r["details"])!,
             EntityId: EntityId.Value((string)r["entity_id"]),
             EntityType: EntityType.Name((string)r["entity_type"]),
-            Ordinal: EventOrdinal.Of(r.GetInt32(r.GetOrdinal("ordinal"))),
+            Ordinal: Ordinal.Of(r.GetInt32(r.GetOrdinal("ordinal"))),
             Position: Position.Of(r.GetInt64(r.GetOrdinal("position")))));
     }
 }

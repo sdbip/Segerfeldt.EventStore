@@ -6,7 +6,7 @@ public interface ISnapshot<in TEntity> where TEntity : class, IEntity
     EntityId Id { get; }
     EntityType EntityType { get; }
     /// <summary>the ordinal of the last event added to this entity when the snapshot was made</summary>
-    EventOrdinal Ordinal { get; }
+    Ordinal Ordinal { get; }
 
     /// <summary>Restores the state of an entity from this snapshot</summary>
     /// <param name="entity"></param>
