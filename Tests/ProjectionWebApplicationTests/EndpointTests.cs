@@ -24,14 +24,14 @@ public sealed class EndpointTests
         webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
 
-        var connection = webApplicationFactory.Services.GetRequiredService<TargetDatabase>().CreateConnection();
+        var connection = webApplicationFactory.Services.GetRequiredKeyedService<TargetDatabase>("events").CreateConnection();
         AtomicSQLiteProjectionsTable.AddSchema(connection);
     }
 
     [TearDown]
     public void TearDown()
     {
-        var connection = webApplicationFactory.Services.GetRequiredService<TargetDatabase>().CreateConnection();
+        var connection = webApplicationFactory.Services.GetRequiredKeyedService<TargetDatabase>("events").CreateConnection();
         var command = connection.CreateCommand("DELETE FROM Players; DELETE FROM Projections");
 
         connection.Open();

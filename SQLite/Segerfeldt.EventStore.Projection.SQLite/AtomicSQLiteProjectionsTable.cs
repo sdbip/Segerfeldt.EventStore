@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.SQLite;
 
-public sealed class AtomicSQLiteProjectionsTable([ServiceKey] string source, TargetDatabase database) : IProjectionTracker
+public sealed class AtomicSQLiteProjectionsTable([ServiceKey] string name, IServiceProvider serviceProvider) : IProjectionTracker
 {
-    private readonly string source = source;
-    private readonly TargetDatabase database = database;
+    private readonly string source = name;
+    private readonly TargetDatabase database = serviceProvider.GetRequiredKeyedService<TargetDatabase>(name);
 
     public static void AddSchema(IDbConnection connection)
     {

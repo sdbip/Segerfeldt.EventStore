@@ -16,7 +16,7 @@ public sealed class EventSourceConfigurationWithoutTarget(IServiceCollection ser
     /// <param name="connectionFactory">A function that can create connections to the target database</param>
     public EventSourceConfiguration SetTarget(Func<IDbConnection> connectionFactory)
     {
-        services.AddSingleton(new TargetDatabase(connectionFactory));
+        services.AddKeyedSingleton(name, new TargetDatabase(connectionFactory));
         return new EventSourceConfiguration(services, name);
     }
 }

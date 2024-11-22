@@ -25,7 +25,7 @@ builder.Services.AddHostedSQLiteEventSource("events", builder.Configuration.GetC
 {
     Initialization = p =>
     {
-        var connection = p.GetRequiredService<TargetDatabase>().CreateConnection();
+        var connection = p.GetRequiredKeyedService<TargetDatabase>("events").CreateConnection();
         Schema.CreateIfMissing(connection);
     }
 })

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Segerfeldt.EventStore.Projection.SQLite.Tests;
 
 // ReSharper disable once InconsistentNaming
@@ -11,7 +13,7 @@ public sealed class AtomicSQLiteProjectionsTableTests
     {
         connection = new InMemoryConnection();
         AtomicSQLiteProjectionsTable.AddSchema(connection);
-        table = new AtomicSQLiteProjectionsTable("source", new TargetDatabase(() => connection));
+        table = new AtomicSQLiteProjectionsTable("source", new MockServiceProvider(new TargetDatabase(() => connection)));
     }
 
     [TearDown]
@@ -71,5 +73,12 @@ public sealed class AtomicSQLiteProjectionsTableTests
 
         using var command = connection.CreateCommand("SELECT COUNT(*) FROM Projections");
         Assert.That(command.ExecuteScalar(), Is.EqualTo(0));
+    }
+
+    private class MockServiceProvider(TargetDatabase targetDatabase) : IKeyedServiceProvider
+    {
+        public object? GetKeyedService(Type serviceType, object? serviceKey) => targetDatabase;
+        public object GetRequiredKeyedService(Type serviceType, object? serviceKey) => targetDatabase;
+        public object? GetService(Type serviceType) => targetDatabase;
     }
 }

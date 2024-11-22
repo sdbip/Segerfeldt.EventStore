@@ -48,7 +48,7 @@ public static class ServiceCollectionExtension
     {
         services.AddKeyedSingleton(name, (p, n) => new EventSource(
             createNamedEventSourceRepository(p, n),
-            p.GetRequiredService<TargetDatabase>(),
+            p.GetRequiredKeyedService<TargetDatabase>(n),
             p.GetRequiredKeyedService<ReceptacleCollection>(n),
             p.GetKeyedService<IProjectionTracker>(n),
             p.GetKeyedService<IPollingStrategy>(n) ?? p.GetService<IPollingStrategy>()));

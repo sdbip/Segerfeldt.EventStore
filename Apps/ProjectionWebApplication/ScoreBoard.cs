@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 using Segerfeldt.EventStore.Projection;
 
 using System;
@@ -5,8 +7,10 @@ using System.Collections.Generic;
 
 namespace ProjectionWebApplication;
 
-public sealed class ScoreBoard(TargetDatabase database) : ReceptacleBase
+public sealed class ScoreBoard(IServiceProvider serviceProvider) : ReceptacleBase
 {
+    private readonly TargetDatabase database = serviceProvider.GetRequiredKeyedService<TargetDatabase>("events");
+
     public IEnumerable<(string name, int score)> PlayerScores
     {
         get
