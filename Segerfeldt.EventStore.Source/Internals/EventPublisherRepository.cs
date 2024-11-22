@@ -13,9 +13,9 @@ public interface IEventPublisherRepository
     Task<IAtomicOperation> BeginAtomicOperationAsync();
     IAtomicOperation CreateOperation(IDbTransaction transaction);
 
-    Task<EntityVersion?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation);
-    Task<Ordinal?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation);
-    Task<Position?> GetLastPositionAsync(IAtomicOperation operation);
+    Task<int?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation);
+    Task<int?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation);
+    Task<long?> GetLastPositionAsync(IAtomicOperation operation);
 
     Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation);
     Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, Ordinal ordinal, Position position, IAtomicOperation operation);
@@ -33,19 +33,19 @@ internal static class EventPublisherRepositoryExtensions
     public static async Task<EntityVersion> GetCurrentEntityVersionAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
     {
         var version = await repository.GetCurrentVersionAsync(entityId, operation);
-        return version ?? EntityVersion.New;
+        return version is null ? EntityVersion.New : EntityVersion.Safe(version.Value);
     }
 
     public static async Task<Ordinal> GetNextOrdinalAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
     {
         var ordinal = await repository.GetHighestOrdinalAsync(entityId, operation);
-        return ordinal?.Next() ?? Ordinal.Zero;
+        return ordinal.HasValue ? Ordinal.Safe(ordinal.Value + 1) : Ordinal.Zero;
     }
 
     public static async Task<Position> GetNextPositionAsync(this IEventPublisherRepository repository, IAtomicOperation operation)
     {
         var position = await repository.GetLastPositionAsync(operation);
-        return position?.Next() ?? Position.Zero;
+        return position.HasValue ? Position.Safe(position.Value + 1) : Position.Zero;
     }
 }
 
@@ -62,27 +62,27 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
     public IAtomicOperation CreateOperation(IDbTransaction transaction) =>
         new Transaction((DbConnection)transaction.Connection!, (DbTransaction)transaction);
 
-    public async Task<EntityVersion?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation)
+    public async Task<int?> GetCurrentVersionAsync(EntityId entityId, IAtomicOperation operation)
     {
         using var command = GetDbTransaction(operation).CreateCommand("SELECT version FROM Entities WHERE id = @entityId");
         command.AddParameter("@entityId", entityId.ToString());
         var scalar = await command.ExecuteScalarAsync();
-        return IsNullResult(scalar) ? null : EntityVersion.Safe(Convert.ToInt32(scalar));
+        return IsNullResult(scalar) ? null : Convert.ToInt32(scalar);
     }
 
-    public async Task<Ordinal?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation)
+    public async Task<int?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation)
     {
         var command = GetDbTransaction(operation).CreateCommand("SELECT max(ordinal) FROM Events WHERE entity_id = @entityId");
         command.AddParameter("@entityId", entityId.ToString());
         var result = await command.ExecuteScalarAsync();
-        return IsNullResult(result) ? null : Ordinal.Safe(Convert.ToInt32(result));
+        return IsNullResult(result) ? null : Convert.ToInt32(result);
     }
 
-    public async Task<Position?> GetLastPositionAsync(IAtomicOperation operation)
+    public async Task<long?> GetLastPositionAsync(IAtomicOperation operation)
     {
         var command = GetDbTransaction(operation).CreateCommand("SELECT max(position) FROM Events");
         var result = await command.ExecuteScalarAsync();
-        return IsNullResult(result) ? null : Position.Safe(Convert.ToInt64(result));
+        return IsNullResult(result) ? null : Convert.ToInt64(result);
     }
 
     public async Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation)
