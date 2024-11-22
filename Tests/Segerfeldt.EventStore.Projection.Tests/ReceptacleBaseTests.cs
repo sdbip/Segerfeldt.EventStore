@@ -9,8 +9,7 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodWithMatchingEventNameAndType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.Update(new Event("an-entity", EntityTypeTestingReceptacle.MatchedType, EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0),
-            new Transaction(Mock.Of<IDbTransaction>(), Mock.Of<IDbConnection>()));
+        receptacle.Update(new Event("an-entity", EntityTypeTestingReceptacle.MatchedType, EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
@@ -19,8 +18,7 @@ public sealed class ReceptacleBaseTests
     public void DoesNotInvokeMethodWithMismatchingEventType()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "mismatching-type", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0),
-            new Transaction(Mock.Of<IDbTransaction>(), Mock.Of<IDbConnection>()));
+        receptacle.Update(new Event("an-entity", "mismatching-type", EntityTypeTestingReceptacle.WhereReceptacleSpecifiesType, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Null);
     }
@@ -29,8 +27,7 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodIfEventTypeIgnored()
     {
         var receptacle = new EntityTypeTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "{}", 0, 0),
-            new Transaction(Mock.Of<IDbTransaction>(), Mock.Of<IDbConnection>()));
+        receptacle.Update(new Event("an-entity", "an-entity-type", EntityTypeTestingReceptacle.WhereReceptacleIgnoresType, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
@@ -39,8 +36,7 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodWithOnlyEventParameter()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "{}", 0, 0),
-            new Transaction(Mock.Of<IDbTransaction>(), Mock.Of<IDbConnection>()));
+        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsEventOnly, "{}", 0, 0));
 
         Assert.That(receptacle.ReceivedEvent, Is.Not.Null);
     }
@@ -49,8 +45,7 @@ public sealed class ReceptacleBaseTests
     public void InvokesMethodWithEntityIdAndDataParameters()
     {
         var receptacle = new ParameterListTestingReceptacle();
-        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, @"{""property"":42}", 0, 0),
-            new Transaction(Mock.Of<IDbTransaction>(), Mock.Of<IDbConnection>()));
+        receptacle.Update(new Event("an-entity", "an-entity-type", ParameterListTestingReceptacle.WhereReceptacleAcceptsIdAndData, @"{""property"":42}", 0, 0));
 
         Assert.That(receptacle.ReceivedEntityId, Is.EqualTo("an-entity"));
         Assert.That(receptacle.ReceivedData, Is.EqualTo(new EventData(42)));

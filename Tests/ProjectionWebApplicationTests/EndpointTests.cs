@@ -61,8 +61,7 @@ public sealed class EndpointTests
         Assert.Multiple(async () =>
         {
             Assert.That(response.IsSuccessStatusCode, Is.True);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            Assert.That(responseBody, Is.EqualTo(@"[{""name"":""Johan"",""score"":2}]"));
+            Assert.That(await response.Content.ReadAsStringAsync(), Is.EqualTo(@"[{""name"":""Johan"",""score"":2}]"));
         });
     }
 

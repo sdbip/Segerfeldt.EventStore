@@ -14,7 +14,7 @@ public sealed class ProjectionTests
     private MySqlConnection connection = null!;
     private EventSource eventSource = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
-    private Mock<IProjectionTracker> projectionTracker = null!;
+    private MockProjectionTracker projectionTracker = null!;
     private ReceptacleCollection receptacles = null!;
 
     [SetUp]
@@ -25,7 +25,7 @@ public sealed class ProjectionTests
 
         connection = new MySqlConnection(connectionString);
         delayConfiguration = new Mock<IPollingStrategy>();
-        projectionTracker = new Mock<IProjectionTracker>();
+        projectionTracker = new MockProjectionTracker();
         receptacles = new ReceptacleCollection();
 
         var targetConnection = new Mock<IDbConnection>();
@@ -36,7 +36,7 @@ public sealed class ProjectionTests
             new MySQLEventSourceRepository(new MySqlConnection(connectionString)),
             new TargetDatabase(() => targetConnection.Object),
             receptacles,
-            projectionTracker.Object,
+            projectionTracker,
             delayConfiguration.Object);
 
         delayConfiguration
@@ -120,7 +120,7 @@ public sealed class ProjectionTests
         GivenEntity("an-entity");
         GivenEvent("an-entity", "first-event", position: 32);
         GivenEvent("an-entity", "second-event", position: 33);
-        projectionTracker.Setup(t => t.GetLastFinishedPosition()).Returns(32);
+        projectionTracker.lastProjectedPosition = 32;
 
         var notifiedEvents = CaptureNotifiedEvents("first-event", "second-event");
 
@@ -132,14 +132,12 @@ public sealed class ProjectionTests
     [Test]
     public void ReportsNewPosition()
     {
-        var finishedPosition = CaptureFinishedPosition();
-
         GivenEntity("an-entity");
         GivenEvent("an-entity", "an-event", position: 1);
 
         ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        Assert.That(projectionTracker.lastProjectedPosition, Is.EqualTo(1));
     }
 
     private void GivenEntity(string entityId, int version = 1)
@@ -189,14 +187,6 @@ public sealed class ProjectionTests
         return events;
     }
 
-    private Trap<long> CaptureFinishedPosition()
-    {
-        var finishedPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>(), It.IsAny<Transaction>()))
-            .Callback<long, Transaction>((l, _) => finishedPosition.Value = l);
-        return finishedPosition;
-    }
-
     private void ClearTables()
     {
         connection.Open();
@@ -209,5 +199,18 @@ public sealed class ProjectionTests
         {
             connection.Close();
         }
+    }
+}
+
+public sealed class MockProjectionTracker : IProjectionTracker
+{
+    public long? lastProjectedPosition;
+    public long? GetLastFinishedPosition() => lastProjectedPosition;
+
+    public Task ProjectingPosition(long position, Action runProjection)
+    {
+        runProjection();
+        lastProjectedPosition = position;
+        return Task.CompletedTask;
     }
 }

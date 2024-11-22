@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.NUnit.Tests;
 
@@ -19,7 +20,7 @@ public sealed class EventSourceExtensionTests
             Mock.Of<IEventSourceRepository>(),
             new TargetDatabase(() => targetConnection.Object),
             new ReceptacleCollection([receptacle]),
-            Mock.Of<IProjectionTracker>(),
+            new MockProjectionTracker(),
             Mock.Of<IPollingStrategy>());
     }
 
@@ -47,5 +48,18 @@ public sealed class EventSourceExtensionTests
             EntityId = entityId;
             Details = details;
         }
+    }
+}
+
+public sealed class MockProjectionTracker : IProjectionTracker
+{
+    public long? lastProjectedPosition;
+    public long? GetLastFinishedPosition() => lastProjectedPosition;
+
+    public Task ProjectingPosition(long position, Action runProjection)
+    {
+        runProjection();
+        lastProjectedPosition = position;
+        return Task.CompletedTask;
     }
 }

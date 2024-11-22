@@ -17,5 +17,5 @@ public sealed class DelegateReceptacle(ProjectionDelegate @delegate, IEnumerable
     /// <param name="handledEvents">the events this delegate handles</param>
     public DelegateReceptacle(ProjectionDelegate @delegate, params string[] handledEvents) : this(@delegate, (IEnumerable<string>)handledEvents) { }
 
-    public void Update(Event @event, Transaction transaction) => @delegate(@event);
+    public void Update(Event @event) => @delegate(@event);
 }

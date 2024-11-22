@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.SQLite;
 
@@ -29,30 +30,17 @@ public sealed class AtomicSQLiteProjectionsTable([ServiceKey] string source, Ta
         finally { connection.Close(); }
     }
 
-    public void OnProjectionFinished(long position, Transaction transaction)
+    public Task ProjectingPosition(long position, Action runProjection)
     {
-        using var command = transaction.CreateCommand(
-            """
-            INSERT INTO Projections VALUES (@source, @position)
-            ON CONFLICT (source) DO UPDATE
-            SET position = @position;
-            """);
-        command.AddParameter("@source", source);
-        command.AddParameter("@position", position);
-        command.ExecuteNonQuery();
-    }
-
-    public void ProjectingPosition(long position, Action runProjection)
-    {
-        using var connection = database.CreateConnection();
-        connection.Open();
+        using var connection = database.OpenSharedConnection();
         connection.CreateCommand("BEGIN TRANSACTION").ExecuteNonQuery();
         try { runProjection(); }
         catch
         {
             connection.CreateCommand("ROLLBACK TRANSACTION").ExecuteNonQuery();
-            return;
+            return Task.CompletedTask;
         }
+
         using var command = connection.CreateCommand(
             """
             INSERT INTO Projections VALUES (@source, @position)
@@ -63,6 +51,7 @@ public sealed class AtomicSQLiteProjectionsTable([ServiceKey] string source, Ta
         command.AddParameter("@source", source);
         command.AddParameter("@position", position);
         try { command.ExecuteNonQuery(); }
-        finally { connection.Close(); }
+        finally { database.CloseSharedConnection(); }
+        return Task.CompletedTask;
     }
 }

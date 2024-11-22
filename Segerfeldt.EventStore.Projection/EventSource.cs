@@ -17,21 +17,14 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
 {
     private readonly IEventSourceRepository repository = repository;
     private readonly TargetDatabase database = database;
-    private readonly IProjectionTracker? tracker = tracker;
+    private readonly IProjectionTracker tracker = tracker ?? new NullProjectionTracker();
     private readonly IPollingStrategy pollingStrategy = pollingStrategy ?? new DefaultPollingStrategy();
-    private long lastReadPosition = -1;
     private CancellationTokenSource? currentDelay;
 
     /// <summary>Start projecting the source state</summary>
     public void BeginProjecting()
     {
-        GetPositionFromTracker();
         PollEventsTable();
-    }
-
-    internal void GetPositionFromTracker()
-    {
-        lastReadPosition = tracker?.GetLastFinishedPosition() ?? -1;
     }
 
     private void PollEventsTable()
@@ -49,7 +42,7 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
 
     internal int PollEventsTableOnce()
     {
-        var unsortedEvents = repository.GetEventsAsync(lastReadPosition, maxCount: 100).Result;
+        var unsortedEvents = repository.GetEventsAsync(tracker.GetLastFinishedPosition() ?? -1, maxCount: 100).Result;
         return Emit(unsortedEvents, maxCount: 100);
     }
 
@@ -65,21 +58,12 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
 
     private int Emit(List<(long position, IImmutableList<Event> events)> eventGroups)
     {
-        var count = 0;
+        var count = eventGroups.Sum(it => it.events.Count);
         foreach (var (position, events) in eventGroups)
-        {
-            var transaction = database.BeginTransaction();
-            count += events.Count;
-            try { foreach (var @event in events) Emit(@event, transaction); }
-            catch
+            tracker.ProjectingPosition(position, () =>
             {
-                transaction.Rollback();
-                throw;
-            }
-            lastReadPosition = position;
-            tracker?.OnProjectionFinished(position, transaction);
-            transaction.Commit();
-        }
+                foreach (var @event in events) Emit(@event);
+            });
 
         return count;
     }
@@ -98,9 +82,9 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
         }
     }
 
-    private void Emit(Event @event, Transaction transaction)
+    private void Emit(Event @event)
     {
-        foreach (var receptacle in GetReceptacles(@event)) receptacle.Update(@event, transaction);
+        foreach (var receptacle in GetReceptacles(@event)) receptacle.Update(@event);
     }
 
     private IEnumerable<IReceptacle> GetReceptacles(Event @event) => receptacles.GetReceptacles(@event.Name);
@@ -108,6 +92,19 @@ public sealed class EventSource(IEventSourceRepository repository, TargetDatabas
     private sealed class DefaultPollingStrategy : IPollingStrategy
     {
         public int NextDelay(int count) => count == 0 ? 60_000 : 1_000;
+    }
+
+    private sealed class NullProjectionTracker : IProjectionTracker
+    {
+        private long? lastProjectedPosition;
+        public long? GetLastFinishedPosition() => lastProjectedPosition;
+
+        public Task ProjectingPosition(long position, Action runProjection)
+        {
+            runProjection();
+            lastProjectedPosition = position;
+            return Task.CompletedTask;
+        }
     }
 }
 

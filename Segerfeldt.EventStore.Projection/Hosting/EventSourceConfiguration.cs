@@ -91,4 +91,27 @@ public sealed class EventSourceConfiguration(IServiceCollection services, string
         services.AddKeyedSingleton(name, (p, n) => projectionTrackerFunc(p));
         return this;
     }
+
+    /// <summary>Set the <see cref="IProjectionTracker"/> used to persist the position</summary>
+    /// <param name="projectionTrackerFunc">Function to call to instantiate the position tracker</param>
+    /// <returns>This <see cref="EventSourceConfiguration"/> for further configuration</returns>
+    public EventSourceConfiguration SetProjectionTracker(Func<IServiceProvider, string, IProjectionTracker> projectionTrackerFunc)
+    {
+        services.AddKeyedSingleton(name, (p, n) => projectionTrackerFunc(p, name));
+        return this;
+    }
+}
+
+internal static class ServiceProviderExtension {
+    public static object? Resolve(this IServiceProvider serviceProvider, Type serviceType, string key)
+    {
+        var constructors = serviceType.GetConstructors(BindingFlags.Public);
+        if (constructors.Length != 1) throw new InvalidOperationException($"Invalid type: {serviceType.FullName}. Must have exactly one public constructor.");
+
+        var parameterTypes = constructors[0].GetParameters().Select(p => p.ParameterType);
+        var parameters = parameterTypes
+            .Select(p => serviceProvider.Resolve(p, key) ?? ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, p))
+            .ToArray();
+        return constructors[0].Invoke(null, parameters);
+    }
 }

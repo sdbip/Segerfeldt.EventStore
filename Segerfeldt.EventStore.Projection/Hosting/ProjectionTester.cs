@@ -18,7 +18,6 @@ public class ProjectionTester(IServiceProvider serviceProvider)
 
     public static void EmitInitialEvents(EventSource eventSource)
     {
-        eventSource.GetPositionFromTracker();
         eventSource.PollEventsTableOnce();
     }
 

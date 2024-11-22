@@ -1,3 +1,6 @@
+using System;
+using System.Threading.Tasks;
+
 namespace Segerfeldt.EventStore.Projection;
 
 /// <summary>Tracks the position of the Projection database</summary>
@@ -13,8 +16,8 @@ public interface IProjectionTracker
     /// <summary>Reads the last position successfully handled by the projection receptacles</summary>
     long? GetLastFinishedPosition();
 
-    /// <summary>Signals that projection has completed emitting all events at the current position</summary>
-    /// This would be a good place to COMMIT the transacion if you have one.
-    /// <param name="position">the position of the last emitted events</param>
-    void OnProjectionFinished(long position, Transaction transaction);
+    /// <summary>Perform tasks (such as start/commit transaction) before and after emitting all events for the same position</summary>
+    /// <param name="position">The position of the emitted events; store this when done</param>
+    /// <param name="runProjection">This actually emits the events</param>
+    Task ProjectingPosition(long position, Action runProjection);
 }

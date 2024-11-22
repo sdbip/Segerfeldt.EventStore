@@ -1,8 +1,10 @@
 using Segerfeldt.EventStore.Projection.Hosting;
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Segerfeldt.EventStore.Projection.Tests;
 
@@ -13,20 +15,20 @@ public sealed class EventSourceTests
     private EventSource eventSource = null!;
     private ReceptacleCollection receptacles = null!;
     private Mock<IPollingStrategy> delayConfiguration = null!;
-    private Mock<IProjectionTracker> projectionTracker = null!;
+    private MockProjectionTracker projectionTracker = null!;
 
     [SetUp]
     public void Setup()
     {
         receptacles = new ReceptacleCollection();
         delayConfiguration = new Mock<IPollingStrategy>();
-        projectionTracker = new Mock<IProjectionTracker>();
+        projectionTracker = new MockProjectionTracker();
         repository = new Mock<IEventSourceRepository>();
         var targetConnection = new Mock<IDbConnection>();
         targetConnection.Setup(c => c.CreateCommand()).Returns(Mock.Of<IDbCommand>());
         targetConnection.Setup(c => c.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
 
-        eventSource = new EventSource(repository.Object, new TargetDatabase(() => targetConnection.Object), receptacles, projectionTracker.Object, delayConfiguration.Object);
+        eventSource = new EventSource(repository.Object, new TargetDatabase(() => targetConnection.Object), receptacles, projectionTracker, delayConfiguration.Object);
     }
 
     [Test]
@@ -75,11 +77,9 @@ public sealed class EventSourceTests
         repository.Setup(r => r.GetEventsAsync(It.IsAny<long>(), It.IsAny<int>()))
             .ReturnsAsync([new Event("an-entity", "some-entity", "first-event", @"{""value"":42}", ordinal: 0, position: 1)]);
 
-        var finishedPosition = CaptureFinishedPosition();
-
         ProjectionTester.EmitInitialEvents(eventSource);
 
-        Assert.That(finishedPosition.Value, Is.EqualTo(1));
+        Assert.That(projectionTracker.lastProjectedPosition, Is.EqualTo(1));
     }
 
     private List<Event> CaptureReceivedEvents(params string[] eventNames)
@@ -89,12 +89,17 @@ public sealed class EventSourceTests
             receptacles.Add(new DelegateReceptacle(events.Add, eventName));
         return events;
     }
+}
 
-    private Trap<long> CaptureFinishedPosition()
+public sealed class MockProjectionTracker : IProjectionTracker
+{
+    public long? lastProjectedPosition;
+    public long? GetLastFinishedPosition() => lastProjectedPosition;
+
+    public Task ProjectingPosition(long position, Action runProjection)
     {
-        var finishedPosition = new Trap<long>();
-        projectionTracker.Setup(t => t.OnProjectionFinished(It.IsAny<long>(), It.IsAny<Transaction>()))
-            .Callback<long, Transaction>((l, _) => finishedPosition.Value = l);
-        return finishedPosition;
+        runProjection();
+        lastProjectedPosition = position;
+        return Task.CompletedTask;
     }
 }
