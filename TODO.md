@@ -1,10 +1,6 @@
 # TODO
 
-- Remove all couplings to databases from EventStore.Source/Projection
-  - Do not create transactions in `EventSource`
-  - Does `EventSource` presume that there is a `TargetDatabase`?
-  - What if you want to project into memory? Or some other tech?
-- Add `AtomicX-SQLProjectionsTable` `ProjectionTracker` to the database implementations.
+- `MockProjectionTracker` is duplicated many times
 
 ## Icebox Issues & Ideas
 
@@ -33,3 +29,4 @@
 - Add sample applications using all database implementations
 - `Position` and `EventOrdinal` should not have a `[JsonConverter]`
   - `EventDAO` prevents removing it though.
+- Rename `EventOrdinal` and merge with `EntityVersion`
