@@ -9,6 +9,7 @@ using ProjectionWebApplication.Schema;
 
 using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.Hosting;
+using Segerfeldt.EventStore.Projection.SQLite;
 using Segerfeldt.EventStore.Projection.SQLite.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +31,7 @@ builder.Services.AddHostedSQLiteEventSource("events", builder.Configuration.GetC
 })
     .SetSQLiteTarget(builder.Configuration.GetConnectionString("projection")!)
     .AddReceptacles()
-    .SetProjectionTracker<ProjectionTracker>();
+    .SetProjectionTracker<AtomicSQLiteProjectionsTable>();
 
 var app = builder.Build();
 if (builder.Environment.IsDevelopment())

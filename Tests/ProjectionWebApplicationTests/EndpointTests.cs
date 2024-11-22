@@ -2,8 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Segerfeldt.EventStore.Projection;
 using Segerfeldt.EventStore.Projection.NUnit;
+using Segerfeldt.EventStore.Projection.SQLite;
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -21,13 +23,16 @@ public sealed class EndpointTests
     {
         webApplicationFactory = new();
         client = webApplicationFactory.CreateClient();
+
+        var connection = webApplicationFactory.Services.GetRequiredService<TargetDatabase>().CreateConnection();
+        AtomicSQLiteProjectionsTable.AddSchema(connection);
     }
 
     [TearDown]
     public void TearDown()
     {
         var connection = webApplicationFactory.Services.GetRequiredService<TargetDatabase>().CreateConnection();
-        var command = connection.CreateCommand("DELETE FROM Players");
+        var command = connection.CreateCommand("DELETE FROM Players; DELETE FROM Projections");
 
         connection.Open();
         try { command.ExecuteNonQuery(); }
@@ -68,9 +73,8 @@ public sealed class EndpointTests
 
         Assert.Multiple(async () =>
         {
-            Assert.That(response.IsSuccessStatusCode, Is.True);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            Assert.That(responseBody, Is.EqualTo(""));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(await response.Content.ReadAsStringAsync(), Is.Empty);
         });
     }
 

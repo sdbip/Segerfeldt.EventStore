@@ -11,7 +11,7 @@ public sealed class AtomicSQLiteProjectionsTableTests
     {
         connection = new InMemoryConnection();
         AtomicSQLiteProjectionsTable.AddSchema(connection);
-        table = new AtomicSQLiteProjectionsTable("source", connection);
+        table = new AtomicSQLiteProjectionsTable("source", new TargetDatabase(() => connection));
     }
 
     [TearDown]

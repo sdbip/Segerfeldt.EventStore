@@ -1,15 +1,16 @@
-using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 using System;
+using System.Data;
 
 namespace Segerfeldt.EventStore.Projection.SQLite;
 
-public sealed class AtomicSQLiteProjectionsTable(string source, SqliteConnection connection)
+public sealed class AtomicSQLiteProjectionsTable([ServiceKey] string source, TargetDatabase database) : IProjectionTracker
 {
-    private readonly SqliteConnection connection = connection;
     private readonly string source = source;
+    private readonly TargetDatabase database = database;
 
-    public static void AddSchema(SqliteConnection connection)
+    public static void AddSchema(IDbConnection connection)
     {
         connection.Open();
         using var command = connection.CreateCommand(
@@ -20,14 +21,31 @@ public sealed class AtomicSQLiteProjectionsTable(string source, SqliteConnection
 
     public long? GetLastFinishedPosition()
     {
+        using var connection = database.CreateConnection();
         using var command = connection.CreateCommand("SELECT position FROM Projections WHERE source = @source");
         command.AddParameter("@source", source);
+        connection.Open();
         try { return (long?)command.ExecuteScalar(); }
         finally { connection.Close(); }
     }
 
+    public void OnProjectionFinished(long position, Transaction transaction)
+    {
+        using var command = transaction.CreateCommand(
+            """
+            INSERT INTO Projections VALUES (@source, @position)
+            ON CONFLICT (source) DO UPDATE
+            SET position = @position;
+            """);
+        command.AddParameter("@source", source);
+        command.AddParameter("@position", position);
+        command.ExecuteNonQuery();
+    }
+
     public void ProjectingPosition(long position, Action runProjection)
     {
+        using var connection = database.CreateConnection();
+        connection.Open();
         connection.CreateCommand("BEGIN TRANSACTION").ExecuteNonQuery();
         try { runProjection(); }
         catch
