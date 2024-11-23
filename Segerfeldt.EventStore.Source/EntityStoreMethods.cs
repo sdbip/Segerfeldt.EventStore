@@ -99,13 +99,13 @@ public static class EntityStoreMethods
         return entity;
     }
 
-    private static TEntity Instantiate<TEntity>(this EntityStore entityStore, EntityId id, EntityVersion version) where TEntity : IEntity
+    private static TEntity Instantiate<TEntity>(this EntityStore entityStore, EntityId id, Ordinal version) where TEntity : IEntity
     {
         var constructor = typeof(TEntity).GetConstructor([typeof(EntityId), typeof(EntityVersion)])
             ?? throw new InvalidEntityException(typeof(TEntity));
         return (TEntity)constructor.Invoke(constructor.GetParameters().Length == 2
-            ? [id, version]
-            : [id, version, entityStore]);
+            ? [id, EntityVersion.Safe(version.Value)]
+            : [id, EntityVersion.Safe(version.Value), entityStore]);
     }
 
     private class SnapshotRestorer<TEntity>(EntityId id, EntityType entityType, Ordinal? ordinal, Action<TEntity> restore) where TEntity : class, IEntity

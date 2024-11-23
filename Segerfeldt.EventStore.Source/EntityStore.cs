@@ -34,7 +34,7 @@ public sealed class EntityStore(IEntityStoreRepository repository)
         var dao = nullableDAO.Value;
         return new EntityHistory(
             EntityType.Safe(dao.Type),
-            EntityVersion.Safe(dao.Version),
+            Ordinal.Safe(dao.Version),
             dao.Events
                 .Order(GenericComparer.Create<PublishedEventDAO>((e1, e2) => e1.Ordinal.CompareTo(e2.Ordinal)))
                 .Select(e => new PublishedEvent(e.Name, e.Details, e.Actor, Timestamp.DaysSinceUnixEpoch(e.Timestamp))));

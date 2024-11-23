@@ -29,4 +29,3 @@
 - Add sample applications using all database implementations
 - `Position` and `EventOrdinal` should not have a `[JsonConverter]`
   - `EventDAO` prevents removing it though.
-- Rename `EventOrdinal` and merge with `EntityVersion`

@@ -45,8 +45,8 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
     private async Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor, IAtomicOperation operation)
     {
         var currentVersion = await repository.GetCurrentEntityVersionAsync(entityId, operation);
-        if (currentVersion.IsNew) await repository.InsertEntityAsync(entityId, type, EntityVersion.Zero, operation);
-        return await InsertEventsForEntitiesAsync([(entityId, currentVersion, [@event])], actor, operation);
+        if (currentVersion.IsNew) await repository.InsertEntityAsync(entityId, type, Ordinal.Zero, operation);
+        return await InsertEventsForEntitiesAsync([(entityId, Ordinal.Safe(currentVersion.Value), [@event])], actor, operation);
     }
 
     /// <summary>Publish a single event for an entity</summary>
@@ -87,13 +87,13 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
             if (entity.Version != currentVersion)
                 throw new ConcurrentUpdateException(entity.Version, currentVersion);
 
-            if (currentVersion.IsNew) await repository.InsertEntityAsync(entity.Id, entity.Type, entity.Version, operation);
+            if (currentVersion.IsNew) await repository.InsertEntityAsync(entity.Id, entity.Type, Ordinal.Safe(entity.Version.Value), operation);
         }
 
-        return await InsertEventsForEntitiesAsync(entities.Where(e => e.UnpublishedEvents.Any()).Select(e => (e.Id, e.Version, e.UnpublishedEvents)), actor, operation);
+        return await InsertEventsForEntitiesAsync(entities.Where(e => e.UnpublishedEvents.Any()).Select(e => (e.Id, Ordinal.Safe(e.Version.Value), e.UnpublishedEvents)), actor, operation);
     }
 
-    private async Task<UpdatedStorePosition> InsertEventsForEntitiesAsync(IEnumerable<(EntityId, EntityVersion, IEnumerable<UnpublishedEvent>)> entities, string actor, IAtomicOperation operation)
+    private async Task<UpdatedStorePosition> InsertEventsForEntitiesAsync(IEnumerable<(EntityId, Ordinal, IEnumerable<UnpublishedEvent>)> entities, string actor, IAtomicOperation operation)
     {
         var position = await repository.GetNextPositionAsync(operation);
 

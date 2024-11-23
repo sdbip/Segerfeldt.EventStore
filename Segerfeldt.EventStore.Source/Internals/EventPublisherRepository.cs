@@ -17,9 +17,9 @@ public interface IEventPublisherRepository
     Task<int?> GetHighestOrdinalAsync(EntityId entityId, IAtomicOperation operation);
     Task<long?> GetLastPositionAsync(IAtomicOperation operation);
 
-    Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation);
+    Task InsertEntityAsync(EntityId id, EntityType type, Ordinal version, IAtomicOperation operation);
     Task InsertEventAsync(EntityId entityId, UnpublishedEvent @event, string actor, Ordinal ordinal, Position position, IAtomicOperation operation);
-    Task UpdateVersionAsync(EntityId id, EntityVersion version, IAtomicOperation operation);
+    Task UpdateVersionAsync(EntityId id, Ordinal version, IAtomicOperation operation);
 }
 
 public interface IAtomicOperation
@@ -64,7 +64,7 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
         return IsNullResult(result) ? null : Convert.ToInt64(result);
     }
 
-    public async Task InsertEntityAsync(EntityId id, EntityType type, EntityVersion version, IAtomicOperation operation)
+    public async Task InsertEntityAsync(EntityId id, EntityType type, Ordinal version, IAtomicOperation operation)
     {
         using var command = GetDbTransaction(operation).CreateCommand("INSERT INTO Entities (id, type, version) VALUES (@id, @type, @version)");
         command.AddParameter("@id", id.ToString());
@@ -73,7 +73,7 @@ public sealed class EventPublisherRepository(EventStoreConnectionFactory connect
         await command.ExecuteNonQueryAsync();
     }
 
-    public async Task UpdateVersionAsync(EntityId id, EntityVersion version, IAtomicOperation operation)
+    public async Task UpdateVersionAsync(EntityId id, Ordinal version, IAtomicOperation operation)
     {
         using var command = GetDbTransaction(operation).CreateCommand("UPDATE Entities SET version = @version WHERE id = @id");
         command.AddParameter("@id", id.ToString());
