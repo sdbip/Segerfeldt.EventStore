@@ -19,21 +19,20 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
     /// <summary>Publish all new changes since reconstituting an entity</summary>
     /// <param name="entities">the entities whose events to publish</param>
     /// <param name="actor">the actor/user who caused these changes</param>
-    public UpdatedStorePosition Publish(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor, IDbTransaction transaction) =>
-        PublishAsync(entityId, type, @event, actor, repository.CreateOperation(transaction)).Result;
+    public void Publish(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor, IDbTransaction transaction) =>
+        PublishAsync(entityId, type, @event, actor, repository.CreateOperation(transaction)).Wait();
 
     /// <summary>Publish all new changes since reconstituting an entity</summary>
     /// <param name="entities">the entities whose events to publish</param>
     /// <param name="actor">the actor/user who caused these changes</param>
-    public async Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
+    public async Task PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor)
     {
         var operation = await repository.BeginAtomicOperationAsync();
 
         try
         {
-            var result = await PublishAsync(entityId, type, @event, actor, operation);
+            await PublishAsync(entityId, type, @event, actor, operation);
             await operation.CommitAsync();
-            return result;
         }
         catch
         {
@@ -42,7 +41,7 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
         }
     }
 
-    private async Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor, IAtomicOperation operation)
+    private async Task PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor, IAtomicOperation operation)
     {
         var currentVersion = await repository.GetCurrentEntityVersionAsync(entityId, operation);
         if (currentVersion == EntityVersion.New)
@@ -51,7 +50,6 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
             await repository.UpdateVersionAsync(entityId, currentVersion.Next().Ordinal!, operation);
         var position = await repository.GetNextPositionAsync(operation);
         await InsertEventsForEntitiesAsync(position, [(entityId, [@event])], actor, operation);
-        return new UpdatedStorePosition(position, [(entityId, currentVersion.NextOrdinal())]);
     }
 
     /// <summary>Publish a single event for an entity</summary>
@@ -59,23 +57,22 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
     /// <param name="type">the type of the entity if it has to be created</param>
     /// <param name="event">the event to publish</param>
     /// <param name="actor">the actor/user who caused this change</param>
-    public UpdatedStorePosition PublishChanges(IEnumerable<IEntity> entities, string actor, IDbTransaction transaction) =>
-        PublishChangesAsync(entities, actor, repository.CreateOperation(transaction)).Result;
+    public void PublishChanges(IEnumerable<IEntity> entities, string actor, IDbTransaction transaction) =>
+        PublishChangesAsync(entities, actor, repository.CreateOperation(transaction)).Wait();
 
     /// <summary>Publish a single event for an entity</summary>
     /// <param name="entityId">the unique identifier for this entity</param>
     /// <param name="type">the type of the entity if it has to be created</param>
     /// <param name="event">the event to publish</param>
     /// <param name="actor">the actor/user who caused this change</param>
-    public async Task<UpdatedStorePosition> PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
+    public async Task PublishChangesAsync(IEnumerable<IEntity> entities, string actor)
     {
         var operation = await repository.BeginAtomicOperationAsync();
 
         try
         {
-            var result = await PublishChangesAsync(entities, actor, operation);
+            await PublishChangesAsync(entities, actor, operation);
             await operation.CommitAsync();
-            return result;
         }
         catch
         {
@@ -84,7 +81,7 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
         }
     }
 
-    private async Task<UpdatedStorePosition> PublishChangesAsync(IEnumerable<IEntity> entities, string actor, IAtomicOperation operation)
+    private async Task PublishChangesAsync(IEnumerable<IEntity> entities, string actor, IAtomicOperation operation)
     {
         foreach (var entity in entities)
         {
@@ -100,8 +97,6 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
 
         var position = await repository.GetNextPositionAsync(operation);
         await InsertEventsForEntitiesAsync(position, entities.Where(e => e.UnpublishedEvents.Any()).Select(e => (e.Id, e.UnpublishedEvents)), actor, operation);
-
-        return new UpdatedStorePosition(position, entities.Select(e => (e.Id, e.Version.Next().Ordinal!)));
     }
 
     private async Task InsertEventsForEntitiesAsync(Position position, IEnumerable<(EntityId, IEnumerable<UnpublishedEvent>)> entities, string actor, IAtomicOperation operation)
