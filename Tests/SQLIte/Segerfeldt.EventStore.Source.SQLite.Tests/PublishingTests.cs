@@ -3,7 +3,6 @@ namespace Segerfeldt.EventStore.Source.SQLite.Tests;
 // ReSharper disable once InconsistentNaming
 public sealed class PublishingTests
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Structure", "NUnit1032:An IDisposable field/property should be Disposed in a TearDown method", Justification = "<Pending>")]
     private InMemoryConnection connection = null!;
     private EventPublisher publisher = null!;
 
@@ -14,6 +13,12 @@ public sealed class PublishingTests
         publisher = new EventPublisher(connection);
 
         Schema.CreateIfMissing(connection);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        connection.Dispose();
     }
 
     [Test]
