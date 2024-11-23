@@ -1,6 +1,7 @@
 # TODO
 
 - `MockProjectionTracker` is duplicated many times
+- `EventPublisher` only has integration tests.
 
 ## Icebox Issues & Ideas
 
@@ -27,5 +28,5 @@
     among them, but it is probably impossible to know if there are conflicting
     endpoints that were setup through other means.
 - Add sample applications using all database implementations
-- `Position` and `EventOrdinal` should not have a `[JsonConverter]`
+- `Position` and `Ordinal` should not have a `[JsonConverter]`
   - `EventDAO` prevents removing it though.
