@@ -116,18 +116,18 @@ public sealed class PublishingTests
     [Test]
     public void WillNotPublishChangesIfThereAreNoEvents()
     {
+        publisher.Publish(
+            EntityId.Value("an-entity"),
+            EntityType.Name("a-type"),
+            new UnpublishedEvent("an-event", new { Meaning = 42 }), "johan");
+
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
         entity.Setup(e => e.Type).Returns(EntityType.Name("a-type"));
         entity.Setup(e => e.Version).Returns(EntityVersion.New);
         entity.Setup(e => e.UnpublishedEvents).Returns(Array.Empty<UnpublishedEvent>());
-        publisher.PublishChanges(entity.Object, "johan");
 
-        connection.Open();
-        var count = connection.CreateCommand("SELECT COUNT(*) FROM Events").ExecuteScalar();
-        connection.Close();
-
-        Assert.That(count, Is.Zero);
+        Assert.That(() => publisher.PublishChanges(entity.Object, "johan"), Throws.Nothing);
     }
 
     [Test]

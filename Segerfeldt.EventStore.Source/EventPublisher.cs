@@ -83,7 +83,10 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
 
     private async Task PublishChangesAsync(IEnumerable<IEntity> entities, string actor, IAtomicOperation operation)
     {
-        foreach (var entity in entities)
+        var changedEntities = entities.Where(e => e.UnpublishedEvents.Any());
+        if (!changedEntities.Any()) return;
+
+        foreach (var entity in changedEntities)
         {
             var currentVersion = await repository.GetCurrentEntityVersionAsync(entity.Id, operation);
             if (entity.Version != currentVersion)
@@ -96,7 +99,7 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
         }
 
         var position = await repository.GetNextPositionAsync(operation);
-        await InsertEventsForEntitiesAsync(position, entities.Where(e => e.UnpublishedEvents.Any()).Select(e => (e.Id, e.UnpublishedEvents)), actor, operation);
+        await InsertEventsForEntitiesAsync(position, changedEntities.Select(e => (e.Id, e.UnpublishedEvents)), actor, operation);
     }
 
     private async Task InsertEventsForEntitiesAsync(Position position, IEnumerable<(EntityId, IEnumerable<UnpublishedEvent>)> entities, string actor, IAtomicOperation operation)
