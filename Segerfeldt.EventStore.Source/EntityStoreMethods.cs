@@ -104,8 +104,8 @@ public static class EntityStoreMethods
         var constructor = typeof(TEntity).GetConstructor([typeof(EntityId), typeof(EntityVersion)])
             ?? throw new InvalidEntityException(typeof(TEntity));
         return (TEntity)constructor.Invoke(constructor.GetParameters().Length == 2
-            ? [id, EntityVersion.Safe(version.Value)]
-            : [id, EntityVersion.Safe(version.Value), entityStore]);
+            ? [id, new EntityVersion(version)]
+            : [id, new EntityVersion(version), entityStore]);
     }
 
     private class SnapshotRestorer<TEntity>(EntityId id, EntityType entityType, Ordinal? ordinal, Action<TEntity> restore) where TEntity : class, IEntity

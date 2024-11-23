@@ -67,7 +67,7 @@ public sealed class PublishingTests
     [Test]
     public void CanPublishNewEntity()
     {
-        GivenEntity("an-entity", version: EntityVersion.Of(3));
+        GivenEntity("an-entity", version: Ordinal.Of(3));
 
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
@@ -101,7 +101,7 @@ public sealed class PublishingTests
     [Test]
     public void CanPublishChanges()
     {
-        GivenEntity("an-entity", version: EntityVersion.Zero);
+        GivenEntity("an-entity", version: Ordinal.Zero);
 
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
@@ -136,7 +136,7 @@ public sealed class PublishingTests
     [Test]
     public void CannotPublishChangesIfRemoteUpdated()
     {
-        GivenEntity("an-entity", version: EntityVersion.Of(3));
+        GivenEntity("an-entity", version: Ordinal.Of(3));
 
         var entity = new Mock<IEntity>();
         entity.Setup(e => e.Id).Returns(EntityId.Value("an-entity"));
@@ -192,7 +192,7 @@ public sealed class PublishingTests
         finally { connection.Close(); }
     }
 
-    private void GivenEntity(string id, EntityVersion version)
+    private void GivenEntity(string id, Ordinal version)
     {
         connection.Open();
         try

@@ -45,8 +45,13 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
     private async Task<UpdatedStorePosition> PublishAsync(EntityId entityId, EntityType type, UnpublishedEvent @event, string actor, IAtomicOperation operation)
     {
         var currentVersion = await repository.GetCurrentEntityVersionAsync(entityId, operation);
-        if (currentVersion.IsNew) await repository.InsertEntityAsync(entityId, type, Ordinal.Zero, operation);
-        return await InsertEventsForEntitiesAsync([(entityId, Ordinal.Safe(currentVersion.Value), [@event])], actor, operation);
+        if (currentVersion == EntityVersion.New)
+            await repository.InsertEntityAsync(entityId, type, Ordinal.Zero, operation);
+        else
+            await repository.UpdateVersionAsync(entityId, currentVersion.Next().Ordinal!, operation);
+        var position = await repository.GetNextPositionAsync(operation);
+        await InsertEventsForEntitiesAsync(position, [(entityId, [@event])], actor, operation);
+        return new UpdatedStorePosition(position, [(entityId, currentVersion.NextOrdinal())]);
     }
 
     /// <summary>Publish a single event for an entity</summary>
@@ -87,31 +92,29 @@ public sealed class EventPublisher(IEventPublisherRepository repository)
             if (entity.Version != currentVersion)
                 throw new ConcurrentUpdateException(entity.Version, currentVersion);
 
-            if (currentVersion.IsNew) await repository.InsertEntityAsync(entity.Id, entity.Type, Ordinal.Safe(entity.Version.Value), operation);
+            if (currentVersion == EntityVersion.New)
+                await repository.InsertEntityAsync(entity.Id, entity.Type, Ordinal.Zero, operation);
+            else
+                await repository.UpdateVersionAsync(entity.Id, currentVersion.NextOrdinal(), operation);
         }
 
-        return await InsertEventsForEntitiesAsync(entities.Where(e => e.UnpublishedEvents.Any()).Select(e => (e.Id, Ordinal.Safe(e.Version.Value), e.UnpublishedEvents)), actor, operation);
+        var position = await repository.GetNextPositionAsync(operation);
+        await InsertEventsForEntitiesAsync(position, entities.Where(e => e.UnpublishedEvents.Any()).Select(e => (e.Id, e.UnpublishedEvents)), actor, operation);
+
+        return new UpdatedStorePosition(position, entities.Select(e => (e.Id, e.Version.Next().Ordinal!)));
     }
 
-    private async Task<UpdatedStorePosition> InsertEventsForEntitiesAsync(IEnumerable<(EntityId, Ordinal, IEnumerable<UnpublishedEvent>)> entities, string actor, IAtomicOperation operation)
+    private async Task InsertEventsForEntitiesAsync(Position position, IEnumerable<(EntityId, IEnumerable<UnpublishedEvent>)> entities, string actor, IAtomicOperation operation)
     {
-        var position = await repository.GetNextPositionAsync(operation);
-
-        var entityVersions = await Task.WhenAll(
+        await Task.WhenAll(
             entities.Select(async entity =>
             {
-                var (id, currentVersion, events) = entity;
+                var (id, events) = entity;
                 var nextOrdinal = await repository.GetNextOrdinalAsync(id, operation);
                 foreach (var (@event, ordinal) in events.Zip(IncrementingOrdinalsFrom(nextOrdinal)))
                     await repository.InsertEventAsync(id, @event, actor, ordinal, position, operation);
-
-                var (_, lastInsertedOrdinal) = events.Zip(IncrementingOrdinalsFrom(nextOrdinal)).Last();
-                await repository.UpdateVersionAsync(id, currentVersion.Next(), operation);
-                return (id, currentVersion.Next());
             })
         );
-
-        return new UpdatedStorePosition(position, entityVersions);
 
         // ReSharper disable once IteratorNeverReturns
         static IEnumerable<Ordinal> IncrementingOrdinalsFrom(Ordinal first)
@@ -130,8 +133,8 @@ internal static class EventPublisherRepositoryExtensions
 {
     public static async Task<EntityVersion> GetCurrentEntityVersionAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)
     {
-        var version = await repository.GetCurrentVersionAsync(entityId, operation);
-        return version is null ? EntityVersion.New : EntityVersion.Safe(version.Value);
+        var ordinal = await repository.GetCurrentVersionAsync(entityId, operation);
+        return ordinal is null ? EntityVersion.New : new EntityVersion(Ordinal.Safe(ordinal.Value));
     }
 
     public static async Task<Ordinal> GetNextOrdinalAsync(this IEventPublisherRepository repository, EntityId entityId, IAtomicOperation operation)

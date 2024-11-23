@@ -7,36 +7,29 @@ namespace Segerfeldt.EventStore.Source;
 public sealed class EntityVersion : ValueObject<EntityVersion>
 {
     /// <summary>A new entity that has not been published/stored yet</summary>
-    public static EntityVersion New => new(-1);
+    public static EntityVersion New => new(null!);
 
-    public static readonly EntityVersion Zero = new(0);
+    public static readonly EntityVersion Zero = new(Ordinal.Zero);
 
-    /// <summary>The actual value of the version</summary>
-    public int Value { get; }
-    /// <summary>Whether this is a new entity, or it has been stored already</summary>
-    public bool IsNew => Value < 0;
+    /// <summary>The ordinal value of the version</summary>
+    public Ordinal? Ordinal { get; }
 
-    private EntityVersion(int value) => Value = value;
-
-    internal static EntityVersion Safe(int value) => new(value);
+    public EntityVersion(Ordinal value) => Ordinal = value;
 
     /// <summary>Initialize a new <see cref="EntityVersion"/></summary>
     /// <param name="value">the actual value of the version</param>
     /// <returns>a valid <see cref="EntityVersion"/>with the specified <paramref name="value"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">if the value is negative</exception>
-    public static EntityVersion Of(int value)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(value, 0, nameof(value));
-        return new EntityVersion(value);
-    }
+    public static EntityVersion Of(int value) => new(Ordinal.Of(value));
 
     /// <inheritdoc />
-    protected override IEnumerable<object> GetEqualityComponents() => [Value];
+    protected override IEnumerable<object> GetEqualityComponents() => Ordinal is null ? [] : [Ordinal];
 
     /// <summary>The next <see cref="EntityVersion"/> after this</summary>
     /// <returns>a new <see cref="EntityVersion"/> with either the value 0 (if this is <see cref="New"/>), or this value + 1</returns>
-    internal EntityVersion Next() => new(Value + 1);
+    internal EntityVersion Next() => new(NextOrdinal());
+    internal Ordinal NextOrdinal() => Ordinal?.Next() ?? Ordinal.Zero;
 
     /// <inheritdoc />
-    public override string ToString() => Value < 0 ? "[New]" : $"[{Value}]";
+    public override string ToString() => Ordinal is null ? "[New]" : $"[{Ordinal.Value}]";
 }
